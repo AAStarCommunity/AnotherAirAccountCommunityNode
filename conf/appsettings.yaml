@@ -1,0 +1,9 @@
+db:
+  user: # change it
+  password: #change it
+  host: #change it
+  schema: aastar # db schema
+jwt:
+  security: thisisunsafeuntilyouchangit
+  realm: AASTAR
+  idkey: id

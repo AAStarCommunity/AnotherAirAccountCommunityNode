@@ -1,7 +1,7 @@
 package routers
 
 import (
-	"another_node/internal/middlewares"
+	"another_node/internal/web_server/middlewares"
 
 	"github.com/gin-gonic/gin"
 )

@@ -2,8 +2,8 @@ package routers
 
 import (
 	"another_node/conf"
-	"another_node/internal/middlewares"
-	"another_node/internal/pkg/response"
+	"another_node/internal/web_server/middlewares"
+	"another_node/internal/web_server/pkg/response"
 	"io"
 	"net/http"
 

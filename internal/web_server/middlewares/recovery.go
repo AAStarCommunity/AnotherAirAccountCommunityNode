@@ -2,7 +2,7 @@ package middlewares
 
 import (
 	"another_node/conf"
-	"another_node/internal/pkg/response"
+	"another_node/internal/web_server/pkg/response"
 	"errors"
 	"fmt"
 	"net/http"

@@ -10,8 +10,9 @@ import (
 var once sync.Once
 
 type Conf struct {
-	Db  DB
-	Jwt JWT
+	Db   DB
+	Jwt  JWT
+	Node Node
 }
 
 var conf *Conf
@@ -83,6 +84,12 @@ func mappingEnvToConf(fileConf *Conf) *Conf {
 		envConf.Jwt.Security = jwt__idkey
 	} else if fileConf != nil {
 		envConf.Jwt.IdKey = fileConf.Jwt.IdKey
+	}
+
+	if node__genesis := os.Getenv("node__genesis"); len(node__genesis) > 0 {
+		envConf.Node.Genesis = node__genesis == "true"
+	} else if fileConf != nil {
+		envConf.Node.Genesis = fileConf.Node.Genesis
 	}
 
 	return envConf

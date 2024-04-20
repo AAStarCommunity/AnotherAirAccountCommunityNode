@@ -20,7 +20,8 @@ type DB struct {
 var db *gorm.DB
 
 func getDbConnectionString(c *Conf) *string {
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=disable", c.Db.Host, c.Db.User, c.Db.Password, c.Db.Schema)
+	//
+	dsn := fmt.Sprintf("postgres://%s:%s@%s/%s", c.Db.User, c.Db.Password, c.Db.Host, c.Db.Schema)
 	return &dsn
 }
 

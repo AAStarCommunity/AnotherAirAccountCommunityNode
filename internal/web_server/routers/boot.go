@@ -2,6 +2,7 @@ package routers
 
 import (
 	"another_node/conf"
+	"another_node/docs"
 	"another_node/internal/web_server/middlewares"
 	"another_node/internal/web_server/pkg/response"
 	"io"
@@ -10,7 +11,6 @@ import (
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"github.com/swaggo/swag/example/basic/docs"
 )
 
 // SetRouters setting the routers

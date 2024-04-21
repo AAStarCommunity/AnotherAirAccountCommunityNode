@@ -6,8 +6,8 @@ import (
 	"log"
 )
 
-// broadcast sends data to all nodes in the cluster
-func (n *Node) broadcast(data *Payload) error {
+// Broadcast sends data to all nodes in the cluster
+func (n *Node) Broadcast(data *Payload) error {
 	buf := new(bytes.Buffer)
 	encoder := gob.NewEncoder(buf)
 	if err := encoder.Encode(data); err != nil {

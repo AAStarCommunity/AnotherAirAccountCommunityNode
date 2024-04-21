@@ -10,3 +10,7 @@ func GetPublicKey(hashedAccount *string) string {
 		return member.PublicKey
 	}
 }
+
+func UpcomingHandler(payload *Payload) {
+	_ = storage.UpsertMember(payload.Account, &payload.PublicKey, nil, &payload.RpcAddress, payload.Version)
+}

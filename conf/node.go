@@ -8,9 +8,12 @@ import (
 )
 
 type Node struct {
-	Genesis         bool
-	ExternalAddress string
-	GlobalName      string
+	Genesis      bool
+	ExternalAddr string
+	ExternalPort int
+	BindAddr     string
+	BindPort     int
+	GlobalName   string
 }
 
 var node *Node
@@ -22,8 +25,8 @@ func GetNode() *Node {
 		if node == nil {
 			j := &getConf().Node
 			node = &Node{
-				Genesis:         j.Genesis,
-				ExternalAddress: j.ExternalAddress,
+				Genesis:      j.Genesis,
+				ExternalAddr: j.ExternalAddr,
 				GlobalName: func() string {
 					if j.GlobalName == "" {
 						return fmt.Sprintf("aa:%s", uuid.NewString())

@@ -2,6 +2,7 @@ package conf
 
 import (
 	"os"
+	"strconv"
 	"sync"
 
 	"gopkg.in/yaml.v2"
@@ -10,6 +11,7 @@ import (
 var once sync.Once
 
 type Conf struct {
+	Web  Web
 	Db   DB
 	Jwt  JWT
 	Node Node
@@ -46,8 +48,23 @@ func getConfiguration(filePath *string) *Conf {
 
 func mappingEnvToConf(fileConf *Conf) *Conf {
 	envConf := &Conf{
-		Db:  DB{},
-		Jwt: JWT{},
+		Web:  Web{},
+		Db:   DB{},
+		Jwt:  JWT{},
+		Node: Node{},
+	}
+	if web__port := os.Getenv("web__port"); len(web__port) > 0 {
+		if port, err := strconv.Atoi(web__port); err == nil && port > 0 {
+			envConf.Web.Port = port
+		} else {
+			panic("web__port is invalid")
+		}
+	} else if fileConf != nil {
+		if fileConf.Web.Port > 0 {
+			envConf.Web.Port = fileConf.Web.Port
+		} else {
+			panic("web.port is invalid")
+		}
 	}
 	if db__user := os.Getenv("db__user"); len(db__user) > 0 {
 		envConf.Db.User = db__user
@@ -90,6 +107,47 @@ func mappingEnvToConf(fileConf *Conf) *Conf {
 		envConf.Node.Genesis = node__genesis == "true"
 	} else if fileConf != nil {
 		envConf.Node.Genesis = fileConf.Node.Genesis
+	}
+	if node__globalname := os.Getenv("node__globalname"); len(node__globalname) > 0 {
+		envConf.Node.GlobalName = node__globalname
+	} else if fileConf != nil {
+		envConf.Node.GlobalName = fileConf.Node.GlobalName
+	}
+	if node__externaladdr := os.Getenv("node__externaladdr"); len(node__externaladdr) > 0 {
+		envConf.Node.ExternalAddr = node__externaladdr
+	} else if fileConf != nil {
+		envConf.Node.ExternalAddr = fileConf.Node.ExternalAddr
+	}
+	if node__externalport := os.Getenv("node__externalport"); len(node__externalport) > 0 {
+		if port, err := strconv.Atoi(node__externalport); err == nil && port > 0 {
+			envConf.Node.ExternalPort = port
+		} else {
+			panic("node__externalport is invalid")
+		}
+	} else if fileConf != nil {
+		if fileConf.Node.ExternalPort > 0 {
+			envConf.Node.ExternalPort = fileConf.Node.ExternalPort
+		} else {
+			panic("node.externalport is invalid")
+		}
+	}
+	if node__bindaddr := os.Getenv("node__bindaddr"); len(node__bindaddr) > 0 {
+		envConf.Node.BindAddr = node__bindaddr
+	} else if fileConf != nil {
+		envConf.Node.BindAddr = fileConf.Node.BindAddr
+	}
+	if node__bindport := os.Getenv("node__bindport"); len(node__bindport) > 0 {
+		if port, err := strconv.Atoi(node__bindport); err == nil && port > 0 {
+			envConf.Node.BindPort = port
+		} else {
+			panic("node__bindport is invalid")
+		}
+	} else if fileConf != nil {
+		if fileConf.Node.BindPort > 0 {
+			envConf.Node.BindPort = fileConf.Node.BindPort
+		} else {
+			panic("node.bindport is invalid")
+		}
 	}
 
 	return envConf

@@ -1,3 +1,5 @@
+web:
+  port: 8080
 db:
   user: # change it
   password: #change it
@@ -9,3 +11,8 @@ jwt:
   idkey: id
 node:
   genesis: false
+  globalName: genesis-01
+  externalAddr: 0.0.0.0
+  externalPort: 7946
+  bindAddr: 0.0.0.0
+  bindPort: 7946

@@ -81,3 +81,15 @@ func UpsertMember(hashedAccount string, publicKey, privateKey, rpcAddress *strin
 		}
 	})
 }
+
+// TryFindMember find a member by hashed account
+func TryFindMember(hashedAccount string) (*Member, error) {
+	db := conf.GetDbClient()
+
+	var member Member
+	err := db.Where("hashed_account = ?", hashedAccount).First(&member).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+	return &member, err
+}

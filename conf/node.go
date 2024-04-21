@@ -1,10 +1,16 @@
 package conf
 
-import "sync"
+import (
+	"fmt"
+	"sync"
+
+	"github.com/google/uuid"
+)
 
 type Node struct {
 	Genesis         bool
 	ExternalAddress string
+	GlobalName      string
 }
 
 var node *Node
@@ -18,6 +24,13 @@ func GetNode() *Node {
 			node = &Node{
 				Genesis:         j.Genesis,
 				ExternalAddress: j.ExternalAddress,
+				GlobalName: func() string {
+					if j.GlobalName == "" {
+						return fmt.Sprintf("aa:%s", uuid.NewString())
+					} else {
+						return j.GlobalName
+					}
+				}(),
 			}
 		}
 	})

@@ -18,6 +18,7 @@ func init() {
 	migrations = []Migration{
 		&Migration20240420{},
 	}
+
 }
 
 func AutoMigrate() {
@@ -35,10 +36,15 @@ func migrate(db *gorm.DB) {
 	}
 }
 
-// Rollback rolls back database changes
-func Rollback(db *gorm.DB) {
+// rollback rolls back database changes
+func rollback(db *gorm.DB) {
 
 	for i := len(migrations) - 1; i >= 0; i-- {
 		migrations[i].Down(db)
 	}
+}
+
+func Rollback() {
+	db := conf.GetDbClient()
+	rollback(db)
 }

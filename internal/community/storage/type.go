@@ -1,23 +1,23 @@
 package storage
 
 import (
+	"os"
 	"time"
 
 	"gorm.io/gorm"
 )
 
+var rpcAddress string
+
 type Model struct {
-	ID        uint           `gorm:"primarykey"`
-	CreatedAt time.Time      `gorm:"autoCreateTime"`
-	UpdatedAt time.Time      `gorm:"autoUpdateTime:milli"`
-	DeletedAt gorm.DeletedAt `gorm:"index"`
-	DeletedBy string         `gorm:"size:64, null"`
+	ID        uint           `gorm:"column:id; primarykey"`
+	CreatedAt time.Time      `gorm:"column:created_at; autoCreateTime"`
+	UpdatedAt time.Time      `gorm:"column:updated_at; autoUpdateTime:milli"`
+	DeletedAt gorm.DeletedAt `gorm:"column:deleted_at; index"`
+	DeletedBy string         `gorm:"column:deleted_by; type: varchar(1024); null"`
+	Version   uint           `gorm:"column:version; default:0;"`
 }
 
-// gorm的数据表结构定义
-type Member struct {
-	Model
-	HashedAccount   string `gorm:"uniqueIndex"`
-	PublicKey       string `gorm:"size:1024"`
-	PrivateKeyVault string `gorm:"size:1024, null"`
+func init() {
+	rpcAddress = os.Getenv("RPC_ADDRESS")
 }

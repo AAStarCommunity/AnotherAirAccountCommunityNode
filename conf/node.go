@@ -3,7 +3,8 @@ package conf
 import "sync"
 
 type Node struct {
-	Genesis bool
+	Genesis         bool
+	ExternalAddress string
 }
 
 var node *Node
@@ -15,7 +16,8 @@ func GetNode() *Node {
 		if node == nil {
 			j := &getConf().Node
 			node = &Node{
-				Genesis: j.Genesis,
+				Genesis:         j.Genesis,
+				ExternalAddress: j.ExternalAddress,
 			}
 		}
 	})

@@ -1,7 +1,7 @@
 package migrations
 
 import (
-	"go-to-cloud/conf"
+	"another_node/conf"
 	"os"
 	"testing"
 
@@ -69,7 +69,7 @@ func TestRollback(t *testing.T) {
 		db = conf.GetDbClient()
 	}
 
-	Rollback(db)
+	rollback(db)
 
 	if testing.Short() {
 		assert.Equal(t, 2, sortedDown[0])

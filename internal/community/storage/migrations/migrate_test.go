@@ -63,8 +63,6 @@ func TestMigrate(t *testing.T) {
 func TestRollback(t *testing.T) {
 	var db *gorm.DB
 
-	os.Setenv("Evn", "dev")
-
 	if testing.Short() {
 		initTestData()
 	} else {

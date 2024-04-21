@@ -11,10 +11,10 @@ import (
 // Member represent a web2 account
 type Member struct {
 	Model
-	HashedAccount   string `gorm:"column:hashed_account; type:varchar(1024); not null; uniqueIndex"`
-	RpcAddress      string `gorm:"column:rpc_address; type:varchar(128); not null"`
-	PublicKey       string `gorm:"column:public_key; type:varchar(1024)"`
-	PrivateKeyVault string `gorm:"column:private_key_vault; type:varchar(1024); null"`
+	HashedAccount   string  `gorm:"column:hashed_account; type:varchar(1024); not null; uniqueIndex"`
+	RpcAddress      string  `gorm:"column:rpc_address; type:varchar(128); not null"`
+	PublicKey       string  `gorm:"column:public_key; type:varchar(1024)"`
+	PrivateKeyVault *string `gorm:"column:private_key_vault; type:varchar(1024); null"`
 }
 
 func (m *Member) TableName() string {
@@ -36,7 +36,7 @@ func UpsertMember(hashedAccount string, publicKey, privateKey, rpcAddress *strin
 				},
 				HashedAccount:   hashedAccount,
 				PublicKey:       *publicKey,
-				PrivateKeyVault: *privateKey,
+				PrivateKeyVault: privateKey,
 				RpcAddress:      *rpcAddress,
 			}).Error
 		} else {
@@ -61,13 +61,7 @@ func UpsertMember(hashedAccount string, publicKey, privateKey, rpcAddress *strin
 						return member.PublicKey
 					}
 				}(),
-				PrivateKeyVault: func() string {
-					if privateKey != nil {
-						return *privateKey
-					} else {
-						return member.PrivateKeyVault
-					}
-				}(),
+				PrivateKeyVault: privateKey,
 				RpcAddress: func() string {
 					if rpcAddress != nil {
 						return *rpcAddress

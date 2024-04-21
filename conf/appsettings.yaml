@@ -10,7 +10,7 @@ jwt:
   realm: AASTAR
   idkey: id
 node:
-  genesis: false
+  genesis: true
   globalName: genesis-01
   externalAddr: 0.0.0.0
   externalPort: 7946

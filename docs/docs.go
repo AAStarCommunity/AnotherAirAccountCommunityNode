@@ -90,12 +90,6 @@ const docTemplate = `{
                 },
                 "publicKey": {
                     "type": "string"
-                },
-                "rpcAddress": {
-                    "type": "string"
-                },
-                "version": {
-                    "type": "integer"
                 }
             }
         },

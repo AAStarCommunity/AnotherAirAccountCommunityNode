@@ -1,6 +1,12 @@
 package account_v1
 
-import "github.com/gin-gonic/gin"
+import (
+	"another_node/internal/community"
+	"another_node/internal/web_server/pkg/request"
+	"another_node/internal/web_server/pkg/response"
+
+	"github.com/gin-gonic/gin"
+)
 
 // Bind a account to community node
 // @Tags Account
@@ -12,5 +18,11 @@ import "github.com/gin-gonic/gin"
 // @Router /api/account/v1/bind [POST]
 // @Security JWT
 func Bind(ctx *gin.Context) {
-	ctx.JSON(201, gin.H{})
+	var req request.Bind
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		response.BadRequest(ctx, err)
+		return
+	}
+
+	community.BindAccount(req.Account, &req.PublicKey)
 }

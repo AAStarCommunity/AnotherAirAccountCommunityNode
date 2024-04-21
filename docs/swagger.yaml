@@ -5,10 +5,6 @@ definitions:
         type: string
       publicKey:
         type: string
-      rpcAddress:
-        type: string
-      version:
-        type: integer
     type: object
   request.ClientCredential:
     properties:

@@ -16,8 +16,9 @@ func TestMember(t *testing.T) {
 	prepare_test()
 
 	ptr := "B"
-	assert.NoError(t, UpsertMember("A", &ptr, &ptr, &ptr, 1))
-	assert.NoError(t, UpsertMember("A", &ptr, &ptr, &ptr, 2))
+	prtN := 1
+	assert.NoError(t, UpsertMember("A", &ptr, &ptr, &ptr, &prtN, 1))
+	assert.NoError(t, UpsertMember("A", &ptr, &ptr, &ptr, &prtN, 2))
 }
 
 func TestFindMember(t *testing.T) {
@@ -28,10 +29,12 @@ func TestFindMember(t *testing.T) {
 	}
 	prepare_test()
 
+	prtN := 1
+
 	ptr := "B"
-	assert.NoError(t, UpsertMember("A", &ptr, &ptr, &ptr, 1))
+	assert.NoError(t, UpsertMember("A", &ptr, &ptr, &ptr, &prtN, 1))
 	ptr = "C"
-	assert.NoError(t, UpsertMember("A", &ptr, &ptr, &ptr, 1))
+	assert.NoError(t, UpsertMember("A", &ptr, &ptr, &ptr, &prtN, 1))
 
 	member, err := TryFindMember("A")
 	assert.NoError(t, err)

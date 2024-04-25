@@ -53,35 +53,41 @@ func UpsertMember(hashedAccount, publicKey, privateKey, rpcAddress string, rpcPo
 				return nil
 			}
 
-			if publicKey == nil {
+			if len(publicKey) == 0 {
 				tx.Omit("public_key")
 			}
-			if privateKey == nil {
+			if len(privateKey) == 0 {
 				tx.Omit("private_key_vault")
 			}
-			if rpcAddress == nil || rpcPort == nil {
+			if len(rpcAddress) == 0 || rpcPort == 0 {
 				tx.Omit("rpc_address")
 				tx.Omit("rpc_port")
 			}
 			err := tx.Where("id=?", member.ID).Updates(Member{
 				PublicKey: func() string {
-					if publicKey != nil {
-						return *publicKey
+					if len(publicKey) > 0 {
+						return publicKey
 					} else {
 						return member.PublicKey
 					}
 				}(),
-				PrivateKeyVault: privateKey,
+				PrivateKeyVault: func() *string {
+					if len(privateKey) > 0 {
+						return &privateKey
+					} else {
+						return member.PrivateKeyVault
+					}
+				}(),
 				RpcAddress: func() string {
-					if rpcAddress != nil {
-						return *rpcAddress
+					if len(rpcAddress) > 0 {
+						return rpcAddress
 					} else {
 						return member.RpcAddress
 					}
 				}(),
 				RpcPort: func() int {
-					if rpcPort != nil {
-						return *rpcPort
+					if rpcPort > 0 {
+						return rpcPort
 					} else {
 						return member.RpcPort
 					}

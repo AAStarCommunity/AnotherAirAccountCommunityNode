@@ -37,17 +37,13 @@ func getConfiguration(filePath *string) *Conf {
 		return mappingEnvToConf(nil)
 	} else {
 		c := Conf{}
-		err := yaml.Unmarshal(file, &c)
-		if err != nil {
-			return mappingEnvToConf(&c)
-		}
-
-		return &c
+		yaml.Unmarshal(file, &c)
+		return mappingEnvToConf(&c)
 	}
 }
 
-func mappingEnvToConf(fileConf *Conf) *Conf {
-	envConf := &Conf{
+func mappingEnvToConf(fileConf *Conf) (envConf *Conf) {
+	envConf = &Conf{
 		Web:  Web{},
 		Db:   DB{},
 		Jwt:  JWT{},
@@ -150,5 +146,5 @@ func mappingEnvToConf(fileConf *Conf) *Conf {
 		}
 	}
 
-	return envConf
+	return
 }

@@ -41,7 +41,7 @@ func BindAccount(hashedAccount string, publicKey *string) error {
 			PublicKey:  *publicKey,
 			RpcAddress: rpcAddress,
 			RpcPort:    rpcPort,
-			Version:    *&version,
+			Version:    version,
 		})
 	}
 }

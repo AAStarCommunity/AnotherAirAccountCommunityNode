@@ -4,7 +4,6 @@ import (
 	"another_node/conf"
 	"another_node/internal/community/node"
 	"another_node/internal/community/storage"
-	"fmt"
 )
 
 type Community struct {
@@ -19,24 +18,30 @@ func New(n *node.Node) {
 	}
 }
 
+// BindAccount binding a web2 account
 func BindAccount(hashedAccount string, publicKey *string) error {
+	privateKeyValut := "WIP Private Key Vault"
+
 	if publicKey == nil {
 		// TODO: auto dispatch a web3 account
 		publicKey = new(string)
 		*publicKey = "WIP"
+		privateKeyValut = "Auto Dispatched Private Key Vault"
 	}
 
-	rpcAddress := new(string)
-	*rpcAddress = fmt.Sprintf("%s:%d", conf.GetNode().ExternalAddr, conf.GetNode().ExternalPort)
+	rpcAddress := conf.GetNode().ExternalAddr
+	rpcPort := conf.GetNode().ExternalPort
+	version := 0
 
-	if err := storage.UpsertMember(hashedAccount, publicKey, nil, rpcAddress, 0); err != nil {
+	if err := storage.UpsertMember(hashedAccount, *publicKey, privateKeyValut, rpcAddress, rpcPort, &version); err != nil {
 		return err
 	} else {
 		return community.Node.Broadcast(&node.Payload{
 			Account:    hashedAccount,
 			PublicKey:  *publicKey,
-			RpcAddress: *rpcAddress,
-			Version:    0,
+			RpcAddress: rpcAddress,
+			RpcPort:    rpcPort,
+			Version:    *&version,
 		})
 	}
 }

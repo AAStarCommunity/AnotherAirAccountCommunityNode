@@ -12,5 +12,5 @@ func GetPublicKey(hashedAccount *string) string {
 }
 
 func UpcomingHandler(payload *Payload) {
-	_ = storage.UpsertMember(payload.Account, &payload.PublicKey, nil, &payload.RpcAddress, payload.Version)
+	_ = storage.UpsertMember(payload.Account, payload.PublicKey, "", payload.RpcAddress, payload.RpcPort, &payload.Version)
 }

@@ -9,11 +9,11 @@ import (
 
 type Node struct {
 	Genesis      bool
-	ExternalAddr string
-	ExternalPort int
-	BindAddr     string
-	BindPort     int
-	GlobalName   string
+	ExternalAddr string `yaml:"externalAddr"`
+	ExternalPort int    `yaml:"externalPort"`
+	BindAddr     string `yaml:"bindAddr"`
+	BindPort     int    `yaml:"bindPort"`
+	GlobalName   string `yaml:"globalName"`
 }
 
 var node *Node
@@ -27,6 +27,9 @@ func GetNode() *Node {
 			node = &Node{
 				Genesis:      j.Genesis,
 				ExternalAddr: j.ExternalAddr,
+				ExternalPort: j.ExternalPort,
+				BindAddr:     j.BindAddr,
+				BindPort:     j.BindPort,
 				GlobalName: func() string {
 					if j.GlobalName == "" {
 						return fmt.Sprintf("aa:%s", uuid.NewString())

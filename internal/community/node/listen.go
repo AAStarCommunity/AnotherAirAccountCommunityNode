@@ -17,6 +17,8 @@ func (n *Node) listen() {
 				continue
 			}
 
+			log.Printf("Received broadcast: %v", payload)
+
 			go UpcomingHandler(&payload)
 		}
 	}

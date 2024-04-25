@@ -24,7 +24,7 @@ func New() (*Node, error) {
 
 		if !confNode.Genesis {
 			exists := []string{
-				"127.0.0.1:7946", // TODO: replace with the genesis node address on chain
+				"192.168.1.6:7947", // TODO: replace with the genesis node address on chain
 			}
 
 			if _, err := list.Join(exists); err != nil {

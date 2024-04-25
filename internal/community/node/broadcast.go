@@ -19,5 +19,7 @@ func (n *Node) Broadcast(data *Payload) error {
 		n.Delegate.Broadcasts = append(n.Delegate.Broadcasts, buf.Bytes())
 	}
 
+	log.Printf("Broadcasted: %v", data)
+
 	return nil
 }

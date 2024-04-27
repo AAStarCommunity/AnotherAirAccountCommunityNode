@@ -54,7 +54,7 @@ func ListMembers() []string {
 	return members
 }
 
-func SayHello() {
+func Broadcast() {
 	community.Node.Broadcast(&node.Payload{
 		Account: "0x",
 	})

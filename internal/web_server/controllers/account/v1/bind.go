@@ -24,5 +24,9 @@ func Bind(ctx *gin.Context) {
 		return
 	}
 
-	community.BindAccount(req.Account, &req.PublicKey)
+	if err := community.BindAccount(req.Account, &req.PublicKey); err != nil {
+		response.InternalServerError(ctx, err)
+	} else {
+		response.Created(ctx, nil)
+	}
 }

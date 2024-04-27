@@ -17,6 +17,9 @@ func (n *Node) Broadcast(data *Payload) error {
 
 	if len(n.Delegate.Broadcasts) < n.Delegate.BroadcastCap {
 		n.Delegate.Broadcasts = append(n.Delegate.Broadcasts, buf.Bytes())
+		log.Printf("Broadcasted: %v", data)
+	} else {
+		log.Printf("Broadcasted data is full, dropped: %v", data)
 	}
 
 	return nil

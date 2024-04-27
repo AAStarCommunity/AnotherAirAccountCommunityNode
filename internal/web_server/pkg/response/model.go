@@ -31,19 +31,20 @@ func Success(ctx *gin.Context, data ...any) {
 	GetResponse().Success(ctx)
 }
 
-// Fail response when business operation fails
-func Fail(ctx *gin.Context, code int, message *string, data ...any) {
-	var msg string
-	if message == nil {
-		msg = ""
-	} else {
-		msg = *message
-	}
+func Created(ctx *gin.Context, data ...any) {
 	if data != nil {
-		GetResponse().WithData(data[0]).FailCode(ctx, code, msg)
+		GetResponse().withDataAndHttpCode(http.StatusCreated, ctx, data[0])
 		return
 	}
-	GetResponse().FailCode(ctx, code, msg)
+	GetResponse().SetHttpCode(http.StatusCreated).Success(ctx)
+}
+
+func InternalServerError(ctx *gin.Context, data ...any) {
+	if data != nil {
+		GetResponse().withDataAndHttpCode(http.StatusInternalServerError, ctx, data[0])
+		return
+	}
+	GetResponse().SetHttpCode(http.StatusInternalServerError).Fail(ctx)
 }
 
 type Result struct {

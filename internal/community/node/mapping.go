@@ -1,6 +1,8 @@
 package node
 
-import "another_node/internal/community/storage"
+import (
+	"another_node/internal/community/storage"
+)
 
 // GetPublicKey get public key by hashed account
 func GetPublicKey(hashedAccount *string) string {

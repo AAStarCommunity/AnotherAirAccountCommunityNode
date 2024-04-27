@@ -13,12 +13,12 @@ import (
 func buildRouters(router *gin.Engine) {
 
 	// testing router
-	router.GET("/api/say", func(ctx *gin.Context) {
-		community.SayHello()
+	router.GET("/api/broadcast", func(ctx *gin.Context) {
+		community.Broadcast()
 	})
 
 	router.POST("/api/auth/v1/login", auth_v1.Login)
-	router.GET("api/dashboard/v1/node", dashboard_v1.Node)
+	router.GET("/api/dashboard/v1/node", dashboard_v1.Node)
 
 	router.Use(middlewares.AuthHandler())
 	{

@@ -45,3 +45,17 @@ func BindAccount(hashedAccount string, publicKey *string) error {
 		})
 	}
 }
+
+func ListMembers() []string {
+	var members []string
+	for _, member := range community.Node.Members.Members() {
+		members = append(members, member.Name)
+	}
+	return members
+}
+
+func SayHello() {
+	community.Node.Broadcast(&node.Payload{
+		Account: "0x",
+	})
+}

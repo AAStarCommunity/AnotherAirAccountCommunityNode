@@ -30,7 +30,7 @@ var onceDb sync.Once
 // GetDbClient 获取数据库连接对象
 func GetDbClient() *gorm.DB {
 	onceDb.Do(func() {
-		if os.Getenv("UnitTestEnv") == "1" {
+		if os.Getenv("UnitTestEnv") == "1" || os.Getenv("LocalDebug") == "true" {
 			db, _ = getInMemoryDbClient()
 			db = db.Debug()
 		} else {

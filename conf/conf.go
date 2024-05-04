@@ -11,10 +11,10 @@ import (
 var once sync.Once
 
 type Conf struct {
-	Web  Web
-	Db   DB
-	Jwt  JWT
-	Node Node
+	Web     Web
+	Jwt     JWT
+	Node    Node
+	Storage string
 }
 
 var conf *Conf
@@ -45,10 +45,18 @@ func getConfiguration(filePath *string) *Conf {
 func mappingEnvToConf(fileConf *Conf) (envConf *Conf) {
 	envConf = &Conf{
 		Web:  Web{},
-		Db:   DB{},
 		Jwt:  JWT{},
 		Node: Node{},
 	}
+
+	if storage := os.Getenv("storage"); len(storage) > 0 {
+		envConf.Storage = storage
+	} else if fileConf != nil {
+		envConf.Storage = fileConf.Storage
+	} else {
+		envConf.Storage = "another.dat"
+	}
+
 	if web__port := os.Getenv("web__port"); len(web__port) > 0 {
 		if port, err := strconv.Atoi(web__port); err == nil && port > 0 {
 			envConf.Web.Port = port
@@ -61,26 +69,6 @@ func mappingEnvToConf(fileConf *Conf) (envConf *Conf) {
 		} else {
 			panic("web.port is invalid")
 		}
-	}
-	if db__user := os.Getenv("db__user"); len(db__user) > 0 {
-		envConf.Db.User = db__user
-	} else if fileConf != nil {
-		envConf.Db.User = fileConf.Db.User
-	}
-	if db__password := os.Getenv("db__password"); len(db__password) > 0 {
-		envConf.Db.Password = db__password
-	} else if fileConf != nil {
-		envConf.Db.Password = fileConf.Db.Password
-	}
-	if db__host := os.Getenv("db__host"); len(db__host) > 0 {
-		envConf.Db.Host = db__host
-	} else if fileConf != nil {
-		envConf.Db.Host = fileConf.Db.Host
-	}
-	if db__schema := os.Getenv("db__schema"); len(db__schema) > 0 {
-		envConf.Db.Schema = db__schema
-	} else if fileConf != nil {
-		envConf.Db.Schema = fileConf.Db.Schema
 	}
 
 	if jwt__security := os.Getenv("jwt__security"); len(jwt__security) > 0 {

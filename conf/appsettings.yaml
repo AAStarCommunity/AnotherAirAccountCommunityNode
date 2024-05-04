@@ -16,3 +16,4 @@ node:
   externalPort: 7946
   bindAddr: "0.0.0.0"
   bindPort: 7946
+storage: another.dat

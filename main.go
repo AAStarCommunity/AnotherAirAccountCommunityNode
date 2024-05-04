@@ -4,7 +4,6 @@ import (
 	"another_node/conf"
 	"another_node/internal/community"
 	"another_node/internal/community/node"
-	"another_node/internal/community/storage/migrations"
 	"another_node/internal/web_server/routers"
 	"flag"
 	"strconv"
@@ -37,8 +36,6 @@ func main() {
 	} else {
 		community.New(n)
 	}
-
-	migrations.AutoMigrate()
 
 	// start web server
 	routers.SetRouters().Run(func(port int) string {

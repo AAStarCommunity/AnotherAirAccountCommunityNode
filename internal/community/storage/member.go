@@ -7,6 +7,8 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/syndtr/goleveldb/leveldb"
 )
@@ -152,9 +154,22 @@ func compareAndUpdateMember(oldMember, newMember *Member) *Member {
 }
 
 const MemberPrefix = "member:"
+const MemberIndexPrefix = "index:member:"
+
+var memberIndexLock sync.Mutex
 
 func memberKey(member *Member) string {
 	return fmt.Sprintf("%s%s", MemberPrefix, member.HashedAccount)
+}
+
+func memberIndexKey() string {
+	memberIndexLock.Lock()
+	defer func() {
+		// TODO: better way to unlock
+		time.Sleep(time.Nanosecond * 1)
+		memberIndexLock.Unlock()
+	}()
+	return fmt.Sprintf("%s%d", MemberIndexPrefix, time.Now().UnixNano())
 }
 
 // UpsertMember update a member if exists and newer than old by version
@@ -165,11 +180,7 @@ func UpsertMember(hashedAccount, publicKey, privateKey, rpcAddress string, rpcPo
 		if db, err := leveldb.Open(stor, nil); err != nil {
 			return err
 		} else {
-			defer func() {
-				stor.Close()
-				db.Close()
-			}()
-
+			upserted := false
 			newMember := &Member{
 				HashedAccount: hashedAccount,
 				RpcAddress:    rpcAddress,
@@ -184,9 +195,24 @@ func UpsertMember(hashedAccount, publicKey, privateKey, rpcAddress string, rpcPo
 				}(),
 				Version: uint32(*version),
 			}
-			if oldMemberByte, err := db.Get([]byte(hashedAccount), nil); err != nil {
+
+			defer func() {
+				stor.Close()
+				db.Close()
+
+				if upserted {
+					newMemberIndex(newMember)
+				}
+			}()
+
+			if oldMemberByte, err := db.Get([]byte(memberKey(newMember)), nil); err != nil {
 				if errors.Is(err, leveldb.ErrNotFound) {
-					return db.Put([]byte(memberKey(newMember)), newMember.Marshal(), nil)
+					if err := db.Put([]byte(memberKey(newMember)), newMember.Marshal(), nil); err != nil {
+						return err
+					} else {
+						upserted = true
+						return nil
+					}
 				}
 				return err
 			} else {
@@ -194,7 +220,12 @@ func UpsertMember(hashedAccount, publicKey, privateKey, rpcAddress string, rpcPo
 					return err
 				} else {
 					newMember = compareAndUpdateMember(oldMember, newMember)
-					return db.Put([]byte(memberKey(newMember)), newMember.Marshal(), nil)
+					if err := db.Put([]byte(memberKey(newMember)), newMember.Marshal(), nil); err != nil {
+						return err
+					} else {
+						upserted = true
+						return nil
+					}
 				}
 			}
 		}

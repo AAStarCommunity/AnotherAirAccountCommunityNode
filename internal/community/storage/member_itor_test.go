@@ -1,12 +1,8 @@
 package storage
 
 import (
-	"another_node/conf"
 	"reflect"
 	"testing"
-
-	"github.com/syndtr/goleveldb/leveldb"
-	"github.com/syndtr/goleveldb/leveldb/opt"
 )
 
 func TestGetAllMembers(t *testing.T) {
@@ -25,25 +21,8 @@ func TestGetAllMembers(t *testing.T) {
 		PublicKey:       "publicKey2",
 		PrivateKeyVault: nil,
 	}
-	data1 := member1.Marshal()
-	data2 := member2.Marshal()
-
-	func() {
-		// os.Setenv("UnitTest", "1")
-		stor, _ := conf.GetStorage()
-		db, _ := leveldb.Open(stor, &opt.Options{})
-		defer func() {
-			stor.Close()
-			db.Close()
-		}()
-
-		if err := db.Put([]byte(memberKey(member1)), data1, nil); err != nil {
-			t.Fatal(err)
-		}
-		if err := db.Put([]byte(memberKey(member2)), data2, nil); err != nil {
-			t.Fatal(err)
-		}
-	}()
+	UpsertMember(member1.HashedAccount, member1.PublicKey, *member1.PrivateKeyVault, member1.RpcAddress, member1.RpcPort, &member1.Version)
+	UpsertMember(member2.HashedAccount, member2.PublicKey, "", member2.RpcAddress, member2.RpcPort, &member2.Version)
 
 	// Call the GetAllMembers function
 	members, err := GetAllMembers()

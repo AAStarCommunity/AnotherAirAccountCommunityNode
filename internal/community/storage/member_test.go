@@ -230,3 +230,28 @@ func TestMarshalToUnmarshalThenMarhsalCompare(t *testing.T) {
 		t.Error("TestMashalToUnmashalThenMarhsalCompare failed")
 	}
 }
+
+func TestMemberIndex(t *testing.T) {
+	key1 := memberIndexKey()
+	key2 := memberIndexKey()
+	if len(key1) > 1 && len(key2) > 1 && key1 != key2 {
+		t.Log("TestMemberIndex passed")
+	} else {
+		t.Error("TestMemberIndex failed")
+	}
+}
+
+func TestUpsertMember(t *testing.T) {
+	member := &Member{
+		HashedAccount:   "HelloWorld",
+		RpcAddress:      "test",
+		RpcPort:         165,
+		PublicKey:       "Abc Def",
+		PrivateKeyVault: func() *string { s := "privateKeyVault"; return &s }(),
+		Version:         22222,
+	}
+	err := UpsertMember(member.HashedAccount, member.PublicKey, *member.PrivateKeyVault, member.RpcAddress, member.RpcPort, &member.Version)
+	if err != nil {
+		t.Error("TestUpsertMember failed")
+	}
+}

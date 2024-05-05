@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/memberlist"
 )
 
-func New(listen *int, globalName *string, entrypoints *string, genesis *bool) (*Node, error) {
+func New(listen *uint16, globalName *string, entrypoints *string, genesis *bool) (*Node, error) {
 
 	confNode := conf.GetNode()
 	if genesis != nil {
@@ -30,9 +30,9 @@ func New(listen *int, globalName *string, entrypoints *string, genesis *bool) (*
 	conf := memberlist.DefaultWANConfig()
 	conf.Name = confNode.GlobalName
 	conf.AdvertiseAddr = confNode.ExternalAddr
-	conf.AdvertisePort = confNode.ExternalPort
+	conf.AdvertisePort = int(confNode.ExternalPort)
 	conf.BindAddr = confNode.BindAddr
-	conf.BindPort = confNode.BindPort
+	conf.BindPort = int(confNode.BindPort)
 	conf.Delegate = delegate
 
 	entrypointNodeAddr := []string{

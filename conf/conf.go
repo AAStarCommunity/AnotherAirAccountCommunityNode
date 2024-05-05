@@ -103,8 +103,8 @@ func mappingEnvToConf(fileConf *Conf) (envConf *Conf) {
 		envConf.Node.ExternalAddr = fileConf.Node.ExternalAddr
 	}
 	if node__externalport := os.Getenv("node__externalport"); len(node__externalport) > 0 {
-		if port, err := strconv.Atoi(node__externalport); err == nil && port > 0 {
-			envConf.Node.ExternalPort = port
+		if port, err := strconv.ParseUint(node__externalport, 10, 16); err == nil && port > 0 {
+			envConf.Node.ExternalPort = uint16(port)
 		} else {
 			panic("node__externalport is invalid")
 		}
@@ -121,8 +121,8 @@ func mappingEnvToConf(fileConf *Conf) (envConf *Conf) {
 		envConf.Node.BindAddr = fileConf.Node.BindAddr
 	}
 	if node__bindport := os.Getenv("node__bindport"); len(node__bindport) > 0 {
-		if port, err := strconv.Atoi(node__bindport); err == nil && port > 0 {
-			envConf.Node.BindPort = port
+		if port, err := strconv.ParseUint(node__bindport, 10, 16); err == nil && port > 0 {
+			envConf.Node.BindPort = uint16(port)
 		} else {
 			panic("node__bindport is invalid")
 		}

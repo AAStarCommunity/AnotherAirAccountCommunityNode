@@ -2,108 +2,132 @@ package storage
 
 import (
 	"another_node/conf"
+	"bytes"
+	"encoding/binary"
 	"errors"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/syndtr/goleveldb/leveldb"
 )
 
+const (
+	hashedAccountCap    = 128
+	rpcAddressCap       = 128
+	publicKeyCap        = 512
+	privateKeyVaultCap  = 512
+	memberMarshalHeader = byte(0x01)
+)
+
+// marshalTotalCap is the total cap of marshaled member
+// 1 byte for header
+// 128 bytes for hashed account
+// 128 bytes for rpc address
+// 2 bytes for rpc port
+// 512 bytes for public key
+// 512 bytes for private key vault
+// 4 bytes for version
+var marshalTotalCap = 1 + hashedAccountCap + rpcAddressCap + 2 + publicKeyCap + privateKeyVaultCap + 4
+
 // Member represent a web2 account
 type Member struct {
 	HashedAccount   string
 	RpcAddress      string
-	RpcPort         int
+	RpcPort         uint16
 	PublicKey       string
 	PrivateKeyVault *string
-	Version         uint
+	Version         uint32
 }
 
-const (
-	hashedAccountCapacity   = 128
-	rpcAddressCapacity      = 128
-	rpcPortCapacity         = 5
-	publicKeyCapacity       = 512
-	privateKeyVaultCapacity = 512
-	memberMarshalHeader     = byte(0x01)
-)
+// uintToBytes convert uint to bytes in little endian
+func uintToBytes[T uint16 | uint32](n T) []byte {
+	buf := new(bytes.Buffer)
+	binary.Write(buf, binary.LittleEndian, n)
+	ret := buf.Bytes()
+	return ret
+}
 
 func (m *Member) Marshal() []byte {
 
-	hashedAccount := fmt.Sprintf("%-*s", hashedAccountCapacity, m.HashedAccount)
-	if len(hashedAccount) > hashedAccountCapacity {
+	hashedAccountBytes := []byte(m.HashedAccount)
+	if len(hashedAccountBytes) > hashedAccountCap {
 		return nil
 	}
 
-	rpcAddress := fmt.Sprintf("%-*s", rpcAddressCapacity, m.RpcAddress)
-	if len(rpcAddress) > rpcAddressCapacity {
+	rpcAddressBytes := []byte(m.RpcAddress)
+	if len(rpcAddressBytes) > rpcAddressCap {
 		return nil
 	}
 
-	rpcPort := fmt.Sprintf("%-*d", rpcPortCapacity, m.RpcPort)
-	if len(rpcPort) > rpcPortCapacity {
+	rpcPortBytes := uintToBytes(m.RpcPort)
+
+	publicKeyBytes := []byte(m.PublicKey)
+	if len(publicKeyBytes) > publicKeyCap {
 		return nil
 	}
 
-	publicKey := fmt.Sprintf("%-*s", publicKeyCapacity, m.PublicKey)
-	if len(publicKey) > publicKeyCapacity {
-		return nil
-	}
-
-	privateKeyVault := ""
+	privateKeyVaultBytes := []byte{}
 	if m.PrivateKeyVault != nil {
-		privateKeyVault = fmt.Sprintf("%-*s", privateKeyVaultCapacity, *m.PrivateKeyVault)
-	} else {
-		privateKeyVault = fmt.Sprintf("%-*s", privateKeyVaultCapacity, privateKeyVault)
-	}
-	if len(privateKeyVault) > privateKeyVaultCapacity {
-		return nil
+		privateKeyVaultBytes = []byte(*m.PrivateKeyVault)
+		if len(privateKeyVaultBytes) > privateKeyVaultCap {
+			return nil
+		}
 	}
 
-	result := hashedAccount + rpcAddress + rpcPort + publicKey + privateKeyVault + strconv.Itoa(int(m.Version))
-	return append([]byte{memberMarshalHeader}, []byte(result)...)
+	versionBytes := uintToBytes(m.Version)
+
+	ret := make([]byte, marshalTotalCap)
+	offset := 0
+	copy(ret, []byte{memberMarshalHeader})
+	offset += 1
+	copy(ret[offset:offset+hashedAccountCap], hashedAccountBytes)
+	offset += hashedAccountCap
+	copy(ret[offset:offset+rpcAddressCap], rpcAddressBytes)
+	offset += rpcAddressCap
+	copy(ret[offset:offset+2], rpcPortBytes)
+	offset += 2
+	copy(ret[offset:offset+publicKeyCap], publicKeyBytes)
+	offset += publicKeyCap
+	copy(ret[offset:offset+privateKeyVaultCap], privateKeyVaultBytes)
+	offset += privateKeyVaultCap
+	copy(ret[offset:offset+4], versionBytes)
+
+	return ret
 }
 
 func Unmarshal(data []byte) (*Member, error) {
-	if len(data) < (1 + // 1 byte for header
-		hashedAccountCapacity + rpcAddressCapacity + rpcPortCapacity + publicKeyCapacity + privateKeyVaultCapacity +
-		1) { // 1 byte for version
-		return nil, errors.New("data is too short to unmarshal into Member")
+	if len(data) < 1 {
+		return nil, errors.New("invalid data")
 	}
 
-	header := int8(data[0])
-	if header != int8(memberMarshalHeader) {
+	if data[0] != memberMarshalHeader {
 		return nil, errors.New("invalid header")
 	}
 
-	hashedAccount := strings.TrimSpace(string(data[1:hashedAccountCapacity]))
-	rpcAddress := strings.TrimSpace(string(data[1+hashedAccountCapacity : hashedAccountCapacity+rpcAddressCapacity]))
-	rpcPort, err := strconv.Atoi(strings.TrimSpace(string(data[1+hashedAccountCapacity+rpcAddressCapacity : hashedAccountCapacity+rpcAddressCapacity+rpcPortCapacity+1])))
-	if err != nil {
-		return nil, err
+	if len(data) < 1+hashedAccountCap+rpcAddressCap+2+publicKeyCap+privateKeyVaultCap+4 {
+		return nil, errors.New("invalid data length")
 	}
-	publicKey := strings.TrimSpace(string(data[1+hashedAccountCapacity+rpcAddressCapacity+rpcPortCapacity : hashedAccountCapacity+rpcAddressCapacity+rpcPortCapacity+publicKeyCapacity]))
-	privateKeyVault := strings.TrimSpace(string(data[1+hashedAccountCapacity+rpcAddressCapacity+rpcPortCapacity+publicKeyCapacity : hashedAccountCapacity+rpcAddressCapacity+rpcPortCapacity+publicKeyCapacity+privateKeyVaultCapacity]))
 
-	version, err := strconv.Atoi(strings.TrimSpace(string(data[1+hashedAccountCapacity+rpcAddressCapacity+rpcPortCapacity+publicKeyCapacity+privateKeyVaultCapacity:])))
-	if err != nil {
-		return nil, err
-	}
-	return &Member{
-		HashedAccount: hashedAccount,
-		RpcAddress:    rpcAddress,
-		RpcPort:       rpcPort,
-		PublicKey:     publicKey,
+	m := &Member{
+		HashedAccount: strings.Trim(string(data[1:1+hashedAccountCap]), "\x00"),
+		RpcAddress:    strings.Trim(string(data[1+hashedAccountCap:1+hashedAccountCap+rpcAddressCap]), "\x00"),
+		RpcPort:       binary.LittleEndian.Uint16(data[1+hashedAccountCap+rpcAddressCap : 1+hashedAccountCap+rpcAddressCap+2]),
+		PublicKey:     strings.Trim(string(data[1+hashedAccountCap+rpcAddressCap+2:1+hashedAccountCap+rpcAddressCap+2+publicKeyCap]), "\x00"),
 		PrivateKeyVault: func() *string {
+			if len(data[1+hashedAccountCap+rpcAddressCap+2+publicKeyCap:]) == 0 {
+				return nil
+			}
+			privateKeyVault := strings.Trim(string(data[1+hashedAccountCap+rpcAddressCap+2+publicKeyCap:1+hashedAccountCap+rpcAddressCap+2+publicKeyCap+privateKeyVaultCap]), "\x00")
 			if len(privateKeyVault) == 0 {
 				return nil
 			} else {
 				return &privateKeyVault
 			}
 		}(),
-		Version: uint(version),
-	}, nil
+		Version: binary.LittleEndian.Uint32(data[1+hashedAccountCap+rpcAddressCap+2+publicKeyCap+privateKeyVaultCap:]),
+	}
+
+	return m, nil
 }
 
 func compareAndUpdateMember(oldMember, newMember *Member) *Member {
@@ -134,7 +158,7 @@ func memberKey(member *Member) string {
 }
 
 // UpsertMember update a member if exists and newer than old by version
-func UpsertMember(hashedAccount, publicKey, privateKey, rpcAddress string, rpcPort int, version *int) error {
+func UpsertMember(hashedAccount, publicKey, privateKey, rpcAddress string, rpcPort uint16, version *uint32) error {
 	if stor, err := conf.GetStorage(); err != nil {
 		return err
 	} else {
@@ -158,7 +182,7 @@ func UpsertMember(hashedAccount, publicKey, privateKey, rpcAddress string, rpcPo
 						return &privateKey
 					}
 				}(),
-				Version: uint(*version),
+				Version: uint32(*version),
 			}
 			if oldMemberByte, err := db.Get([]byte(hashedAccount), nil); err != nil {
 				if errors.Is(err, leveldb.ErrNotFound) {

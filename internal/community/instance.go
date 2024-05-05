@@ -54,8 +54,6 @@ func ListMembers() []string {
 	return members
 }
 
-func Broadcast() {
-	community.Node.Broadcast(&node.Payload{
-		Account: "0x",
-	})
+func Broadcast(payload *node.Payload) error {
+	return community.Node.Broadcast(payload)
 }

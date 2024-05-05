@@ -2,6 +2,7 @@ package routers
 
 import (
 	"another_node/internal/community"
+	"another_node/internal/community/node"
 	account_v1 "another_node/internal/web_server/controllers/account/v1"
 	auth_v1 "another_node/internal/web_server/controllers/auth/v1"
 	dashboard_v1 "another_node/internal/web_server/controllers/dashboard/v1"
@@ -14,7 +15,9 @@ func buildRouters(router *gin.Engine) {
 
 	// testing router
 	router.GET("/api/broadcast", func(ctx *gin.Context) {
-		community.Broadcast()
+		community.Broadcast(&node.Payload{
+			Account: "test",
+		})
 	})
 
 	router.POST("/api/auth/v1/login", auth_v1.Login)

@@ -3,17 +3,20 @@ package storage
 import (
 	"fmt"
 	"reflect"
+	"strconv"
 	"testing"
 )
 
 func TestMarshal(t *testing.T) {
 	privateKey := "privateKey"
+
 	member := &Member{
 		HashedAccount:   "hashedAccount",
 		RpcAddress:      "rpcAddress",
 		RpcPort:         12345,
 		PublicKey:       "publicKey",
 		PrivateKeyVault: &privateKey,
+		Version:         1,
 	}
 
 	data := member.Marshal()
@@ -22,9 +25,9 @@ func TestMarshal(t *testing.T) {
 	rpcAddress := fmt.Sprintf("%-*s", rpcAddressCapacity, "rpcAddress")
 	rpcPort := fmt.Sprintf("%-*d", rpcPortCapacity, 12345)
 	publicKey := fmt.Sprintf("%-*s", publicKeyCapacity, "publicKey")
-	privateKeyVault := fmt.Sprintf("%-*s", privateKeyVaultCapacity, "privateKey")
+	privateKeyVault := fmt.Sprintf("%-*s", privateKeyVaultCapacity, privateKey)
 
-	expected := []byte(hashedAccount + rpcAddress + rpcPort + publicKey + privateKeyVault)
+	expected := append([]byte{memberMarshalHeader}, []byte(hashedAccount+rpcAddress+rpcPort+publicKey+privateKeyVault+strconv.Itoa(int(member.Version)))...)
 
 	if !reflect.DeepEqual(data, expected) {
 		t.Errorf("Expected %v, but got %v", expected, data)
@@ -39,8 +42,9 @@ func TestUnmarshal(t *testing.T) {
 	rpcPort := fmt.Sprintf("%-*d", rpcPortCapacity, 12345)
 	publicKey := fmt.Sprintf("%-*s", publicKeyCapacity, "publicKey")
 	privateKeyVault := fmt.Sprintf("%-*s", privateKeyVaultCapacity, privateKey)
+	version := "100"
 
-	data := []byte(hashedAccount + rpcAddress + rpcPort + publicKey + privateKeyVault)
+	data := append([]byte{1}, []byte(hashedAccount+rpcAddress+rpcPort+publicKey+privateKeyVault+version)...)
 	member, err := Unmarshal(data)
 
 	if err != nil {
@@ -53,6 +57,7 @@ func TestUnmarshal(t *testing.T) {
 		RpcPort:         12345,
 		PublicKey:       "publicKey",
 		PrivateKeyVault: &privateKey,
+		Version:         100,
 	}
 	if !reflect.DeepEqual(member, expected) {
 		t.Errorf("Expected %v, but got %v", expected, member)

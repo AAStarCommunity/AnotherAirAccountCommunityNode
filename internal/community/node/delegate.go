@@ -29,7 +29,6 @@ func (d *CommunityDelegate) GetBroadcasts(overhead, limit int) [][]byte {
 // LocalState return the local state data while a remote node joins or sync
 func (d *CommunityDelegate) LocalState(join bool) []byte {
 	if join {
-		// TODO: retrive partial data by init sync policy from storage and return to joiner
 	} else {
 		//TODO: retrive partial data by non-init sync policy form storage and return to joiner
 	}

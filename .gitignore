@@ -24,3 +24,5 @@ appsettings.*.yaml
 
 .idea
 .vscode
+
+*.dat

@@ -91,12 +91,18 @@ func Unmarshal(data []byte) (*Member, error) {
 		return nil, err
 	}
 	return &Member{
-		HashedAccount:   hashedAccount,
-		RpcAddress:      rpcAddress,
-		RpcPort:         rpcPort,
-		PublicKey:       publicKey,
-		PrivateKeyVault: &privateKeyVault,
-		Version:         uint(version),
+		HashedAccount: hashedAccount,
+		RpcAddress:    rpcAddress,
+		RpcPort:       rpcPort,
+		PublicKey:     publicKey,
+		PrivateKeyVault: func() *string {
+			if len(privateKeyVault) == 0 {
+				return nil
+			} else {
+				return &privateKeyVault
+			}
+		}(),
+		Version: uint(version),
 	}, nil
 }
 

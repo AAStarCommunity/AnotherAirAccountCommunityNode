@@ -16,7 +16,7 @@ func TestGetAllMembers(t *testing.T) {
 		RpcAddress:      "rpcAddress1",
 		RpcPort:         12345,
 		PublicKey:       "publicKey1",
-		PrivateKeyVault: nil,
+		PrivateKeyVault: func() *string { s := "privateKeyVault1"; return &s }(),
 	}
 	member2 := &Member{
 		HashedAccount:   "hashedAccount2",

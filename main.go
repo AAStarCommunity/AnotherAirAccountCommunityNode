@@ -10,9 +10,11 @@ import (
 	"strings"
 )
 
-func getFlags() (listen *int, name *string, joinAddrs *string, genesis *bool) {
+func getFlags() (listen *uint16, name *string, joinAddrs *string, genesis *bool) {
 	// 解析命令行参数
-	listen = flag.Int("listen", 0, "Listen port number")
+	listenTmp := flag.Uint("listen", 0, "Listen port number")
+	listenVal := uint16(*listenTmp)
+	listen = &listenVal
 	name = flag.String("name", "", "Node name")
 	joinAddrs = flag.String("join", "", "Addresses of nodes to join (comma-separated)")
 	genesis = flag.Bool("genesis", false, "Is this genesis node")

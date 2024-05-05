@@ -4,6 +4,6 @@ type Payload struct {
 	Account    string
 	PublicKey  string
 	RpcAddress string
-	RpcPort    int
-	Version    int
+	RpcPort    uint16
+	Version    uint32
 }

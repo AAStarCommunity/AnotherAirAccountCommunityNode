@@ -2,83 +2,134 @@ package storage
 
 import (
 	"another_node/conf"
+	"bytes"
+	"encoding/binary"
 	"errors"
 	"fmt"
-	"strconv"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/syndtr/goleveldb/leveldb"
 )
+
+const (
+	hashedAccountCap    = 128
+	rpcAddressCap       = 128
+	publicKeyCap        = 512
+	privateKeyVaultCap  = 512
+	memberMarshalHeader = byte(0x01)
+)
+
+// marshalTotalCap is the total cap of marshaled member
+// 1 byte for header
+// 128 bytes for hashed account
+// 128 bytes for rpc address
+// 2 bytes for rpc port
+// 512 bytes for public key
+// 512 bytes for private key vault
+// 4 bytes for version
+var marshalTotalCap = 1 + hashedAccountCap + rpcAddressCap + 2 + publicKeyCap + privateKeyVaultCap + 4
 
 // Member represent a web2 account
 type Member struct {
 	HashedAccount   string
 	RpcAddress      string
-	RpcPort         int
+	RpcPort         uint16
 	PublicKey       string
 	PrivateKeyVault *string
-	Version         uint
+	Version         uint32
 }
 
-const (
-	hashedAccountCapacity   = 128
-	rpcAddressCapacity      = 128
-	rpcPortCapacity         = 5
-	publicKeyCapacity       = 1024
-	privateKeyVaultCapacity = 2048
-)
+// uintToBytes convert uint to bytes in little endian
+func uintToBytes[T uint16 | uint32](n T) []byte {
+	buf := new(bytes.Buffer)
+	binary.Write(buf, binary.LittleEndian, n)
+	ret := buf.Bytes()
+	return ret
+}
 
 func (m *Member) Marshal() []byte {
-	hashedAccount := fmt.Sprintf("%-*s", hashedAccountCapacity, m.HashedAccount)
-	if len(hashedAccount) > hashedAccountCapacity {
-		hashedAccount = hashedAccount[:hashedAccountCapacity]
+
+	hashedAccountBytes := []byte(m.HashedAccount)
+	if len(hashedAccountBytes) > hashedAccountCap {
+		return nil
 	}
 
-	rpcAddress := fmt.Sprintf("%-*s", rpcAddressCapacity, m.RpcAddress)
-	if len(rpcAddress) > rpcAddressCapacity {
-		rpcAddress = rpcAddress[:rpcAddressCapacity]
+	rpcAddressBytes := []byte(m.RpcAddress)
+	if len(rpcAddressBytes) > rpcAddressCap {
+		return nil
 	}
 
-	rpcPort := fmt.Sprintf("%-*d", rpcPortCapacity, m.RpcPort)
-	if len(rpcPort) > rpcPortCapacity {
-		rpcPort = rpcPort[:rpcPortCapacity]
+	rpcPortBytes := uintToBytes(m.RpcPort)
+
+	publicKeyBytes := []byte(m.PublicKey)
+	if len(publicKeyBytes) > publicKeyCap {
+		return nil
 	}
 
-	publicKey := fmt.Sprintf("%-*s", publicKeyCapacity, m.PublicKey)
-	if len(publicKey) > publicKeyCapacity {
-		publicKey = publicKey[:publicKeyCapacity]
+	privateKeyVaultBytes := []byte{}
+	if m.PrivateKeyVault != nil {
+		privateKeyVaultBytes = []byte(*m.PrivateKeyVault)
+		if len(privateKeyVaultBytes) > privateKeyVaultCap {
+			return nil
+		}
 	}
 
-	privateKeyVault := fmt.Sprintf("%-*s", privateKeyVaultCapacity, *m.PrivateKeyVault)
-	if len(privateKeyVault) > privateKeyVaultCapacity {
-		privateKeyVault = privateKeyVault[:privateKeyVaultCapacity]
-	}
+	versionBytes := uintToBytes(m.Version)
 
-	result := hashedAccount + rpcAddress + rpcPort + publicKey + privateKeyVault
-	return []byte(result)
+	ret := make([]byte, marshalTotalCap)
+	offset := 0
+	copy(ret, []byte{memberMarshalHeader})
+	offset += 1
+	copy(ret[offset:offset+hashedAccountCap], hashedAccountBytes)
+	offset += hashedAccountCap
+	copy(ret[offset:offset+rpcAddressCap], rpcAddressBytes)
+	offset += rpcAddressCap
+	copy(ret[offset:offset+2], rpcPortBytes)
+	offset += 2
+	copy(ret[offset:offset+publicKeyCap], publicKeyBytes)
+	offset += publicKeyCap
+	copy(ret[offset:offset+privateKeyVaultCap], privateKeyVaultBytes)
+	offset += privateKeyVaultCap
+	copy(ret[offset:offset+4], versionBytes)
+
+	return ret
 }
 
 func Unmarshal(data []byte) (*Member, error) {
-	if len(data) < (hashedAccountCapacity + rpcAddressCapacity + rpcPortCapacity + publicKeyCapacity + privateKeyVaultCapacity) {
-		return nil, errors.New("data is too short to unmarshal into Member")
+	if len(data) < 1 {
+		return nil, errors.New("invalid data")
 	}
 
-	hashedAccount := strings.TrimSpace(string(data[:hashedAccountCapacity]))
-	rpcAddress := strings.TrimSpace(string(data[hashedAccountCapacity : hashedAccountCapacity+rpcAddressCapacity]))
-	rpcPort, err := strconv.Atoi(strings.TrimSpace(string(data[hashedAccountCapacity+rpcAddressCapacity : hashedAccountCapacity+rpcAddressCapacity+rpcPortCapacity])))
-	if err != nil {
-		return nil, err
+	if data[0] != memberMarshalHeader {
+		return nil, errors.New("invalid header")
 	}
-	publicKey := strings.TrimSpace(string(data[hashedAccountCapacity+rpcAddressCapacity+rpcPortCapacity : hashedAccountCapacity+rpcAddressCapacity+rpcPortCapacity+publicKeyCapacity]))
-	privateKeyVault := strings.TrimSpace(string(data[hashedAccountCapacity+rpcAddressCapacity+rpcPortCapacity+publicKeyCapacity:]))
 
-	return &Member{
-		HashedAccount:   hashedAccount,
-		RpcAddress:      rpcAddress,
-		RpcPort:         rpcPort,
-		PublicKey:       publicKey,
-		PrivateKeyVault: &privateKeyVault,
-	}, nil
+	if len(data) < 1+hashedAccountCap+rpcAddressCap+2+publicKeyCap+privateKeyVaultCap+4 {
+		return nil, errors.New("invalid data length")
+	}
+
+	m := &Member{
+		HashedAccount: strings.Trim(string(data[1:1+hashedAccountCap]), "\x00"),
+		RpcAddress:    strings.Trim(string(data[1+hashedAccountCap:1+hashedAccountCap+rpcAddressCap]), "\x00"),
+		RpcPort:       binary.LittleEndian.Uint16(data[1+hashedAccountCap+rpcAddressCap : 1+hashedAccountCap+rpcAddressCap+2]),
+		PublicKey:     strings.Trim(string(data[1+hashedAccountCap+rpcAddressCap+2:1+hashedAccountCap+rpcAddressCap+2+publicKeyCap]), "\x00"),
+		PrivateKeyVault: func() *string {
+			if len(data[1+hashedAccountCap+rpcAddressCap+2+publicKeyCap:]) == 0 {
+				return nil
+			}
+			privateKeyVault := strings.Trim(string(data[1+hashedAccountCap+rpcAddressCap+2+publicKeyCap:1+hashedAccountCap+rpcAddressCap+2+publicKeyCap+privateKeyVaultCap]), "\x00")
+			if len(privateKeyVault) == 0 {
+				return nil
+			} else {
+				return &privateKeyVault
+			}
+		}(),
+		Version: binary.LittleEndian.Uint32(data[1+hashedAccountCap+rpcAddressCap+2+publicKeyCap+privateKeyVaultCap:]),
+	}
+
+	return m, nil
 }
 
 func compareAndUpdateMember(oldMember, newMember *Member) *Member {
@@ -102,16 +153,34 @@ func compareAndUpdateMember(oldMember, newMember *Member) *Member {
 	return newMember
 }
 
+const MemberPrefix = "member:"
+const MemberIndexPrefix = "index:member:"
+
+var memberIndexLock sync.Mutex
+
+func memberKey(member *Member) string {
+	return fmt.Sprintf("%s%s", MemberPrefix, member.HashedAccount)
+}
+
+func memberIndexKey() string {
+	memberIndexLock.Lock()
+	defer func() {
+		// TODO: better way to unlock
+		time.Sleep(time.Nanosecond * 1)
+		memberIndexLock.Unlock()
+	}()
+	return fmt.Sprintf("%s%d", MemberIndexPrefix, time.Now().UnixNano())
+}
+
 // UpsertMember update a member if exists and newer than old by version
-func UpsertMember(hashedAccount, publicKey, privateKey, rpcAddress string, rpcPort int, version *int) error {
+func UpsertMember(hashedAccount, publicKey, privateKey, rpcAddress string, rpcPort uint16, version *uint32) error {
 	if stor, err := conf.GetStorage(); err != nil {
 		return err
 	} else {
 		if db, err := leveldb.Open(stor, nil); err != nil {
 			return err
 		} else {
-			defer db.Close()
-
+			upserted := false
 			newMember := &Member{
 				HashedAccount: hashedAccount,
 				RpcAddress:    rpcAddress,
@@ -124,11 +193,26 @@ func UpsertMember(hashedAccount, publicKey, privateKey, rpcAddress string, rpcPo
 						return &privateKey
 					}
 				}(),
-				Version: uint(*version),
+				Version: uint32(*version),
 			}
-			if oldMemberByte, err := db.Get([]byte(hashedAccount), nil); err != nil {
+
+			defer func() {
+				stor.Close()
+				db.Close()
+
+				if upserted {
+					newMemberIndex(newMember)
+				}
+			}()
+
+			if oldMemberByte, err := db.Get([]byte(memberKey(newMember)), nil); err != nil {
 				if errors.Is(err, leveldb.ErrNotFound) {
-					return db.Put([]byte(hashedAccount), newMember.Marshal(), nil)
+					if err := db.Put([]byte(memberKey(newMember)), newMember.Marshal(), nil); err != nil {
+						return err
+					} else {
+						upserted = true
+						return nil
+					}
 				}
 				return err
 			} else {
@@ -136,10 +220,13 @@ func UpsertMember(hashedAccount, publicKey, privateKey, rpcAddress string, rpcPo
 					return err
 				} else {
 					newMember = compareAndUpdateMember(oldMember, newMember)
-
-					return db.Put([]byte(hashedAccount), newMember.Marshal(), nil)
+					if err := db.Put([]byte(memberKey(newMember)), newMember.Marshal(), nil); err != nil {
+						return err
+					} else {
+						upserted = true
+						return nil
+					}
 				}
-
 			}
 		}
 	}
@@ -153,8 +240,11 @@ func TryFindMember(hashedAccount string) (*Member, error) {
 		if db, err := leveldb.Open(stor, nil); err != nil {
 			return nil, err
 		} else {
-			defer db.Close()
-			if member, err := db.Get([]byte(hashedAccount), nil); err != nil {
+			defer func() {
+				stor.Close()
+				db.Close()
+			}()
+			if member, err := db.Get([]byte(MemberPrefix+hashedAccount), nil); err != nil {
 				if errors.Is(err, leveldb.ErrNotFound) {
 					return nil, nil
 				}

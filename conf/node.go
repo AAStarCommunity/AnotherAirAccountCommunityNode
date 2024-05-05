@@ -10,9 +10,9 @@ import (
 type Node struct {
 	Genesis      bool
 	ExternalAddr string `yaml:"externalAddr"`
-	ExternalPort int    `yaml:"externalPort"`
+	ExternalPort uint16 `yaml:"externalPort"`
 	BindAddr     string `yaml:"bindAddr"`
-	BindPort     int    `yaml:"bindPort"`
+	BindPort     uint16 `yaml:"bindPort"`
 	GlobalName   string `yaml:"globalName"`
 }
 

@@ -31,7 +31,7 @@ func BindAccount(hashedAccount string, publicKey *string) error {
 
 	rpcAddress := conf.GetNode().ExternalAddr
 	rpcPort := conf.GetNode().ExternalPort
-	version := 0
+	version := uint32(0)
 
 	if err := storage.UpsertMember(hashedAccount, *publicKey, privateKeyValut, rpcAddress, rpcPort, &version); err != nil {
 		return err
@@ -54,8 +54,6 @@ func ListMembers() []string {
 	return members
 }
 
-func Broadcast() {
-	community.Node.Broadcast(&node.Payload{
-		Account: "0x",
-	})
+func Broadcast(payload *node.Payload) error {
+	return community.Node.Broadcast(payload)
 }

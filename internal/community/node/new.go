@@ -2,6 +2,7 @@ package node
 
 import (
 	"another_node/conf"
+	"another_node/internal/community/storage"
 	"log"
 	"strings"
 
@@ -62,6 +63,7 @@ func New(listen *uint16, globalName *string, entrypoints *string, genesis *bool)
 		}
 
 		go node.listen()
+		go storage.ScheduleSnapshot()
 
 		return node, nil
 	}

@@ -25,10 +25,7 @@ func TestGetAllMembers(t *testing.T) {
 	UpsertMember(member2.HashedAccount, member2.PublicKey, "", member2.RpcAddress, member2.RpcPort, &member2.Version)
 
 	// Call the GetAllMembers function
-	members, err := GetAllMembers()
-	if err != nil {
-		t.Errorf("Expected no error, but got %v", err)
-	}
+	members := GetAllMembers(0)
 
 	// Check the returned members
 	expectedMembers := []Member{*member1, *member2}

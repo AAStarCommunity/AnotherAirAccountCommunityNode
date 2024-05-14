@@ -33,16 +33,17 @@ func (d *CommunityDelegate) GetBroadcasts(overhead, limit int) [][]byte {
 
 // LocalState return the local state data while a remote node joins or sync
 func (d *CommunityDelegate) LocalState(join bool) []byte {
-	if join {
-		if _, err := storage.GetAllMembers(); err != nil {
-			return nil
+	if ss, err := storage.GetSnapshot(); err == nil {
+		if join {
+			return ss
 		} else {
-
-			return []byte{1, 2, 3}
+			if s, err := storage.UnmarshalSnapshot(ss); err == nil {
+				members := storage.GetAllMembers(s.TotalMembers)
+				if members != nil {
+					return members[0].Marshal()
+				}
+			}
 		}
-	} else {
-		//TODO: retrive partial data by non-init sync policy form storage and return to joiner
-		return []byte{4, 5, 6}
 	}
 	return nil
 }

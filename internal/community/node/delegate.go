@@ -40,7 +40,7 @@ func (d *CommunityDelegate) LocalState(join bool) []byte {
 			if s, err := storage.UnmarshalSnapshot(ss); err == nil {
 				members := storage.GetAllMembers(s.TotalMembers)
 				if members != nil {
-					return members[0].Marshal()
+					return storage.MarshalMembers(members)
 				}
 			}
 		}
@@ -52,11 +52,18 @@ func (d *CommunityDelegate) LocalState(join bool) []byte {
 func (d *CommunityDelegate) MergeRemoteState(buf []byte, join bool) {
 	if len(buf) > 0 {
 		if join {
-			// TODO: merge partial data by init sync policy from remote
-			fmt.Print("join: Merge remote state: ", buf)
+			go func() {
+				members := storage.UnmarshalMembers(buf)
+				storage.InitRemoteMember(members)
+			}()
 		} else {
-			// TODO: merge partial data by non-init sync policy from remote
-			fmt.Print("sync: Merge remote state: ", buf)
+			go func() {
+				if members, err := storage.Unmarshal(buf); err != nil {
+					fmt.Print("sync: Failed to unmarshal remote state: ", err)
+				} else {
+					storage.MergeRemoteMember(members)
+				}
+			}()
 		}
 	}
 }

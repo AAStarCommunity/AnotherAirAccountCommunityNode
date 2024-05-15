@@ -233,3 +233,71 @@ func TryFindMember(hashedAccount string) (*Member, error) {
 		}
 	}
 }
+
+func MarshalMembers(m []Member) []byte {
+	ret := []byte{}
+	for _, member := range m {
+		b := member.Marshal()
+		sz := uintToBytes(uint16(len(b)))
+		ret = append(ret, sz...)
+		ret = append(ret, b...)
+	}
+	return ret
+}
+
+func UnmarshalMembers(b []byte) []Member {
+	ret := []Member{}
+	for len(b) > 0 {
+		sz := binary.LittleEndian.Uint16(b[:2])
+		b = b[2:]
+		m, _ := Unmarshal(b[:sz])
+		ret = append(ret, *m)
+		b = b[sz:]
+	}
+	return ret
+}
+
+func InitRemoteMember(members []Member) {
+	for _, member := range members {
+		if err := UpsertMember(member.HashedAccount, member.PublicKey, "", member.RpcAddress, member.RpcPort, &member.Version); err != nil {
+			fmt.Print("Failed to init remote member: ", err)
+		}
+	}
+}
+
+func MergeRemoteMember(recv *Member) error {
+	if stor, err := conf.GetStorage(); err != nil {
+		return err
+	} else {
+		if db, err := leveldb.Open(stor, nil); err != nil {
+			return err
+		} else {
+			defer func() {
+				stor.Close()
+				db.Close()
+			}()
+
+			if oldMemberByte, err := db.Get([]byte(memberKey(recv)), nil); err != nil {
+				if errors.Is(err, leveldb.ErrNotFound) {
+					if err := db.Put([]byte(memberKey(recv)), recv.Marshal(), nil); err != nil {
+						return err
+					} else {
+						return nil
+					}
+				}
+				return err
+			} else {
+				if oldMember, err := Unmarshal(oldMemberByte); err != nil {
+					return err
+				} else {
+					recv = compareAndUpdateMember(oldMember, recv)
+					if err := db.Put([]byte(memberKey(recv)), recv.Marshal(), nil); err != nil {
+						return err
+					} else {
+						return nil
+					}
+				}
+			}
+		}
+	}
+}

@@ -245,3 +245,30 @@ func TestUpsertMember(t *testing.T) {
 		t.Error("TestUpsertMember failed")
 	}
 }
+
+func TestMarshalMembers(t *testing.T) {
+	member1 := &Member{
+		HashedAccount:   "HelloWorld",
+		RpcAddress:      "test",
+		RpcPort:         165,
+		PublicKey:       "Abc Def",
+		PrivateKeyVault: func() *string { s := "privateKeyVault"; return &s }(),
+		Version:         22222,
+	}
+	member2 := &Member{
+		HashedAccount:   "HelloWorld2",
+		RpcAddress:      "test2",
+		RpcPort:         166,
+		PublicKey:       "Abc Def2",
+		PrivateKeyVault: func() *string { s := "privateKeyVault2"; return &s }(),
+		Version:         22223,
+	}
+	members := []Member{*member1, *member2}
+	marshal := MarshalMembers(members)
+	unmarshal := UnmarshalMembers(marshal)
+	if reflect.DeepEqual(members, unmarshal) {
+		t.Log("TestMarshalMembers passed")
+	} else {
+		t.Error("TestMarshalMembers failed")
+	}
+}

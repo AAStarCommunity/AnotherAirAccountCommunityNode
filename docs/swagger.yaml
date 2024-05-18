@@ -37,6 +37,26 @@ paths:
       - JWT: []
       tags:
       - Account
+  /api/account/v1/sync:
+    get:
+      consumes:
+      - application/json
+      description: download accounts
+      parameters:
+      - description: how many accounts to download
+        in: query
+        name: count
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+      security:
+      - JWT: []
+      tags:
+      - Account
   /api/auth/v1/login:
     post:
       consumes:
@@ -54,6 +74,22 @@ paths:
           description: Created
       tags:
       - Auth
+  /api/dashboard/v1/node:
+    get:
+      consumes:
+      - application/json
+      description: get node members
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+      tags:
+      - Dashboard
 securityDefinitions:
   JWT:
     description: Type 'Bearer \<TOKEN\>' to correctly set the AccessToken

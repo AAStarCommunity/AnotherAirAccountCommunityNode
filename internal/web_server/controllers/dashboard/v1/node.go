@@ -11,10 +11,10 @@ import (
 // @Description get node members
 // @Accept json
 // @Produce json
-// @Success 200
+// @Success 200 {array} string
 // @Router /api/dashboard/v1/node [GET]
 func Node(ctx *gin.Context) {
-	members := community.ListMembers()
+	members := community.ListNodes()
 
 	ctx.JSON(200, members)
 }

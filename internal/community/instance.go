@@ -46,10 +46,10 @@ func BindAccount(hashedAccount string, publicKey *string) error {
 	}
 }
 
-func ListMembers() []string {
+func ListNodes() []string {
 	var members []string
-	for _, member := range community.Node.Members.Members() {
-		members = append(members, member.Name)
+	for _, node := range community.Node.Members.Members() {
+		members = append(members, node.Name)
 	}
 	return members
 }

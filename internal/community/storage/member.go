@@ -159,51 +159,45 @@ func memberKey(member *Member) string {
 
 // UpsertMember update a member if exists and newer than old by version
 func UpsertMember(hashedAccount, publicKey, privateKey, rpcAddress string, rpcPort uint16, version *uint32) error {
-	if stor, err := conf.GetStorage(); err != nil {
+	if ins, err := Open(); err != nil {
 		return err
 	} else {
-		if db, err := leveldb.Open(stor, nil); err != nil {
-			return err
-		} else {
-			newMember := &Member{
-				HashedAccount: hashedAccount,
-				RpcAddress:    rpcAddress,
-				RpcPort:       rpcPort,
-				PublicKey:     publicKey,
-				PrivateKeyVault: func() *string {
-					if len(privateKey) == 0 {
-						return nil
-					} else {
-						return &privateKey
-					}
-				}(),
-				Version: uint32(*version),
-			}
-
-			defer func() {
-				stor.Close()
-				db.Close()
-			}()
-
-			if oldMemberByte, err := db.Get([]byte(memberKey(newMember)), nil); err != nil {
-				if errors.Is(err, leveldb.ErrNotFound) {
-					if err := db.Put([]byte(memberKey(newMember)), newMember.Marshal(), nil); err != nil {
-						return err
-					} else {
-						return nil
-					}
+		newMember := &Member{
+			HashedAccount: hashedAccount,
+			RpcAddress:    rpcAddress,
+			RpcPort:       rpcPort,
+			PublicKey:     publicKey,
+			PrivateKeyVault: func() *string {
+				if len(privateKey) == 0 {
+					return nil
+				} else {
+					return &privateKey
 				}
-				return err
-			} else {
-				if oldMember, err := Unmarshal(oldMemberByte); err != nil {
+			}(),
+			Version: uint32(*version),
+		}
+
+		defer ins.Close()
+		db := ins.Instance
+
+		if oldMemberByte, err := db.Get([]byte(memberKey(newMember)), nil); err != nil {
+			if errors.Is(err, leveldb.ErrNotFound) {
+				if err := db.Put([]byte(memberKey(newMember)), newMember.Marshal(), nil); err != nil {
 					return err
 				} else {
-					newMember = compareAndUpdateMember(oldMember, newMember)
-					if err := db.Put([]byte(memberKey(newMember)), newMember.Marshal(), nil); err != nil {
-						return err
-					} else {
-						return nil
-					}
+					return nil
+				}
+			}
+			return err
+		} else {
+			if oldMember, err := Unmarshal(oldMemberByte); err != nil {
+				return err
+			} else {
+				newMember = compareAndUpdateMember(oldMember, newMember)
+				if err := db.Put([]byte(memberKey(newMember)), newMember.Marshal(), nil); err != nil {
+					return err
+				} else {
+					return nil
 				}
 			}
 		}

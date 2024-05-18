@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"another_node/conf"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -56,55 +55,37 @@ const SnapshotKey = "snapshot"
 // GetSnapshot returns the current node state
 // node state represent the members of the community snapshot
 func GetSnapshot() ([]byte, error) {
-	if stor, err := conf.GetStorage(); err != nil {
+	if ins, err := Open(); err != nil {
 		return nil, err
 	} else {
-		if db, err := leveldb.Open(stor, nil); err != nil {
+		defer ins.Close()
+
+		db := ins.Instance
+		if ss, err := db.Get([]byte(SnapshotKey), nil); err != nil {
+			if errors.Is(err, leveldb.ErrNotFound) {
+				return nil, nil
+			}
 			return nil, err
 		} else {
-			defer func() {
-				stor.Close()
-				db.Close()
-			}()
-
-			if ss, err := db.Get([]byte(SnapshotKey), nil); err != nil {
-				if errors.Is(err, leveldb.ErrNotFound) {
-					return nil, nil
-				}
-				return nil, err
-			} else {
-				return ss, nil
-			}
+			return ss, nil
 		}
 	}
 }
 
-func memberCounter() (total uint32) {
-	if stor, err := conf.GetStorage(); err != nil {
-		return
-	} else {
-		if db, err := leveldb.Open(stor, nil); err != nil {
-			return
-		} else {
-			defer func() {
-				stor.Close()
-				db.Close()
-			}()
+func memberCounter(db *leveldb.DB) (total uint32) {
 
-			iter := db.NewIterator(nil, nil)
-			total = 0
-			for iter.Next() {
-				total++
-			}
-			iter.Release()
-			err = iter.Error()
-			if err != nil {
-				return
-			}
-
-			return
-		}
+	iter := db.NewIterator(nil, nil)
+	total = 0
+	for iter.Next() {
+		total++
 	}
+	iter.Release()
+	err := iter.Error()
+	if err != nil {
+		return
+	}
+
+	return
 }
 
 func ScheduleSnapshot() {
@@ -118,23 +99,17 @@ func ScheduleSnapshot() {
 }
 
 func updateSnapshot() error {
-	if stor, err := conf.GetStorage(); err != nil {
+	if ins, err := Open(); err != nil {
 		return err
 	} else {
-		if db, err := leveldb.Open(stor, nil); err != nil {
-			return err
-		} else {
-			defer func() {
-				stor.Close()
-				db.Close()
-			}()
+		defer ins.Close()
+		db := ins.Instance
 
-			ss := &Snapshot{
-				Version:      Version,
-				TotalMembers: memberCounter(),
-			}
-			marshal := ss.Digest().Marshal()
-			return db.Put([]byte(SnapshotKey), marshal, nil)
+		ss := &Snapshot{
+			Version:      Version,
+			TotalMembers: memberCounter(db),
 		}
+		marshal := ss.Digest().Marshal()
+		return db.Put([]byte(SnapshotKey), marshal, nil)
 	}
 }

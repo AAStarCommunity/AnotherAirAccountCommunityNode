@@ -2,7 +2,6 @@ package main
 
 import (
 	"another_node/conf"
-	"another_node/internal/community"
 	"another_node/internal/community/node"
 	"another_node/internal/web_server/routers"
 	"flag"
@@ -33,10 +32,8 @@ func getFlags() (listen *uint16, name *string, joinAddrs *string, genesis *bool)
 func main() {
 
 	// start community node
-	if n, err := node.New(getFlags()); err != nil {
+	if _, err := node.New(getFlags()); err != nil {
 		panic(err)
-	} else {
-		community.New(n)
 	}
 
 	// start web server

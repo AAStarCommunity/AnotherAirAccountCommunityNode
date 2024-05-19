@@ -52,13 +52,9 @@ func (d *CommunityDelegate) LocalState(join bool) []byte {
 func (d *CommunityDelegate) MergeRemoteState(buf []byte, join bool) {
 	if len(buf) > 0 {
 		if join {
-			go func() {
-				if snap, err := storage.UnmarshalSnapshot(buf); err == nil {
-					_ = snap
-					// members := storage.UnmarshalMembers(buf)
-					// storage.InitRemoteMember(members)
-				}
-			}()
+			if snap, err := storage.UnmarshalSnapshot(buf); err == nil {
+				go MergeRemoteMembers(snap)
+			}
 		} else {
 			go func() {
 				if members, err := storage.Unmarshal(buf); err != nil {

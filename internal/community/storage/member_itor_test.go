@@ -1,11 +1,19 @@
 package storage
 
 import (
+	"os"
 	"reflect"
 	"testing"
 )
 
 func TestGetAllMembers(t *testing.T) {
+
+	dir := os.TempDir()
+	os.Setenv("storage", dir+"/testing.dat")
+	defer func() {
+		os.Unsetenv("storage")
+		os.Remove(dir + "/testing.dat")
+	}()
 
 	member1 := &Member{
 		HashedAccount:   "hashedAccount1",
@@ -21,11 +29,12 @@ func TestGetAllMembers(t *testing.T) {
 		PublicKey:       "publicKey2",
 		PrivateKeyVault: nil,
 	}
+
 	UpsertMember(member1.HashedAccount, member1.PublicKey, *member1.PrivateKeyVault, member1.RpcAddress, member1.RpcPort, &member1.Version)
 	UpsertMember(member2.HashedAccount, member2.PublicKey, "", member2.RpcAddress, member2.RpcPort, &member2.Version)
 
 	// Call the GetAllMembers function
-	members := GetAllMembers(0)
+	members := GetAllMembers(2)
 
 	// Check the returned members
 	expectedMembers := []Member{*member1, *member2}

@@ -1,7 +1,7 @@
 package dashboard_v1
 
 import (
-	"another_node/internal/community"
+	"another_node/internal/community/node"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,7 +14,7 @@ import (
 // @Success 200 {array} string
 // @Router /api/dashboard/v1/node [GET]
 func Node(ctx *gin.Context) {
-	members := community.ListNodes()
+	members := node.ListNodes()
 
 	ctx.JSON(200, members)
 }

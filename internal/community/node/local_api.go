@@ -1,22 +1,9 @@
-package community
+package node
 
 import (
 	"another_node/conf"
-	"another_node/internal/community/node"
 	"another_node/internal/community/storage"
 )
-
-type Community struct {
-	Node *node.Node
-}
-
-var community *Community
-
-func New(n *node.Node) {
-	community = &Community{
-		Node: n,
-	}
-}
 
 // BindAccount binding a web2 account
 func BindAccount(hashedAccount string, publicKey *string) error {
@@ -36,7 +23,7 @@ func BindAccount(hashedAccount string, publicKey *string) error {
 	if err := storage.UpsertMember(hashedAccount, *publicKey, privateKeyValut, rpcAddress, rpcPort, &version); err != nil {
 		return err
 	} else {
-		return community.Node.Broadcast(&node.Payload{
+		return c.Node.Broadcast(&Payload{
 			Account:    hashedAccount,
 			PublicKey:  *publicKey,
 			RpcAddress: rpcAddress,
@@ -48,12 +35,12 @@ func BindAccount(hashedAccount string, publicKey *string) error {
 
 func ListNodes() []string {
 	var members []string
-	for _, node := range community.Node.Members.Members() {
+	for _, node := range c.Node.Members.Members() {
 		members = append(members, node.Name)
 	}
 	return members
 }
 
-func Broadcast(payload *node.Payload) error {
-	return community.Node.Broadcast(payload)
+func Broadcast(payload *Payload) error {
+	return c.Node.Broadcast(payload)
 }

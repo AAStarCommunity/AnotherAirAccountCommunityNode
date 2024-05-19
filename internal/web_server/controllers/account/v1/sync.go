@@ -13,7 +13,7 @@ import (
 // @Description download accounts
 // @Accept json
 // @Produce json
-// @Success 200 {array} storage.Member
+// @Success 200 {array} byte
 // @Router /api/account/v1/sync [GET]
 // @Param        count    query     int  true  "how many accounts to download"
 // @Security JWT
@@ -23,7 +23,9 @@ func Sync(ctx *gin.Context) {
 		return
 	} else {
 		members := storage.GetAllMembers(uint32(count))
+
+		b := storage.MarshalMembers(members)
 		//community.SyncAccounts(count)
-		response.Success(ctx, members)
+		response.Success(ctx, b)
 	}
 }

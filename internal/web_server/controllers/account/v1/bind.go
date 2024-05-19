@@ -1,7 +1,7 @@
 package account_v1
 
 import (
-	"another_node/internal/community"
+	"another_node/internal/community/node"
 	"another_node/internal/web_server/pkg/request"
 	"another_node/internal/web_server/pkg/response"
 
@@ -24,7 +24,7 @@ func Bind(ctx *gin.Context) {
 		return
 	}
 
-	if err := community.BindAccount(req.Account, &req.PublicKey); err != nil {
+	if err := node.BindAccount(req.Account, &req.PublicKey); err != nil {
 		response.InternalServerError(ctx, err)
 	} else {
 		response.Created(ctx, nil)

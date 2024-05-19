@@ -9,7 +9,14 @@ import (
 	"github.com/hashicorp/memberlist"
 )
 
-func New(listen *uint16, globalName *string, entrypoints *string, genesis *bool) (*Node, error) {
+type Community struct {
+	Node *Node
+}
+
+var c *Community
+var entrypointNodeAddr []string
+
+func New(listen *uint16, globalName *string, entrypoints *string, genesis *bool) (*Community, error) {
 
 	confNode := conf.GetNode()
 	if genesis != nil {
@@ -36,7 +43,7 @@ func New(listen *uint16, globalName *string, entrypoints *string, genesis *bool)
 	conf.BindPort = int(confNode.BindPort)
 	conf.Delegate = delegate
 
-	entrypointNodeAddr := []string{
+	entrypointNodeAddr = []string{
 		"192.168.1.6:7947", // TODO: replace with the genesis node address on chain
 	}
 	if entrypoints != nil && len(*entrypoints) > 0 {
@@ -65,7 +72,9 @@ func New(listen *uint16, globalName *string, entrypoints *string, genesis *bool)
 		go node.listen()
 		go storage.ScheduleSnapshot()
 
-		return node, nil
+		return &Community{
+			Node: node,
+		}, nil
 	}
 
 	return nil, err

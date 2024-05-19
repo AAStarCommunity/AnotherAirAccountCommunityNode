@@ -33,17 +33,17 @@ func (d *CommunityDelegate) GetBroadcasts(overhead, limit int) [][]byte {
 
 // LocalState return the local state data while a remote node joins or sync
 func (d *CommunityDelegate) LocalState(join bool) []byte {
-	if ss, err := storage.GetSnapshot(); err == nil {
-		if join {
-			return ss
-		} else {
+	skip := uint32(0)
+	if !join {
+		if ss, err := storage.GetSnapshot(); err == nil {
 			if s, err := storage.UnmarshalSnapshot(ss); err == nil {
-				members := storage.GetAllMembers(s.TotalMembers)
-				if members != nil {
-					return storage.MarshalMembers(members)
-				}
+				skip = s.TotalMembers
 			}
 		}
+	}
+	members := storage.GetMembers(skip, ^uint32(0))
+	if len(members) > 0 {
+		return storage.MarshalMembers(members)
 	}
 	return nil
 }
@@ -52,8 +52,8 @@ func (d *CommunityDelegate) LocalState(join bool) []byte {
 func (d *CommunityDelegate) MergeRemoteState(buf []byte, join bool) {
 	if len(buf) > 0 {
 		if join {
-			if snap, err := storage.UnmarshalSnapshot(buf); err == nil {
-				go MergeRemoteMembers(snap)
+			if members := storage.UnmarshalMembers(buf); len(members) > 0 {
+				go storage.MergeRemoteAccounts(members)
 			}
 		} else {
 			go func() {

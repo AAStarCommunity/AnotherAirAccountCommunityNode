@@ -4,15 +4,18 @@ import (
 	"os"
 	"reflect"
 	"testing"
+
+	"github.com/google/uuid"
 )
 
 func TestGetAllMembers(t *testing.T) {
 
 	dir := os.TempDir()
-	os.Setenv("storage", dir+"/testing.dat")
+	uuid := uuid.New().String()
+	os.Setenv("storage", dir+"/testing.dat/"+uuid)
 	defer func() {
 		os.Unsetenv("storage")
-		os.Remove(dir + "/testing.dat")
+		os.RemoveAll(dir + "/testing.dat")
 	}()
 
 	member1 := &Member{
@@ -34,7 +37,7 @@ func TestGetAllMembers(t *testing.T) {
 	UpsertMember(member2.HashedAccount, member2.PublicKey, "", member2.RpcAddress, member2.RpcPort, &member2.Version)
 
 	// Call the GetAllMembers function
-	members := GetAllMembers(2)
+	members := GetMembers(0, ^uint32(0))
 
 	// Check the returned members
 	expectedMembers := []Member{*member1, *member2}

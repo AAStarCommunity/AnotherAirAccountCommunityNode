@@ -42,45 +42,6 @@
                 }
             }
         },
-        "/api/account/v1/sync": {
-            "get": {
-                "security": [
-                    {
-                        "JWT": []
-                    }
-                ],
-                "description": "download accounts",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Account"
-                ],
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "how many accounts to download",
-                        "name": "count",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/storage.Member"
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/api/auth/v1/login": {
             "post": {
                 "description": "Get AccessToken By ApiKey",
@@ -151,29 +112,6 @@
             "properties": {
                 "apiKey": {
                     "type": "string"
-                }
-            }
-        },
-        "storage.Member": {
-            "type": "object",
-            "properties": {
-                "hashedAccount": {
-                    "type": "string"
-                },
-                "privateKeyVault": {
-                    "type": "string"
-                },
-                "publicKey": {
-                    "type": "string"
-                },
-                "rpcAddress": {
-                    "type": "string"
-                },
-                "rpcPort": {
-                    "type": "integer"
-                },
-                "version": {
-                    "type": "integer"
                 }
             }
         }

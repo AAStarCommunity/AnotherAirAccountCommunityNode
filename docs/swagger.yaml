@@ -11,21 +11,6 @@ definitions:
       apiKey:
         type: string
     type: object
-  storage.Member:
-    properties:
-      hashedAccount:
-        type: string
-      privateKeyVault:
-        type: string
-      publicKey:
-        type: string
-      rpcAddress:
-        type: string
-      rpcPort:
-        type: integer
-      version:
-        type: integer
-    type: object
 info:
   contact:
     name: AAStar Support
@@ -48,30 +33,6 @@ paths:
       responses:
         "201":
           description: Created
-      security:
-      - JWT: []
-      tags:
-      - Account
-  /api/account/v1/sync:
-    get:
-      consumes:
-      - application/json
-      description: download accounts
-      parameters:
-      - description: how many accounts to download
-        in: query
-        name: count
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/storage.Member'
-            type: array
       security:
       - JWT: []
       tags:

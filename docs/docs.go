@@ -80,8 +80,14 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "201": {
-                        "description": "Created"
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/storage.Member"
+                            }
+                        }
                     }
                 }
             }
@@ -156,6 +162,29 @@ const docTemplate = `{
             "properties": {
                 "apiKey": {
                     "type": "string"
+                }
+            }
+        },
+        "storage.Member": {
+            "type": "object",
+            "properties": {
+                "hashedAccount": {
+                    "type": "string"
+                },
+                "privateKeyVault": {
+                    "type": "string"
+                },
+                "publicKey": {
+                    "type": "string"
+                },
+                "rpcAddress": {
+                    "type": "string"
+                },
+                "rpcPort": {
+                    "type": "integer"
+                },
+                "version": {
+                    "type": "integer"
                 }
             }
         }

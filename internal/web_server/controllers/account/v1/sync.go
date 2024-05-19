@@ -1,6 +1,7 @@
 package account_v1
 
 import (
+	"another_node/internal/community/storage"
 	"another_node/internal/web_server/pkg"
 	"another_node/internal/web_server/pkg/response"
 
@@ -12,7 +13,7 @@ import (
 // @Description download accounts
 // @Accept json
 // @Produce json
-// @Success 201
+// @Success 200 {array} storage.Member
 // @Router /api/account/v1/sync [GET]
 // @Param        count    query     int  true  "how many accounts to download"
 // @Security JWT
@@ -21,8 +22,8 @@ func Sync(ctx *gin.Context) {
 		response.BadRequest(ctx, err)
 		return
 	} else {
-		_ = count
+		members := storage.GetAllMembers(uint32(count))
 		//community.SyncAccounts(count)
-		response.Created(ctx, nil)
+		response.Success(ctx, members)
 	}
 }

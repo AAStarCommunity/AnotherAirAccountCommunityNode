@@ -4,7 +4,7 @@ import (
 	"github.com/syndtr/goleveldb/leveldb/util"
 )
 
-func GetAllMembers(skip uint32) []Member {
+func GetAllMembers(total uint32) []Member {
 	if ins, err := Open(); err != nil {
 		return nil
 	} else {
@@ -15,14 +15,15 @@ func GetAllMembers(skip uint32) []Member {
 		iter := db.NewIterator(&util.Range{
 			Start: []byte(MemberPrefix),
 		}, nil)
-		i := 1
+		i := 0
 		for iter.Next() {
-			if i >= int(skip) {
+			if i < int(total) {
 				if m, err := Unmarshal(iter.Value()); err != nil {
 					return nil
 				} else {
 					members = append(members, *m)
 				}
+				i++
 			}
 		}
 		iter.Release()

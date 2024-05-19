@@ -27,5 +27,6 @@ func buildRouters(router *gin.Engine) {
 	{
 		account := router.Group("/api/account")
 		account.POST("/v1/bind", account_v1.Bind)
+		account.GET("/v1/sync", account_v1.Sync)
 	}
 }

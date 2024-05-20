@@ -26,3 +26,5 @@ appsettings.*.yaml
 .vscode
 
 *.dat
+
+__debug_bin*

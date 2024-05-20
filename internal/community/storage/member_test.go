@@ -192,7 +192,7 @@ func TestMember_Unmarshal(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := Unmarshal(tt.args.data)
+			got, err := UnmarshalMember(tt.args.data)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Member.Unmarshal() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -214,7 +214,7 @@ func TestMarshalToUnmarshalThenMarhsalCompare(t *testing.T) {
 		Version:         22222,
 	}
 	marshal := member.Marshal()
-	unmarshal, _ := Unmarshal(marshal)
+	unmarshal, _ := UnmarshalMember(marshal)
 	if reflect.DeepEqual(member, unmarshal) {
 		t.Log("TestMashalToUnmashalThenMarhsalCompare passed")
 	} else {
@@ -223,7 +223,7 @@ func TestMarshalToUnmarshalThenMarhsalCompare(t *testing.T) {
 
 	member.PrivateKeyVault = nil
 	marshal = member.Marshal()
-	unmarshal, _ = Unmarshal(marshal)
+	unmarshal, _ = UnmarshalMember(marshal)
 	if reflect.DeepEqual(member, unmarshal) {
 		t.Log("TestMashalToUnmashalThenMarhsalCompare passed")
 	} else {

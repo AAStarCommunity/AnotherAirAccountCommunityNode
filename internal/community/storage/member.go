@@ -116,10 +116,10 @@ func compareAndUpdateMember(oldMember, newMember *Member) *Member {
 	return newMember
 }
 
-const MemberPrefix = "member:"
+const memberPrefix = "member:"
 
 func memberKey(member *Member) string {
-	return fmt.Sprintf("%s%s", MemberPrefix, member.HashedAccount)
+	return fmt.Sprintf("%s%s", memberPrefix, member.HashedAccount)
 }
 
 // UpsertMember update a member if exists and newer than old by version
@@ -181,7 +181,7 @@ func TryFindMember(hashedAccount string) (*Member, error) {
 				stor.Close()
 				db.Close()
 			}()
-			if member, err := db.Get([]byte(MemberPrefix+hashedAccount), nil); err != nil {
+			if member, err := db.Get([]byte(memberPrefix+hashedAccount), nil); err != nil {
 				if errors.Is(err, leveldb.ErrNotFound) {
 					return nil, nil
 				}

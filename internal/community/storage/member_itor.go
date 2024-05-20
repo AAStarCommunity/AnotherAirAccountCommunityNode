@@ -13,7 +13,7 @@ func GetMembers(skip, size uint32) []Member {
 
 		members := make([]Member, 0)
 		iter := db.NewIterator(
-			util.BytesPrefix([]byte(MemberPrefix)),
+			util.BytesPrefix([]byte(memberPrefix)),
 			nil)
 		i := uint32(0)
 		for iter.Next() {

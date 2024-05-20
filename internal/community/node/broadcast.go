@@ -1,25 +1,18 @@
 package node
 
 import (
-	"bytes"
-	"encoding/gob"
+	"another_node/conf"
 	"log"
 )
 
 // Broadcast sends data to all nodes in the cluster
-func (n *Node) Broadcast(data *Payload) error {
-	buf := new(bytes.Buffer)
-	encoder := gob.NewEncoder(buf)
-	if err := encoder.Encode(data); err != nil {
-		log.Printf("Failed to serialize data: %v", err)
-		return err
-	}
-
+func (n *Node) Broadcast(data []byte) error {
+	me := conf.GetNode().GlobalName
 	if len(n.Delegate.Broadcasts) < n.Delegate.BroadcastCap {
-		n.Delegate.Broadcasts = append(n.Delegate.Broadcasts, buf.Bytes())
-		log.Printf("Broadcasted: %v", data)
+		n.Delegate.Broadcasts = append(n.Delegate.Broadcasts, data)
+		log.Printf(me+": Broadcasted: %v", data)
 	} else {
-		log.Printf("Broadcasted data is full, dropped: %v", data)
+		log.Printf(me+": Broadcasted data is full, dropped: %v", data)
 	}
 
 	return nil

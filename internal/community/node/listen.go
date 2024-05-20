@@ -1,22 +1,14 @@
 package node
 
 import (
-	"bytes"
-	"encoding/gob"
+	"another_node/conf"
 	"log"
 )
 
 func (n *Node) listen() {
+	me := conf.GetNode().GlobalName
 	for buf := range n.Delegate.DataChannel {
-		decoder := gob.NewDecoder(bytes.NewReader(buf))
-		payload := Payload{}
-		if err := decoder.Decode(&payload); err != nil {
-			log.Printf("Failed to decode broadcast data: %v", err)
-			continue
-		}
-
-		log.Printf("Received broadcast: %v", payload)
-
-		go UpcomingHandler(&payload)
+		log.Printf(me+": Received broadcast: %v", buf)
+		go UpcomingHandler(buf)
 	}
 }

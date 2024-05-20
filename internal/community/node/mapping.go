@@ -13,6 +13,9 @@ func GetPublicKey(hashedAccount *string) string {
 	}
 }
 
-func UpcomingHandler(payload *Payload) {
-	_ = storage.UpsertMember(payload.Account, payload.PublicKey, "", payload.RpcAddress, payload.RpcPort, &payload.Version)
+func UpcomingHandler(payload []byte) {
+	members := storage.UnmarshalMembers(payload)
+	for _, member := range members {
+		_ = storage.UpsertMember(member.HashedAccount, member.PublicKey, "", member.RpcAddress, member.RpcPort, &member.Version)
+	}
 }

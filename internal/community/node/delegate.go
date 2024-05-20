@@ -1,8 +1,8 @@
 package node
 
 import (
+	"another_node/conf"
 	"another_node/internal/community/storage"
-	"fmt"
 )
 
 type CommunityDelegate struct {
@@ -33,14 +33,9 @@ func (d *CommunityDelegate) GetBroadcasts(overhead, limit int) [][]byte {
 
 // LocalState return the local state data while a remote node joins or sync
 func (d *CommunityDelegate) LocalState(join bool) []byte {
+	me := conf.GetNode().GlobalName
+	_ = me
 	skip := uint32(0)
-	if !join {
-		if ss, err := storage.GetSnapshot(); err == nil {
-			if s, err := storage.UnmarshalSnapshot(ss); err == nil {
-				skip = s.TotalMembers
-			}
-		}
-	}
 	members := storage.GetMembers(skip, ^uint32(0))
 	if len(members) > 0 {
 		return storage.MarshalMembers(members)
@@ -51,18 +46,8 @@ func (d *CommunityDelegate) LocalState(join bool) []byte {
 // MergeRemoteState merges the remote state while current node joins or sync
 func (d *CommunityDelegate) MergeRemoteState(buf []byte, join bool) {
 	if len(buf) > 0 {
-		if join {
-			if members := storage.UnmarshalMembers(buf); len(members) > 0 {
-				go storage.MergeRemoteAccounts(members)
-			}
-		} else {
-			go func() {
-				if members, err := storage.Unmarshal(buf); err != nil {
-					fmt.Print("sync: Failed to unmarshal remote state: ", err)
-				} else {
-					storage.MergeRemoteMember(members)
-				}
-			}()
+		if members := storage.UnmarshalMembers(buf); len(members) > 0 {
+			go storage.MergeRemoteAccounts(members)
 		}
 	}
 }

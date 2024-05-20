@@ -2,9 +2,9 @@ package node
 
 import (
 	"another_node/conf"
-	"another_node/internal/community/storage"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/memberlist"
 )
@@ -42,6 +42,7 @@ func New(listen *uint16, globalName *string, entrypoints *string, genesis *bool)
 	conf.BindAddr = confNode.BindAddr
 	conf.BindPort = int(confNode.BindPort)
 	conf.Delegate = delegate
+	conf.PushPullInterval = time.Second
 
 	entrypointNodeAddr = []string{
 		"192.168.1.6:7947", // TODO: replace with the genesis node address on chain
@@ -70,7 +71,6 @@ func New(listen *uint16, globalName *string, entrypoints *string, genesis *bool)
 		}
 
 		go node.listen()
-		go storage.ScheduleSnapshot()
 
 		c = &Community{
 			Node: node,

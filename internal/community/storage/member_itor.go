@@ -12,9 +12,9 @@ func GetMembers(skip, size uint32) []Member {
 		db := ins.Instance
 
 		members := make([]Member, 0)
-		iter := db.NewIterator(&util.Range{
-			Start: []byte(MemberPrefix),
-		}, nil)
+		iter := db.NewIterator(
+			util.BytesPrefix([]byte(MemberPrefix)),
+			nil)
 		i := uint32(0)
 		for iter.Next() {
 			if i >= skip && i < skip+size {

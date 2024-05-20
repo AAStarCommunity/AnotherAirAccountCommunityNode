@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/syndtr/goleveldb/leveldb"
+	"github.com/syndtr/goleveldb/leveldb/util"
 )
 
 const Version uint8 = 1
@@ -74,7 +75,9 @@ func GetSnapshot() ([]byte, error) {
 
 func memberCounter(db *leveldb.DB) (total uint32) {
 
-	iter := db.NewIterator(nil, nil)
+	iter := db.NewIterator(
+		util.BytesPrefix([]byte(MemberPrefix)),
+		nil)
 	total = 0
 	for iter.Next() {
 		total++

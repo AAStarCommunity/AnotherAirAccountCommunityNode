@@ -72,9 +72,11 @@ func New(listen *uint16, globalName *string, entrypoints *string, genesis *bool)
 		go node.listen()
 		go storage.ScheduleSnapshot()
 
-		return &Community{
+		c = &Community{
 			Node: node,
-		}, nil
+		}
+
+		return c, nil
 	}
 
 	return nil, err

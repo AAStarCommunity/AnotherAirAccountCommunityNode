@@ -1,19 +1,21 @@
 package node
 
 import (
-	"another_node/conf"
 	"log"
 )
 
 // Broadcast sends data to all nodes in the cluster
 func (n *Node) Broadcast(data []byte) error {
-	me := conf.GetNode().GlobalName
-	if len(n.Delegate.Broadcasts) < n.Delegate.BroadcastCap {
-		n.Delegate.Broadcasts = append(n.Delegate.Broadcasts, data)
-		log.Printf(me+": Broadcasted: %v", data)
+	if addr, err := getAddr(); err != nil {
+		return err
 	} else {
-		log.Printf(me+": Broadcasted data is full, dropped: %v", data)
-	}
+		if len(n.Delegate.Broadcasts) < n.Delegate.BroadcastCap {
+			n.Delegate.Broadcasts = append(n.Delegate.Broadcasts, data)
+			log.Printf("%s: Broadcasted: %v", addr, data)
+		} else {
+			log.Printf("%s: Broadcasted data is full, dropped: %v", addr, data)
+		}
 
-	return nil
+		return nil
+	}
 }

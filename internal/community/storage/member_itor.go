@@ -13,12 +13,12 @@ func GetMembers(skip, size uint32) []Member {
 
 		members := make([]Member, 0)
 		iter := db.NewIterator(
-			util.BytesPrefix([]byte(MemberPrefix)),
+			util.BytesPrefix([]byte(memberPrefix)),
 			nil)
 		i := uint32(0)
 		for iter.Next() {
 			if i >= skip && i < skip+size {
-				if m, err := Unmarshal(iter.Value()); err != nil {
+				if m, err := UnmarshalMember(iter.Value()); err != nil {
 					return nil
 				} else {
 					members = append(members, *m)

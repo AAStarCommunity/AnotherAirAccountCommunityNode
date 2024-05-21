@@ -25,9 +25,6 @@ func New(listen *uint16, globalName *string, entrypoints *string, genesis *bool)
 	if listen != nil && *listen > 0 {
 		confNode.ExternalPort = *listen
 	}
-	if globalName != nil && len(*globalName) > 0 {
-		confNode.GlobalName = *globalName
-	}
 
 	delegate := &CommunityDelegate{
 		DataChannel:  make(chan []byte, 10),
@@ -36,7 +33,18 @@ func New(listen *uint16, globalName *string, entrypoints *string, genesis *bool)
 	}
 
 	conf := memberlist.DefaultWANConfig()
-	conf.Name = confNode.GlobalName
+	conf.Name = func() string {
+		if addr, err := getAddr(); err != nil || addr == nil {
+			if addr, err = generateIdentity(); err != nil {
+				log.Fatalf("Failed to generate identity: %v", err)
+				panic(err)
+			} else {
+				return string(addr)
+			}
+		} else {
+			return string(addr)
+		}
+	}()
 	conf.AdvertiseAddr = confNode.ExternalAddr
 	conf.AdvertisePort = int(confNode.ExternalPort)
 	conf.BindAddr = confNode.BindAddr

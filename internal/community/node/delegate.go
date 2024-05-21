@@ -1,7 +1,6 @@
 package node
 
 import (
-	"another_node/conf"
 	"another_node/internal/community/storage"
 )
 
@@ -33,14 +32,17 @@ func (d *CommunityDelegate) GetBroadcasts(overhead, limit int) [][]byte {
 
 // LocalState return the local state data while a remote node joins or sync
 func (d *CommunityDelegate) LocalState(join bool) []byte {
-	me := conf.GetNode().GlobalName
-	_ = me
-	skip := uint32(0)
-	members := storage.GetMembers(skip, ^uint32(0))
-	if len(members) > 0 {
-		return storage.MarshalMembers(members)
+	if addr, err := getAddr(); err != nil {
+		return nil
+	} else {
+		_ = addr
+		skip := uint32(0)
+		members := storage.GetMembers(skip, ^uint32(0))
+		if len(members) > 0 {
+			return storage.MarshalMembers(members)
+		}
+		return nil
 	}
-	return nil
 }
 
 // MergeRemoteState merges the remote state while current node joins or sync

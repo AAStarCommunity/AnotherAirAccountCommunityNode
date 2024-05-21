@@ -1,10 +1,7 @@
 package conf
 
 import (
-	"fmt"
 	"sync"
-
-	"github.com/google/uuid"
 )
 
 type Node struct {
@@ -13,7 +10,6 @@ type Node struct {
 	ExternalPort uint16 `yaml:"externalPort"`
 	BindAddr     string `yaml:"bindAddr"`
 	BindPort     uint16 `yaml:"bindPort"`
-	GlobalName   string `yaml:"globalName"`
 }
 
 var node *Node
@@ -30,13 +26,6 @@ func GetNode() *Node {
 				ExternalPort: j.ExternalPort,
 				BindAddr:     j.BindAddr,
 				BindPort:     j.BindPort,
-				GlobalName: func() string {
-					if j.GlobalName == "" {
-						return fmt.Sprintf("aa:%s", uuid.NewString())
-					} else {
-						return j.GlobalName
-					}
-				}(),
 			}
 		}
 	})

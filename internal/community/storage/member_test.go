@@ -31,7 +31,7 @@ func TestMember_Marshal(t *testing.T) {
 		RpcAddress      string
 		RpcPort         uint16
 		PublicKey       string
-		PrivateKeyVault *string
+		PrivateKeyVault string
 		Version         uint32
 	}
 	tests := []struct {
@@ -46,7 +46,7 @@ func TestMember_Marshal(t *testing.T) {
 				RpcAddress:      "test",
 				RpcPort:         222,
 				PublicKey:       "Abc Def",
-				PrivateKeyVault: nil,
+				PrivateKeyVault: "",
 				Version:         123,
 			},
 			want: func() []byte {
@@ -75,7 +75,7 @@ func TestMember_Marshal(t *testing.T) {
 				RpcAddress:      "test",
 				RpcPort:         0,
 				PublicKey:       "Abc Def",
-				PrivateKeyVault: func() *string { s := "privateKeyVault"; return &s }(),
+				PrivateKeyVault: "privateKeyVault",
 				Version:         123,
 			},
 			want: func() []byte {
@@ -152,7 +152,7 @@ func TestMember_Unmarshal(t *testing.T) {
 				RpcAddress:      "test",
 				RpcPort:         65531,
 				PublicKey:       "Abc Def",
-				PrivateKeyVault: nil,
+				PrivateKeyVault: "",
 				Version:         2000933341,
 			},
 			wantErr: false,
@@ -184,7 +184,7 @@ func TestMember_Unmarshal(t *testing.T) {
 				RpcAddress:      "test",
 				RpcPort:         0,
 				PublicKey:       "Abc Def",
-				PrivateKeyVault: func() *string { s := "privateKeyVault"; return &s }(),
+				PrivateKeyVault: "privateKeyVault",
 				Version:         123,
 			},
 			wantErr: false,
@@ -192,7 +192,7 @@ func TestMember_Unmarshal(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := Unmarshal(tt.args.data)
+			got, err := UnmarshalMember(tt.args.data)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Member.Unmarshal() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -210,20 +210,20 @@ func TestMarshalToUnmarshalThenMarhsalCompare(t *testing.T) {
 		RpcAddress:      "test",
 		RpcPort:         165,
 		PublicKey:       "Abc Def",
-		PrivateKeyVault: func() *string { s := "privateKeyVault"; return &s }(),
+		PrivateKeyVault: "privateKeyVault",
 		Version:         22222,
 	}
 	marshal := member.Marshal()
-	unmarshal, _ := Unmarshal(marshal)
+	unmarshal, _ := UnmarshalMember(marshal)
 	if reflect.DeepEqual(member, unmarshal) {
 		t.Log("TestMashalToUnmashalThenMarhsalCompare passed")
 	} else {
 		t.Error("TestMashalToUnmashalThenMarhsalCompare failed")
 	}
 
-	member.PrivateKeyVault = nil
+	member.PrivateKeyVault = ""
 	marshal = member.Marshal()
-	unmarshal, _ = Unmarshal(marshal)
+	unmarshal, _ = UnmarshalMember(marshal)
 	if reflect.DeepEqual(member, unmarshal) {
 		t.Log("TestMashalToUnmashalThenMarhsalCompare passed")
 	} else {
@@ -237,10 +237,10 @@ func TestUpsertMember(t *testing.T) {
 		RpcAddress:      "test",
 		RpcPort:         165,
 		PublicKey:       "Abc Def",
-		PrivateKeyVault: func() *string { s := "privateKeyVault"; return &s }(),
+		PrivateKeyVault: "privateKeyVault",
 		Version:         22222,
 	}
-	err := UpsertMember(member.HashedAccount, member.PublicKey, *member.PrivateKeyVault, member.RpcAddress, member.RpcPort, &member.Version)
+	err := UpsertMember(member.HashedAccount, member.PublicKey, member.PrivateKeyVault, member.RpcAddress, member.RpcPort, &member.Version)
 	if err != nil {
 		t.Error("TestUpsertMember failed")
 	}
@@ -252,7 +252,7 @@ func TestMarshalMembers(t *testing.T) {
 		RpcAddress:      "test",
 		RpcPort:         165,
 		PublicKey:       "Abc Def",
-		PrivateKeyVault: func() *string { s := "privateKeyVault"; return &s }(),
+		PrivateKeyVault: "privateKeyVault",
 		Version:         22222,
 	}
 	member2 := &Member{
@@ -260,7 +260,7 @@ func TestMarshalMembers(t *testing.T) {
 		RpcAddress:      "test2",
 		RpcPort:         166,
 		PublicKey:       "Abc Def2",
-		PrivateKeyVault: func() *string { s := "privateKeyVault2"; return &s }(),
+		PrivateKeyVault: "privateKeyVault2",
 		Version:         22223,
 	}
 	members := []Member{*member1, *member2}

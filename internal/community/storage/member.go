@@ -35,7 +35,7 @@ type Member struct {
 	RpcAddress      string
 	RpcPort         uint16
 	PublicKey       string
-	PrivateKeyVault *string
+	PrivateKeyVault string
 	Version         uint32
 }
 
@@ -66,12 +66,9 @@ func (m *Member) Marshal() []byte {
 		return nil
 	}
 
-	privateKeyVaultBytes := []byte{}
-	if m.PrivateKeyVault != nil {
-		privateKeyVaultBytes = []byte(*m.PrivateKeyVault)
-		if len(privateKeyVaultBytes) > privateKeyVaultCap {
-			return nil
-		}
+	privateKeyVaultBytes := []byte(m.PrivateKeyVault)
+	if len(privateKeyVaultBytes) > privateKeyVaultCap {
+		return nil
 	}
 
 	versionBytes := uintToBytes(m.Version)
@@ -95,41 +92,6 @@ func (m *Member) Marshal() []byte {
 	return ret
 }
 
-func Unmarshal(data []byte) (*Member, error) {
-	if len(data) < 1 {
-		return nil, errors.New("invalid data")
-	}
-
-	if data[0] != memberMarshalHeader {
-		return nil, errors.New("invalid header")
-	}
-
-	if len(data) < 1+hashedAccountCap+rpcAddressCap+2+publicKeyCap+privateKeyVaultCap+4 {
-		return nil, errors.New("invalid data length")
-	}
-
-	m := &Member{
-		HashedAccount: strings.Trim(string(data[1:1+hashedAccountCap]), "\x00"),
-		RpcAddress:    strings.Trim(string(data[1+hashedAccountCap:1+hashedAccountCap+rpcAddressCap]), "\x00"),
-		RpcPort:       binary.LittleEndian.Uint16(data[1+hashedAccountCap+rpcAddressCap : 1+hashedAccountCap+rpcAddressCap+2]),
-		PublicKey:     strings.Trim(string(data[1+hashedAccountCap+rpcAddressCap+2:1+hashedAccountCap+rpcAddressCap+2+publicKeyCap]), "\x00"),
-		PrivateKeyVault: func() *string {
-			if len(data[1+hashedAccountCap+rpcAddressCap+2+publicKeyCap:]) == 0 {
-				return nil
-			}
-			privateKeyVault := strings.Trim(string(data[1+hashedAccountCap+rpcAddressCap+2+publicKeyCap:1+hashedAccountCap+rpcAddressCap+2+publicKeyCap+privateKeyVaultCap]), "\x00")
-			if len(privateKeyVault) == 0 {
-				return nil
-			} else {
-				return &privateKeyVault
-			}
-		}(),
-		Version: binary.LittleEndian.Uint32(data[1+hashedAccountCap+rpcAddressCap+2+publicKeyCap+privateKeyVaultCap:]),
-	}
-
-	return m, nil
-}
-
 func compareAndUpdateMember(oldMember, newMember *Member) *Member {
 	if oldMember.Version >= newMember.Version {
 		return oldMember
@@ -139,7 +101,7 @@ func compareAndUpdateMember(oldMember, newMember *Member) *Member {
 		newMember.PublicKey = oldMember.PublicKey
 	}
 
-	if newMember.PrivateKeyVault == nil {
+	if len(newMember.PrivateKeyVault) == 0 {
 		newMember.PrivateKeyVault = oldMember.PrivateKeyVault
 	}
 
@@ -151,10 +113,10 @@ func compareAndUpdateMember(oldMember, newMember *Member) *Member {
 	return newMember
 }
 
-const MemberPrefix = "member:"
+const memberPrefix = "member:"
 
 func memberKey(member *Member) string {
-	return fmt.Sprintf("%s%s", MemberPrefix, member.HashedAccount)
+	return fmt.Sprintf("%s%s", memberPrefix, member.HashedAccount)
 }
 
 // UpsertMember update a member if exists and newer than old by version
@@ -163,18 +125,12 @@ func UpsertMember(hashedAccount, publicKey, privateKey, rpcAddress string, rpcPo
 		return err
 	} else {
 		newMember := &Member{
-			HashedAccount: hashedAccount,
-			RpcAddress:    rpcAddress,
-			RpcPort:       rpcPort,
-			PublicKey:     publicKey,
-			PrivateKeyVault: func() *string {
-				if len(privateKey) == 0 {
-					return nil
-				} else {
-					return &privateKey
-				}
-			}(),
-			Version: uint32(*version),
+			HashedAccount:   hashedAccount,
+			RpcAddress:      rpcAddress,
+			RpcPort:         rpcPort,
+			PublicKey:       publicKey,
+			PrivateKeyVault: privateKey,
+			Version:         uint32(*version),
 		}
 
 		defer ins.Close()
@@ -190,7 +146,7 @@ func UpsertMember(hashedAccount, publicKey, privateKey, rpcAddress string, rpcPo
 			}
 			return err
 		} else {
-			if oldMember, err := Unmarshal(oldMemberByte); err != nil {
+			if oldMember, err := UnmarshalMember(oldMemberByte); err != nil {
 				return err
 			} else {
 				newMember = compareAndUpdateMember(oldMember, newMember)
@@ -216,13 +172,13 @@ func TryFindMember(hashedAccount string) (*Member, error) {
 				stor.Close()
 				db.Close()
 			}()
-			if member, err := db.Get([]byte(MemberPrefix+hashedAccount), nil); err != nil {
+			if member, err := db.Get([]byte(memberPrefix+hashedAccount), nil); err != nil {
 				if errors.Is(err, leveldb.ErrNotFound) {
 					return nil, nil
 				}
 				return nil, err
 			} else {
-				return Unmarshal(member)
+				return UnmarshalMember(member)
 			}
 		}
 	}
@@ -239,12 +195,37 @@ func MarshalMembers(m []Member) []byte {
 	return ret
 }
 
+func UnmarshalMember(data []byte) (*Member, error) {
+	if len(data) < 1 {
+		return nil, errors.New("invalid data")
+	}
+
+	if data[0] != memberMarshalHeader {
+		return nil, errors.New("invalid header")
+	}
+
+	if len(data) < 1+hashedAccountCap+rpcAddressCap+2+publicKeyCap+privateKeyVaultCap+4 {
+		return nil, errors.New("invalid data length")
+	}
+
+	m := &Member{
+		HashedAccount:   strings.Trim(string(data[1:1+hashedAccountCap]), "\x00"),
+		RpcAddress:      strings.Trim(string(data[1+hashedAccountCap:1+hashedAccountCap+rpcAddressCap]), "\x00"),
+		RpcPort:         binary.LittleEndian.Uint16(data[1+hashedAccountCap+rpcAddressCap : 1+hashedAccountCap+rpcAddressCap+2]),
+		PublicKey:       strings.Trim(string(data[1+hashedAccountCap+rpcAddressCap+2:1+hashedAccountCap+rpcAddressCap+2+publicKeyCap]), "\x00"),
+		PrivateKeyVault: strings.Trim(string(data[1+hashedAccountCap+rpcAddressCap+2+publicKeyCap:1+hashedAccountCap+rpcAddressCap+2+publicKeyCap+privateKeyVaultCap]), "\x00"),
+		Version:         binary.LittleEndian.Uint32(data[1+hashedAccountCap+rpcAddressCap+2+publicKeyCap+privateKeyVaultCap:]),
+	}
+
+	return m, nil
+}
+
 func UnmarshalMembers(b []byte) []Member {
 	ret := []Member{}
 	for len(b) > 0 {
 		sz := binary.LittleEndian.Uint16(b[:2])
 		b = b[2:]
-		m, _ := Unmarshal(b[:sz])
+		m, _ := UnmarshalMember(b[:sz])
 		ret = append(ret, *m)
 		b = b[sz:]
 	}
@@ -255,43 +236,6 @@ func InitRemoteMember(members []Member) {
 	for _, member := range members {
 		if err := UpsertMember(member.HashedAccount, member.PublicKey, "", member.RpcAddress, member.RpcPort, &member.Version); err != nil {
 			fmt.Print("Failed to init remote member: ", err)
-		}
-	}
-}
-
-func MergeRemoteMember(recv *Member) error {
-	if stor, err := conf.GetStorage(); err != nil {
-		return err
-	} else {
-		if db, err := leveldb.Open(stor, nil); err != nil {
-			return err
-		} else {
-			defer func() {
-				stor.Close()
-				db.Close()
-			}()
-
-			if oldMemberByte, err := db.Get([]byte(memberKey(recv)), nil); err != nil {
-				if errors.Is(err, leveldb.ErrNotFound) {
-					if err := db.Put([]byte(memberKey(recv)), recv.Marshal(), nil); err != nil {
-						return err
-					} else {
-						return nil
-					}
-				}
-				return err
-			} else {
-				if oldMember, err := Unmarshal(oldMemberByte); err != nil {
-					return err
-				} else {
-					recv = compareAndUpdateMember(oldMember, recv)
-					if err := db.Put([]byte(memberKey(recv)), recv.Marshal(), nil); err != nil {
-						return err
-					} else {
-						return nil
-					}
-				}
-			}
 		}
 	}
 }

@@ -92,11 +92,6 @@ func mappingEnvToConf(fileConf *Conf) (envConf *Conf) {
 	} else if fileConf != nil {
 		envConf.Node.Genesis = fileConf.Node.Genesis
 	}
-	if node__globalname := os.Getenv("node__globalname"); len(node__globalname) > 0 {
-		envConf.Node.GlobalName = node__globalname
-	} else if fileConf != nil {
-		envConf.Node.GlobalName = fileConf.Node.GlobalName
-	}
 	if node__externaladdr := os.Getenv("node__externaladdr"); len(node__externaladdr) > 0 {
 		envConf.Node.ExternalAddr = node__externaladdr
 	} else if fileConf != nil {

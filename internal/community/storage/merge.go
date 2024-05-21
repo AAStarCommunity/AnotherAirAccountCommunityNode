@@ -5,7 +5,7 @@ func MergeRemoteAccounts(accounts []Member) error {
 		if err := UpsertMember(
 			account.HashedAccount,
 			account.PublicKey,
-			*account.PrivateKeyVault,
+			account.PrivateKeyVault,
 			account.RpcAddress,
 			account.RpcPort,
 			&account.Version); err != nil {

@@ -35,7 +35,7 @@ type Member struct {
 	RpcAddress      string
 	RpcPort         uint16
 	PublicKey       string
-	PrivateKeyVault *string
+	PrivateKeyVault string
 	Version         uint32
 }
 
@@ -66,12 +66,9 @@ func (m *Member) Marshal() []byte {
 		return nil
 	}
 
-	privateKeyVaultBytes := []byte{}
-	if m.PrivateKeyVault != nil {
-		privateKeyVaultBytes = []byte(*m.PrivateKeyVault)
-		if len(privateKeyVaultBytes) > privateKeyVaultCap {
-			return nil
-		}
+	privateKeyVaultBytes := []byte(m.PrivateKeyVault)
+	if len(privateKeyVaultBytes) > privateKeyVaultCap {
+		return nil
 	}
 
 	versionBytes := uintToBytes(m.Version)
@@ -104,7 +101,7 @@ func compareAndUpdateMember(oldMember, newMember *Member) *Member {
 		newMember.PublicKey = oldMember.PublicKey
 	}
 
-	if newMember.PrivateKeyVault == nil {
+	if len(newMember.PrivateKeyVault) == 0 {
 		newMember.PrivateKeyVault = oldMember.PrivateKeyVault
 	}
 
@@ -128,18 +125,12 @@ func UpsertMember(hashedAccount, publicKey, privateKey, rpcAddress string, rpcPo
 		return err
 	} else {
 		newMember := &Member{
-			HashedAccount: hashedAccount,
-			RpcAddress:    rpcAddress,
-			RpcPort:       rpcPort,
-			PublicKey:     publicKey,
-			PrivateKeyVault: func() *string {
-				if len(privateKey) == 0 {
-					return nil
-				} else {
-					return &privateKey
-				}
-			}(),
-			Version: uint32(*version),
+			HashedAccount:   hashedAccount,
+			RpcAddress:      rpcAddress,
+			RpcPort:         rpcPort,
+			PublicKey:       publicKey,
+			PrivateKeyVault: privateKey,
+			Version:         uint32(*version),
 		}
 
 		defer ins.Close()
@@ -218,22 +209,12 @@ func UnmarshalMember(data []byte) (*Member, error) {
 	}
 
 	m := &Member{
-		HashedAccount: strings.Trim(string(data[1:1+hashedAccountCap]), "\x00"),
-		RpcAddress:    strings.Trim(string(data[1+hashedAccountCap:1+hashedAccountCap+rpcAddressCap]), "\x00"),
-		RpcPort:       binary.LittleEndian.Uint16(data[1+hashedAccountCap+rpcAddressCap : 1+hashedAccountCap+rpcAddressCap+2]),
-		PublicKey:     strings.Trim(string(data[1+hashedAccountCap+rpcAddressCap+2:1+hashedAccountCap+rpcAddressCap+2+publicKeyCap]), "\x00"),
-		PrivateKeyVault: func() *string {
-			if len(data[1+hashedAccountCap+rpcAddressCap+2+publicKeyCap:]) == 0 {
-				return nil
-			}
-			privateKeyVault := strings.Trim(string(data[1+hashedAccountCap+rpcAddressCap+2+publicKeyCap:1+hashedAccountCap+rpcAddressCap+2+publicKeyCap+privateKeyVaultCap]), "\x00")
-			if len(privateKeyVault) == 0 {
-				return nil
-			} else {
-				return &privateKeyVault
-			}
-		}(),
-		Version: binary.LittleEndian.Uint32(data[1+hashedAccountCap+rpcAddressCap+2+publicKeyCap+privateKeyVaultCap:]),
+		HashedAccount:   strings.Trim(string(data[1:1+hashedAccountCap]), "\x00"),
+		RpcAddress:      strings.Trim(string(data[1+hashedAccountCap:1+hashedAccountCap+rpcAddressCap]), "\x00"),
+		RpcPort:         binary.LittleEndian.Uint16(data[1+hashedAccountCap+rpcAddressCap : 1+hashedAccountCap+rpcAddressCap+2]),
+		PublicKey:       strings.Trim(string(data[1+hashedAccountCap+rpcAddressCap+2:1+hashedAccountCap+rpcAddressCap+2+publicKeyCap]), "\x00"),
+		PrivateKeyVault: strings.Trim(string(data[1+hashedAccountCap+rpcAddressCap+2+publicKeyCap:1+hashedAccountCap+rpcAddressCap+2+publicKeyCap+privateKeyVaultCap]), "\x00"),
+		Version:         binary.LittleEndian.Uint32(data[1+hashedAccountCap+rpcAddressCap+2+publicKeyCap+privateKeyVaultCap:]),
 	}
 
 	return m, nil

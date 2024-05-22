@@ -16,5 +16,10 @@ func MergeRemoteAccounts(accounts []Member) error {
 }
 
 func MergeRemoteAddr(buf []byte) {
-
+	nodes := unmarshalNodes(buf)
+	for _, node := range nodes {
+		if db, err := EnsureOpen(); err == nil {
+			db.Put([]byte(NodeKey(&node)), node.Marshal(), nil)
+		}
+	}
 }

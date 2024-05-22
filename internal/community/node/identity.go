@@ -1,6 +1,7 @@
 package node
 
 import (
+	"another_node/conf"
 	"another_node/internal/community/storage"
 	"crypto/rand"
 	"crypto/rsa"
@@ -65,6 +66,12 @@ func generateIdentity(db *leveldb.DB) ([]byte, error) {
 	if err = db.Put([]byte("node:addr"), []byte(*addr), nil); err != nil {
 		return nil, err
 	} else {
+		nodeAddr := &storage.NodeAddr{
+			Addr:     *addr,
+			Endpoint: conf.GetNode().ExternalAddr + ":" + fmt.Sprint(conf.GetNode().ExternalPort),
+		}
+		db.Put([]byte(storage.NodeKey(nodeAddr)), nodeAddr.Marshal(), nil)
+
 		return []byte(*addr), nil
 	}
 }

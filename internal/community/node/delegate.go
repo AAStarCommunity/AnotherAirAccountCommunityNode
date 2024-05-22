@@ -35,6 +35,7 @@ func (d *CommunityDelegate) LocalState(join bool) []byte {
 	if addr, err := getAddr(); err != nil {
 		return nil
 	} else {
+		// TODO: merge []NodeAddr
 		_ = addr
 		skip := uint32(0)
 		members := storage.GetMembers(skip, ^uint32(0))
@@ -50,9 +51,11 @@ func (d *CommunityDelegate) LocalState(join bool) []byte {
 const (
 	MemberStream uint8 = 0x01
 	AddrStream   uint8 = 0x02
+	All          uint8 = MemberStream | AddrStream
 )
 
 // MergeRemoteState merges the remote state while current node joins or sync
 func (d *CommunityDelegate) MergeRemoteState(buf []byte, join bool) {
+	// TODO: merge []NodeAddr
 	UpcomingHandler(buf)
 }

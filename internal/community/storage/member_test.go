@@ -236,6 +236,7 @@ func TestUpsertMember(t *testing.T) {
 	os.Setenv("UnitTest", "1")
 	defer func() {
 		os.Unsetenv("UnitTest")
+		Close()
 	}()
 	member := &Member{
 		HashedAccount:   "HelloWorld",

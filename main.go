@@ -3,6 +3,7 @@ package main
 import (
 	"another_node/conf"
 	"another_node/internal/community/node"
+	"another_node/internal/community/storage"
 	"another_node/internal/web_server/routers"
 	"flag"
 	"strconv"
@@ -30,6 +31,10 @@ func getFlags() (listen *uint16, name *string, joinAddrs *string, genesis *bool)
 // @description Type 'Bearer \<TOKEN\>' to correctly set the AccessToken
 // @BasePath /api
 func main() {
+
+	defer func() {
+		storage.Close()
+	}()
 
 	// start community node
 	if _, err := node.New(getFlags()); err != nil {

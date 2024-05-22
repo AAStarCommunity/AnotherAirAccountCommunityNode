@@ -39,17 +39,20 @@ func (d *CommunityDelegate) LocalState(join bool) []byte {
 		skip := uint32(0)
 		members := storage.GetMembers(skip, ^uint32(0))
 		if len(members) > 0 {
-			return storage.MarshalMembers(members)
+			m := []byte{MemberStream}
+			m = append(m, members.Marshal()...)
+			return m
 		}
 		return nil
 	}
 }
 
+const (
+	MemberStream uint8 = 0x01
+	AddrStream   uint8 = 0x02
+)
+
 // MergeRemoteState merges the remote state while current node joins or sync
 func (d *CommunityDelegate) MergeRemoteState(buf []byte, join bool) {
-	if len(buf) > 0 {
-		if members := storage.UnmarshalMembers(buf); len(members) > 0 {
-			go storage.MergeRemoteAccounts(members)
-		}
-	}
+	UpcomingHandler(buf)
 }

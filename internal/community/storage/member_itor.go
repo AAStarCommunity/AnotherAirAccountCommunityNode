@@ -4,13 +4,10 @@ import (
 	"github.com/syndtr/goleveldb/leveldb/util"
 )
 
-func GetMembers(skip, size uint32) []Member {
-	if ins, err := Open(); err != nil {
+func GetMembers(skip, size uint32) Members {
+	if db, err := EnsureOpen(); err != nil {
 		return nil
 	} else {
-		defer ins.Close()
-		db := ins.Instance
-
 		members := make([]Member, 0)
 		iter := db.NewIterator(
 			util.BytesPrefix([]byte(memberPrefix)),

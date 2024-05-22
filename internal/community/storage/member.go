@@ -121,7 +121,7 @@ func memberKey(member *Member) string {
 
 // UpsertMember update a member if exists and newer than old by version
 func UpsertMember(hashedAccount, publicKey, privateKey, rpcAddress string, rpcPort uint16, version *uint32) error {
-	if ins, err := Open(); err != nil {
+	if db, err := EnsureOpen(); err != nil {
 		return err
 	} else {
 		newMember := &Member{
@@ -132,9 +132,6 @@ func UpsertMember(hashedAccount, publicKey, privateKey, rpcAddress string, rpcPo
 			PrivateKeyVault: privateKey,
 			Version:         uint32(*version),
 		}
-
-		defer ins.Close()
-		db := ins.Instance
 
 		if oldMemberByte, err := db.Get([]byte(memberKey(newMember)), nil); err != nil {
 			if errors.Is(err, leveldb.ErrNotFound) {
@@ -184,7 +181,9 @@ func TryFindMember(hashedAccount string) (*Member, error) {
 	}
 }
 
-func MarshalMembers(m []Member) []byte {
+type Members []Member
+
+func (m Members) Marshal() []byte {
 	ret := []byte{}
 	for _, member := range m {
 		b := member.Marshal()
@@ -225,17 +224,12 @@ func UnmarshalMembers(b []byte) []Member {
 	for len(b) > 0 {
 		sz := binary.LittleEndian.Uint16(b[:2])
 		b = b[2:]
-		m, _ := UnmarshalMember(b[:sz])
-		ret = append(ret, *m)
-		b = b[sz:]
-	}
-	return ret
-}
-
-func InitRemoteMember(members []Member) {
-	for _, member := range members {
-		if err := UpsertMember(member.HashedAccount, member.PublicKey, "", member.RpcAddress, member.RpcPort, &member.Version); err != nil {
-			fmt.Print("Failed to init remote member: ", err)
+		if m, err := UnmarshalMember(b[:sz]); err != nil {
+			return nil
+		} else {
+			ret = append(ret, *m)
+			b = b[sz:]
 		}
 	}
+	return ret
 }

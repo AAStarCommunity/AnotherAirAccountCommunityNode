@@ -13,9 +13,19 @@ func GetPublicKey(hashedAccount *string) string {
 	}
 }
 
-func UpcomingHandler(payload []byte) {
-	members := storage.UnmarshalMembers(payload)
-	for _, member := range members {
-		_ = storage.UpsertMember(member.HashedAccount, member.PublicKey, "", member.RpcAddress, member.RpcPort, &member.Version)
+func UpcomingHandler(buf []byte) {
+	if len(buf) > 0 {
+		protocol := buf[0]
+		payload := buf[1:]
+
+		switch protocol {
+		case MemberStream:
+			if members := storage.UnmarshalMembers(payload); len(members) > 0 {
+				go storage.MergeRemoteAccounts(members)
+			}
+
+		case AddrStream:
+			go storage.MergeRemoteAddr(payload)
+		}
 	}
 }

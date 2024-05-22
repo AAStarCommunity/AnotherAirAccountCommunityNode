@@ -6,21 +6,23 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
+	"errors"
 	"fmt"
 
 	"github.com/spaolacci/murmur3"
+	"github.com/syndtr/goleveldb/leveldb"
 )
 
 func getAddr() ([]byte, error) {
-	if ins, err := storage.Open(); err != nil {
+	if db, err := storage.EnsureOpen(); err != nil {
 		return nil, err
 	} else {
-		defer ins.Close()
-
-		db := ins.Instance
-
 		if addr, err := db.Get([]byte("node:addr"), nil); err != nil {
-			return nil, err
+			if errors.Is(err, leveldb.ErrNotFound) {
+				return generateIdentity(db)
+			} else {
+				return nil, err
+			}
 		} else {
 			return addr, nil
 		}
@@ -28,7 +30,7 @@ func getAddr() ([]byte, error) {
 }
 
 // generateIdentity represents generating a public/private key pair for the identity of this node
-func generateIdentity() ([]byte, error) {
+func generateIdentity(db *leveldb.DB) ([]byte, error) {
 	// Generate RSA key pair
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
@@ -50,28 +52,20 @@ func generateIdentity() ([]byte, error) {
 	}
 	publicKeyBytes := pem.EncodeToMemory(publicKeyPEM)
 
-	if ins, err := storage.Open(); err != nil {
+	if err = db.Put([]byte("node:private_key"), privateKeyBytes, nil); err != nil {
+		return nil, err
+	}
+
+	if err = db.Put([]byte("node:public_key"), publicKeyBytes, nil); err != nil {
+		return nil, err
+	}
+
+	pub := string(publicKeyBytes)
+	addr := extractIdenty(&pub)
+	if err = db.Put([]byte("node:addr"), []byte(*addr), nil); err != nil {
 		return nil, err
 	} else {
-		defer ins.Close()
-
-		db := ins.Instance
-
-		if err = db.Put([]byte("node:private_key"), privateKeyBytes, nil); err != nil {
-			return nil, err
-		}
-
-		if err = db.Put([]byte("node:public_key"), publicKeyBytes, nil); err != nil {
-			return nil, err
-		}
-
-		pub := string(publicKeyBytes)
-		addr := extractIdenty(&pub)
-		if err = db.Put([]byte("node:addr"), []byte(*addr), nil); err != nil {
-			return nil, err
-		} else {
-			return []byte(*addr), nil
-		}
+		return []byte(*addr), nil
 	}
 }
 

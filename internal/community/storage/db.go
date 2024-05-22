@@ -2,38 +2,39 @@ package storage
 
 import (
 	"another_node/conf"
-	"sync"
 
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/storage"
 )
 
+var db *Db
+var er error
+
 type Db struct {
-	stor     storage.Storage
-	Instance *leveldb.DB
-	lc       sync.Mutex
+	stor    storage.Storage
+	LevelDB *leveldb.DB
 }
 
-func (d *Db) Close() {
-	d.stor.Close()
-	d.Instance.Close()
-	d.lc.Unlock()
+func Close() {
+	db.stor.Close()
+	db.LevelDB.Close()
 }
 
-func Open() (*Db, error) {
-	if stor, err := conf.GetStorage(); err != nil {
-		return nil, err
-	} else {
-		if db, err := leveldb.Open(stor, nil); err != nil {
-			return nil, err
-		} else {
-			ins := &Db{
-				stor:     stor,
-				Instance: db,
+func EnsureOpen() (*leveldb.DB, error) {
+	return db.LevelDB, er
+}
+
+func init() {
+	if stor, err := conf.GetStorage(); err == nil {
+		if dx, err := leveldb.Open(stor, nil); err == nil {
+			db = &Db{
+				stor:    stor,
+				LevelDB: dx,
 			}
-
-			ins.lc.Lock()
-			return ins, nil
+		} else {
+			er = err
 		}
+	} else {
+		er = err
 	}
 }

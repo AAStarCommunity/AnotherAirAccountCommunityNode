@@ -4,18 +4,13 @@ import (
 	"os"
 	"reflect"
 	"testing"
-
-	"github.com/google/uuid"
 )
 
 func TestGetAllMembers(t *testing.T) {
-
-	dir := os.TempDir()
-	uuid := uuid.New().String()
-	os.Setenv("storage", dir+"/testing.dat/"+uuid)
+	os.Setenv("UnitTest", "1")
 	defer func() {
-		os.Unsetenv("storage")
-		os.RemoveAll(dir + "/testing.dat")
+		os.Unsetenv("UnitTest")
+		Close()
 	}()
 
 	member1 := &Member{
@@ -40,7 +35,7 @@ func TestGetAllMembers(t *testing.T) {
 	members := GetMembers(0, ^uint32(0))
 
 	// Check the returned members
-	expectedMembers := []Member{*member1, *member2}
+	expectedMembers := Members{*member1, *member2}
 	if !reflect.DeepEqual(members, expectedMembers) {
 		t.Errorf("Expected %v, but got %v", expectedMembers, members)
 	}

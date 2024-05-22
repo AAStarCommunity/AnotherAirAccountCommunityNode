@@ -14,3 +14,7 @@ func MergeRemoteAccounts(accounts []Member) error {
 	}
 	return nil
 }
+
+func MergeRemoteAddr(buf []byte) {
+
+}

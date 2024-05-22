@@ -23,7 +23,7 @@ func BindAccount(hashedAccount string, publicKey *string) error {
 	if err := storage.UpsertMember(hashedAccount, *publicKey, privateKeyValut, rpcAddress, rpcPort, &version); err != nil {
 		return err
 	} else {
-		payload := storage.MarshalMembers([]storage.Member{
+		payload := storage.Members{
 			{
 				HashedAccount: hashedAccount,
 				PublicKey:     *publicKey,
@@ -31,8 +31,8 @@ func BindAccount(hashedAccount string, publicKey *string) error {
 				RpcPort:       rpcPort,
 				Version:       version,
 			},
-		})
-		return c.Node.Broadcast(payload)
+		}.Marshal()
+		return c.Node.Broadcast(MemberStream, payload)
 	}
 }
 

@@ -34,13 +34,8 @@ func New(listen *uint16, globalName *string, entrypoints *string, genesis *bool)
 
 	conf := memberlist.DefaultWANConfig()
 	conf.Name = func() string {
-		if addr, err := getAddr(); err != nil || addr == nil {
-			if addr, err = generateIdentity(); err != nil {
-				log.Fatalf("Failed to generate identity: %v", err)
-				panic(err)
-			} else {
-				return string(addr)
-			}
+		if addr, err := getAddr(); err != nil {
+			panic(err)
 		} else {
 			return string(addr)
 		}

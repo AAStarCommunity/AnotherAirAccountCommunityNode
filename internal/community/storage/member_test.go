@@ -263,8 +263,8 @@ func TestMarshalMembers(t *testing.T) {
 		PrivateKeyVault: "privateKeyVault2",
 		Version:         22223,
 	}
-	members := []Member{*member1, *member2}
-	marshal := MarshalMembers(members)
+	members := Members{*member1, *member2}
+	marshal := members.Marshal()
 	unmarshal := UnmarshalMembers(marshal)
 	if reflect.DeepEqual(members, unmarshal) {
 		t.Log("TestMarshalMembers passed")

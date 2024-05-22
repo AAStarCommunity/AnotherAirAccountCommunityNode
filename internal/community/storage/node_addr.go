@@ -10,7 +10,7 @@ type NodeAddr struct {
 	Endpoint string
 }
 
-const addrSize = 20
+const addrSize = 32
 const endpointSize = 128
 const nodeAddrPrefix = "nodes:"
 

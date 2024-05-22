@@ -219,8 +219,8 @@ func UnmarshalMember(data []byte) (*Member, error) {
 	return m, nil
 }
 
-func UnmarshalMembers(b []byte) []Member {
-	ret := []Member{}
+func UnmarshalMembers(b []byte) Members {
+	ret := Members{}
 	for len(b) > 0 {
 		sz := binary.LittleEndian.Uint16(b[:2])
 		b = b[2:]

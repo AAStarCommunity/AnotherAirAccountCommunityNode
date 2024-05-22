@@ -248,7 +248,7 @@ func TestUpsertMember(t *testing.T) {
 	}
 	err := UpsertMember(member.HashedAccount, member.PublicKey, member.PrivateKeyVault, member.RpcAddress, member.RpcPort, &member.Version)
 	if err != nil {
-		t.Error("TestUpsertMember failed")
+		t.Error("TestUpsertMember failed: " + err.Error())
 	}
 }
 

@@ -24,6 +24,7 @@ docker run --name community_node -e POSTGRES_PASSWORD=mypassword -d -p 5432:5432
 
 ```shell
 go get -u github.com/swaggo/swag
+go install github.com/swaggo/swag/cmd/swag@latest
 ```
 
 #### 1.2 init swag

@@ -53,6 +53,41 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/account/v1/transfer": {
+            "post": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "transfer a TX",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Account"
+                ],
+                "parameters": [
+                    {
+                        "description": "Transfer TX",
+                        "name": "tx",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.Transfer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    }
+                }
+            }
+        },
         "/api/auth/v1/login": {
             "post": {
                 "description": "Get AccessToken By ApiKey",
@@ -125,6 +160,9 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "request.Transfer": {
+            "type": "object"
         }
     },
     "securityDefinitions": {

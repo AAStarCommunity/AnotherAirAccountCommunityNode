@@ -28,3 +28,5 @@ appsettings.*.yaml
 *.dat
 
 __debug_bin*
+
+another_node

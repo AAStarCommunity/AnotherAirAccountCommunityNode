@@ -37,10 +37,10 @@ func SetRouters() (routers *gin.Engine) {
 		buildSwagger(routers)      // build swagger
 	}
 
-	// 加载中间件
+	// use middlewares
 	routers.Use(handlers...)
 
-	buildRouters(routers) // 构建http路由
+	buildRouters(routers)
 
 	routers.NoRoute(func(ctx *gin.Context) {
 		response.GetResponse().SetHttpCode(http.StatusNotFound).FailCode(ctx, http.StatusNotFound)
@@ -49,7 +49,7 @@ func SetRouters() (routers *gin.Engine) {
 	return
 }
 
-// buildSwagger 创建swagger文档
+// buildSwagger build swagger document
 func buildSwagger(router *gin.Engine) {
 	docs.SwaggerInfo.BasePath = "/"
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

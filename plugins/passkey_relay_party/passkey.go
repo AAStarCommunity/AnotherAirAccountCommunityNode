@@ -11,7 +11,7 @@ import (
 
 const (
 	RelayPartyDisplayName = "CommunityNode@AAStar"
-	RelayPartyID          = "community-node.aastar"
+	RelayPartyID          = "localhost"
 	RelayPartyOrigins     = "https://login.community.aastar.xyz"
 )
 
@@ -21,7 +21,7 @@ type Passkey struct {
 }
 
 func (p *Passkey) RegisterRoutes(router *gin.Engine, community *node.Community) {
-	router.GET("/api/passkey/v1/reg", p.beginRegistration)
+	router.POST("/api/passkey/v1/reg", p.beginRegistration)
 	router.POST("/api/passkey/v1/reg/verify", regAuthVerify)
 	router.GET("/api/passkey/v1/sign", authSign)
 	router.POST("/api/passkey/v1/sign/verify", authSignVerify)

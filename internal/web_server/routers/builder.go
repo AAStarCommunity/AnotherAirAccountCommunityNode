@@ -14,9 +14,6 @@ func buildRouters(router *gin.Engine) {
 	router.POST("/api/auth/v1/login", auth_v1.Login)
 	router.GET("/api/dashboard/v1/node", dashboard_v1.Node)
 
-	router.Use(middlewares.AuthHandler())
-	{
-		account := router.Group("/api/account")
-		account.POST("/v1/bind", account_v1.Bind)
-	}
+	account := router.Group("/api/account", middlewares.AuthHandler())
+	account.POST("/v1/bind", account_v1.Bind)
 }

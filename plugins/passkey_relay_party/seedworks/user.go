@@ -9,6 +9,14 @@ type User struct {
 	displayName string
 }
 
+func NewUser(id, name, displayName string) *User {
+	return &User{
+		id:          []byte(id),
+		name:        name,
+		displayName: displayName,
+	}
+}
+
 var _ webauthn.User = (*User)(nil)
 
 func (user *User) WebAuthnID() []byte {

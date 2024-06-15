@@ -22,11 +22,11 @@ func (passkey *Passkey) beginRegistration(ctx *gin.Context) {
 		return
 	}
 
-	user := seedwork.User{}
-	if options, session, err := passkey.webAuthn.BeginRegistration(&user); err != nil {
+	user := seedwork.NewUser("ab", "de", "ff")
+	if options, session, err := passkey.webAuthn.BeginRegistration(user); err != nil {
 		response.InternalServerError(ctx, err)
 	} else {
 		passkey.store.Set(sessionKey(reg), session)
-		response.GetResponse().WithDataSuccess(ctx, options)
+		response.GetResponse().WithDataSuccess(ctx, options.Response)
 	}
 }

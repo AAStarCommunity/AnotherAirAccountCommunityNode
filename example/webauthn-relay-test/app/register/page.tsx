@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import Link from "next/link";
 import { Form } from "app/form";
 import { SubmitButton } from "app/submit-button";
@@ -16,13 +16,7 @@ export default function Register() {
           </p>
         </div>
         {browserSupportsWebAuthn() ? (
-          <Form
-            action={
-              browserSupportsWebAuthn()
-                ? PasskeyRegister
-                : () => alert("browser doesn't support passkey")
-            }
-          >
+          <Form action={PasskeyRegister}>
             <SubmitButton>Sign Up</SubmitButton>
             <p className="text-center text-sm text-gray-600">
               {"Already have an account? "}

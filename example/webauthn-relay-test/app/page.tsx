@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import Link from "next/link";
 import { Form } from "app/form";
 import { SubmitButton } from "app/submit-button";
@@ -13,7 +13,9 @@ export default function Login() {
           <h3 className="text-xl font-semibold">Sign In</h3>
           <p className="text-sm text-gray-500">Use your passkey to sign in</p>
         </div>
-        <Form action={browserSupportsWebAuthn()?PasskeyLogin:alert("not supported yet")}>
+        <Form
+          action={browserSupportsWebAuthn() ? PasskeyLogin : <div>abc</div>}
+        >
           <SubmitButton>Sign in</SubmitButton>
           <p className="text-center text-sm text-gray-600">
             {"Don't have an account? "}

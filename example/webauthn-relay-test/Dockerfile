@@ -17,7 +17,7 @@ RUN pnpm install
 COPY . .
 
 # 应用运行在哪个端口
-EXPOSE 3000
+EXPOSE 10000
 
 # 运行应用
 CMD ["pnpm", "dev"]

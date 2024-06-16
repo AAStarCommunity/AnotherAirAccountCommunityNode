@@ -8,27 +8,23 @@ import (
 )
 
 func sessionKey(reg seedwork.Registration) string {
-	return reg.Account + ":" + reg.Email
+	return reg.Origin + ":" + reg.Email
 }
-func (passkey Passkey) beginRegistration(ctx *gin.Context) {
+func (relay *RelayParty) beginRegistration(ctx *gin.Context) {
 	var reg seedwork.Registration
 	if err := ctx.ShouldBindJSON(&reg); err != nil {
 		response.BadRequest(ctx, err)
 		return
 	}
 
-	passkey.webAuthn = NewPasskeyByOrigin(reg.Origin, reg.Origin).webAuthn
-
-	if passkey.store.Get(sessionKey(reg)) != nil {
+	if session := relay.store.Get(sessionKey(reg)); session != nil {
 		response.BadRequest(ctx, "Already in registration")
 		return
-	}
-
-	user := seedwork.NewUser("ab", "de", "ff")
-	if options, session, err := passkey.webAuthn.BeginRegistration(user); err != nil {
-		response.InternalServerError(ctx, err)
 	} else {
-		passkey.store.Set(sessionKey(reg), session)
-		response.GetResponse().WithDataSuccess(ctx, options.Response)
+		if options, err := relay.store.NewSession(reg.Origin, reg.Email); err != nil {
+			response.InternalServerError(ctx, err)
+		} else {
+			response.GetResponse().WithDataSuccess(ctx, options.Response)
+		}
 	}
 }

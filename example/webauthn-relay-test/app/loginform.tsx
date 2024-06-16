@@ -7,16 +7,22 @@ import Link from "next/link";
 export default function LoginForm() {
   return (
     <div>
-      <Form action={browserSupportsWebAuthn() ? PasskeyLogin : <div>abc</div>}>
-        <SubmitButton>Sign in</SubmitButton>
-        <p className="text-center text-sm text-gray-600">
-          {"Don't have an account? "}
-          <Link href="/register" className="font-semibold text-gray-800">
-            Sign up
-          </Link>
-          {" for free."}
-        </p>
-      </Form>
+      {browserSupportsWebAuthn() ? (
+        <Form
+          action={browserSupportsWebAuthn() ? PasskeyLogin : <div>abc</div>}
+        >
+          <SubmitButton>Sign in</SubmitButton>
+          <p className="text-center text-sm text-gray-600">
+            {"Don't have an account? "}
+            <Link href="/register" className="font-semibold text-gray-800">
+              Sign up
+            </Link>
+            {" for free."}
+          </p>
+        </Form>
+      ) : (
+        <div>Your browser doesn&apos;t support Passkey yet</div>
+      )}
     </div>
   );
 }

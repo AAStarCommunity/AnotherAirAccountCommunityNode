@@ -67,7 +67,7 @@ func main() {
 
 func RegisterHttpPlugin() []plugin.HttpPlugin {
 	if len(httpPlugins) == 0 {
-		httpPlugins = append(httpPlugins, plugin_passkey_relay_party.NewPasskeyAuth())
+		httpPlugins = append(httpPlugins, plugin_passkey_relay_party.NewPasskey())
 	}
 
 	return httpPlugins

@@ -5,15 +5,13 @@ import "github.com/go-webauthn/webauthn/webauthn"
 type User struct {
 	id          []byte
 	credentials []webauthn.Credential
-	name        string
-	displayName string
+	email       string
 }
 
-func NewUser(id, name, displayName string) *User {
+func newUser(email string) *User {
 	return &User{
-		id:          []byte(id),
-		name:        name,
-		displayName: displayName,
+		id:    []byte(email),
+		email: email,
 	}
 }
 
@@ -24,11 +22,11 @@ func (user *User) WebAuthnID() []byte {
 }
 
 func (user *User) WebAuthnName() string {
-	return user.name
+	return user.email
 }
 
 func (user *User) WebAuthnDisplayName() string {
-	return user.displayName
+	return user.email
 }
 
 func (user *User) WebAuthnCredentials() []webauthn.Credential {

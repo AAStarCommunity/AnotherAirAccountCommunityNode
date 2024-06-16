@@ -1,5 +1,5 @@
 # 使用官方 Node.js 作为基础镜像
-FROM node:18
+FROM node:20.14.0-alpine3.20
 
 # 安装 pnpm
 RUN npm install -g pnpm

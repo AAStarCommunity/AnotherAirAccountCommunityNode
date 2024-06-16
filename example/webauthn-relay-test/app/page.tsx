@@ -13,7 +13,7 @@ export default function Login() {
           <h3 className="text-xl font-semibold">Sign In</h3>
           <p className="text-sm text-gray-500">Use your passkey to sign in</p>
         </div>
-        <Form action={browserSupportsWebAuthn()?PasskeyLogin:alert('browser doesn\'t support passkey')}>
+        <Form action={typeof window !== "undefined" && browserSupportsWebAuthn()?PasskeyLogin:(<div>browser failed</div>)}>
           <SubmitButton>Sign in</SubmitButton>
           <p className="text-center text-sm text-gray-600">
             {"Don't have an account? "}

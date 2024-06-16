@@ -15,7 +15,7 @@ export default function Register() {
             Create an account with your email and passkey
           </p>
         </div>
-        {browserSupportsWebAuthn() ? (
+        {typeof window !== "undefined" && browserSupportsWebAuthn() ? (
           <Form
             action={
               browserSupportsWebAuthn()

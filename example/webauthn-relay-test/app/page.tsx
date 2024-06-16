@@ -1,9 +1,8 @@
 "use client";
-import Link from "next/link";
-import { Form } from "app/form";
-import { SubmitButton } from "app/submit-button";
-import { PasskeyLogin } from "./passkey";
-import { browserSupportsWebAuthn } from "@simplewebauthn/browser";
+
+import dynamic from 'next/dynamic';
+
+const LoginForm = dynamic(() => import('./loginform'), { ssr: false });
 
 export default function Login() {
   return (
@@ -13,18 +12,7 @@ export default function Login() {
           <h3 className="text-xl font-semibold">Sign In</h3>
           <p className="text-sm text-gray-500">Use your passkey to sign in</p>
         </div>
-        <Form
-          action={browserSupportsWebAuthn() ? PasskeyLogin : <div>abc</div>}
-        >
-          <SubmitButton>Sign in</SubmitButton>
-          <p className="text-center text-sm text-gray-600">
-            {"Don't have an account? "}
-            <Link href="/register" className="font-semibold text-gray-800">
-              Sign up
-            </Link>
-            {" for free."}
-          </p>
-        </Form>
+        <LoginForm />
       </div>
     </div>
   );

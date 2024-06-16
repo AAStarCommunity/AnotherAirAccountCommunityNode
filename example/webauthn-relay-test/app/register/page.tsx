@@ -1,9 +1,7 @@
 "use client";
-import Link from "next/link";
-import { Form } from "app/form";
-import { SubmitButton } from "app/submit-button";
-import { browserSupportsWebAuthn } from "@simplewebauthn/browser";
-import { PasskeyRegister } from "../passkey";
+import dynamic from 'next/dynamic';
+
+const RegisterForm = dynamic(() => import('./form'), { ssr: false });
 
 export default function Register() {
   return (
@@ -15,20 +13,7 @@ export default function Register() {
             Create an account with your email and passkey
           </p>
         </div>
-        {browserSupportsWebAuthn() ? (
-          <Form action={PasskeyRegister}>
-            <SubmitButton>Sign Up</SubmitButton>
-            <p className="text-center text-sm text-gray-600">
-              {"Already have an account? "}
-              <Link href="/" className="font-semibold text-gray-800">
-                Sign in
-              </Link>
-              {" instead."}
-            </p>
-          </Form>
-        ) : (
-          <div>WebAuthn is not supported</div>
-        )}
+        <RegisterForm />
       </div>
     </div>
   );

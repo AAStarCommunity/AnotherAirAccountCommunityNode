@@ -4,7 +4,7 @@ import { createUser, getUser } from "app/db";
 import api from "@/app/api";
 import API from "./api/api";
 import { startRegistration } from "@simplewebauthn/browser";
-import { PublicKeyCredentialCreationOptionsJSON } from "@simplewebauthn/types"
+import { PublicKeyCredentialCreationOptionsJSON } from "@simplewebauthn/types";
 
 export const PasskeyRegister = async (formData: FormData) => {
   let email = formData.get("email") as string;
@@ -22,11 +22,12 @@ export const PasskeyRegister = async (formData: FormData) => {
 export const PasskeyLogin = async (formData: FormData) => {};
 
 const generatePasskeyPublicKey = async (email: string) => {
-  const resp = await api.post(API.PASSKEY_REG, { email });
+  const origin = window.location.hostname;
+  const resp = await api.post(API.PASSKEY_REG, { email, origin });
   debugger;
   const json = resp.data.data as PublicKeyCredentialCreationOptionsJSON;
-  console.log(JSON.stringify(json, null, 2))
-  if (json !== null){
+  console.log(JSON.stringify(json, null, 2));
+  if (json !== null) {
     await startRegistration(json);
   }
 };

@@ -10,12 +10,14 @@ import (
 func sessionKey(reg seedwork.Registration) string {
 	return reg.Account + ":" + reg.Email
 }
-func (passkey *Passkey) beginRegistration(ctx *gin.Context) {
+func (passkey Passkey) beginRegistration(ctx *gin.Context) {
 	var reg seedwork.Registration
 	if err := ctx.ShouldBindJSON(&reg); err != nil {
 		response.BadRequest(ctx, err)
 		return
 	}
+
+	passkey.webAuthn = NewPasskeyByOrigin(reg.Origin, reg.Origin).webAuthn
 
 	if passkey.store.Get(sessionKey(reg)) != nil {
 		response.BadRequest(ctx, "Already in registration")

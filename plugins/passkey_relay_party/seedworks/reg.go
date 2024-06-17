@@ -1,4 +1,4 @@
-package seedwork
+package seedworks
 
 type Registration struct {
 	Origin string `json:"origin"`

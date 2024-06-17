@@ -1,4 +1,4 @@
-package seedwork
+package seedworks
 
 import "github.com/go-webauthn/webauthn/webauthn"
 

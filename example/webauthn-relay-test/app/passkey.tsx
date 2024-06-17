@@ -22,13 +22,16 @@ export const PasskeyRegister = async (formData: FormData) => {
 export const PasskeyLogin = async (formData: FormData) => {};
 
 const generatePasskeyPublicKey = async (email: string) => {
-  const origin = window.location.hostname;
+  const origin = window.location.origin;
   const resp = await api.post(API.PASSKEY_REG, { email, origin });
   const json = resp.data.data as PublicKeyCredentialCreationOptionsJSON;
   console.log(JSON.stringify(json, null, 2));
   if (json !== null) {
     const attest = await startRegistration(json);
-    const verifyResp = await api.post(API.PASSKEY_REG_VERIFY, attest);
+    const verifyResp = await api.post(
+      API.PASSKEY_REG_VERIFY + "?origin=" + encodeURIComponent(origin) + "&email=" + email,
+      attest
+    );
     console.log(verifyResp.data);
   }
 };

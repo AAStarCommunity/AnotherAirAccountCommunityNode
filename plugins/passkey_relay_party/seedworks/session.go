@@ -1,13 +1,18 @@
-package seedwork
+package seedworks
 
 import (
 	"fmt"
+	"net/url"
 	"sync"
 	"time"
 
 	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/go-webauthn/webauthn/webauthn"
 )
+
+func GetSessionKey(reg Registration) string {
+	return reg.Origin + ":" + reg.Email
+}
 
 type SessionStore struct {
 	sessions map[string]*sessionCache
@@ -22,13 +27,26 @@ func NewInMemorySessionStore() *SessionStore {
 	return store
 }
 
-func (store *SessionStore) NewSession(origin, email string) (*protocol.CredentialCreation, error) {
+func (store *SessionStore) NewRegSession(origin, email string) (*protocol.CredentialCreation, error) {
 	user := newUser(email)
 	webauthn, _ := newWebAuthn(origin)
+	sessionKey := GetSessionKey(Registration{Origin: origin, Email: email})
 	if opt, session, err := webauthn.BeginRegistration(user); err != nil {
 		return nil, err
 	} else {
-		store.set(string(session.UserID), webauthn, session, origin, user)
+		store.set(sessionKey, webauthn, session, user)
+		return opt, nil
+	}
+}
+
+func (store *SessionStore) NewAuthSession(origin, email string) (*protocol.CredentialAssertion, error) {
+	user := newUser(email)
+	webauthn, _ := newWebAuthn(origin)
+	sessionKey := GetSessionKey(Registration{Origin: origin, Email: email})
+	if opt, session, err := webauthn.BeginLogin(user); err != nil {
+		return nil, err
+	} else {
+		store.set(sessionKey, webauthn, session, user)
 		return opt, nil
 	}
 }
@@ -43,13 +61,10 @@ func (store *SessionStore) Get(id string) *sessionCache {
 		}
 		return session
 	}
-	for k := range store.sessions {
-		return store.sessions[k]
-	}
 	return nil
 }
 
-func (store *SessionStore) set(id string, webauthn *webauthn.WebAuthn, session *webauthn.SessionData, origin string, user *User) {
+func (store *SessionStore) set(key string, webauthn *webauthn.WebAuthn, session *webauthn.SessionData, user *User) {
 	store.locker.Lock()
 	defer store.locker.Unlock()
 
@@ -60,15 +75,19 @@ func (store *SessionStore) set(id string, webauthn *webauthn.WebAuthn, session *
 		expires:  120,
 	}
 	cache.countdown()
-	store.sessions[id] = cache
+	store.sessions[key] = cache
 }
 
-// TODO: origin should includes hostname and protocol://host
 func newWebAuthn(origin string) (*webauthn.WebAuthn, error) {
+	u, err := url.Parse(origin)
+	if err != nil {
+		return nil, err
+	}
+	hostname := u.Hostname()
 	wconfig := &webauthn.Config{
 		RPDisplayName: origin,
-		RPID:          origin,                                    // Generally the FQDN for your site
-		RPOrigins:     []string{origin, "http://localhost:3000"}, // The origin URLs allowed for WebAuthn requests
+		RPID:          hostname,                   // Generally the FQDN for your site
+		RPOrigins:     []string{origin, hostname}, // The origin URLs allowed for WebAuthn requests
 	}
 
 	if webAuthn, err := webauthn.New(wconfig); err != nil {

@@ -14,11 +14,11 @@ func (relay *RelayParty) beginRegistration(ctx *gin.Context) {
 		return
 	}
 
-	if session := relay.store.Get(seedworks.GetSessionKey(reg)); session != nil {
+	if session := relay.store.Get(seedworks.GetSessionKey(&reg)); session != nil {
 		response.BadRequest(ctx, "Already in registration")
 		return
 	} else {
-		if options, err := relay.store.NewRegSession(reg.Origin, reg.Email); err != nil {
+		if options, err := relay.store.NewRegSession(&reg); err != nil {
 			response.InternalServerError(ctx, err)
 		} else {
 			response.GetResponse().WithDataSuccess(ctx, options.Response)

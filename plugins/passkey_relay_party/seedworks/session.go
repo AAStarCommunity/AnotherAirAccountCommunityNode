@@ -6,11 +6,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/go-webauthn/webauthn/webauthn"
 )
 
-func GetSessionKey(reg Registration) string {
+func GetSessionKey(reg *Registration) string {
 	return reg.Origin + ":" + reg.Email
 }
 
@@ -27,10 +28,10 @@ func NewInMemorySessionStore() *SessionStore {
 	return store
 }
 
-func (store *SessionStore) NewRegSession(origin, email string) (*protocol.CredentialCreation, error) {
-	user := newUser(email)
-	webauthn, _ := newWebAuthn(origin)
-	sessionKey := GetSessionKey(Registration{Origin: origin, Email: email})
+func (store *SessionStore) NewRegSession(reg *Registration) (*protocol.CredentialCreation, error) {
+	user := newUser(reg.Email)
+	webauthn, _ := newWebAuthn(reg.Origin)
+	sessionKey := GetSessionKey(reg)
 	if opt, session, err := webauthn.BeginRegistration(user); err != nil {
 		return nil, err
 	} else {
@@ -39,15 +40,48 @@ func (store *SessionStore) NewRegSession(origin, email string) (*protocol.Creden
 	}
 }
 
-func (store *SessionStore) NewAuthSession(origin, email string) (*protocol.CredentialAssertion, error) {
-	user := newUser(email)
-	webauthn, _ := newWebAuthn(origin)
-	sessionKey := GetSessionKey(Registration{Origin: origin, Email: email})
+func (store *SessionStore) FinishRegSession(reg *Registration, ctx *gin.Context) (*User, error) {
+	key := GetSessionKey(reg)
+	if session := store.Get(key); session == nil {
+		return nil, fmt.Errorf("%s: not found", reg.Email)
+	} else {
+		if cred, err := session.WebAuthn.FinishRegistration(&session.User, session.Data, ctx.Request); err == nil {
+			session.User.AddCredential(cred)
+			store.remove(key)
+			return &session.User, nil
+		} else {
+			return nil, err
+		}
+	}
+}
+
+func (store *SessionStore) NewAuthSession(user *User, signIn *SiginIn) (*protocol.CredentialAssertion, error) {
+	if user == nil || signIn == nil {
+		return nil, fmt.Errorf("user or signIn is nil")
+	}
+
+	webauthn, _ := newWebAuthn(signIn.Origin)
+	sessionKey := GetSessionKey(&signIn.Registration)
 	if opt, session, err := webauthn.BeginLogin(user); err != nil {
 		return nil, err
 	} else {
 		store.set(sessionKey, webauthn, session, user)
 		return opt, nil
+	}
+}
+
+func (store *SessionStore) FinishAuthSession(signIn *SiginIn, ctx *gin.Context) (*User, *webauthn.Credential, error) {
+	key := GetSessionKey(&signIn.Registration)
+	if session := store.Get(key); session == nil {
+		return nil, nil, fmt.Errorf("%s: not found", signIn.Email)
+	} else {
+		if cred, err := session.WebAuthn.FinishLogin(&session.User, session.Data, ctx.Request); err == nil {
+			store.remove(key)
+			session.User.UpdateCredential(cred)
+			return &session.User, cred, nil
+		} else {
+			return nil, nil, err
+		}
 	}
 }
 
@@ -62,6 +96,12 @@ func (store *SessionStore) Get(id string) *sessionCache {
 		return session
 	}
 	return nil
+}
+
+func (store *SessionStore) remove(id string) {
+	store.locker.Lock()
+	defer store.locker.Unlock()
+	delete(store.sessions, id)
 }
 
 func (store *SessionStore) set(key string, webauthn *webauthn.WebAuthn, session *webauthn.SessionData, user *User) {

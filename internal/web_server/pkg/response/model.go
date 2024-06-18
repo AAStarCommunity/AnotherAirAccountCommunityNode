@@ -22,6 +22,10 @@ func BadRequest(ctx *gin.Context, data ...any) {
 	GetResponse().withDataAndHttpCode(http.StatusBadRequest, ctx, data)
 }
 
+func NotFound(ctx *gin.Context, data ...any) {
+	GetResponse().withDataAndHttpCode(http.StatusNotFound, ctx, data)
+}
+
 // Success response when business operation is successful
 func Success(ctx *gin.Context, data ...any) {
 	if data != nil {

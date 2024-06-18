@@ -8,26 +8,19 @@ import (
 )
 
 func (relay *RelayParty) finishSignIn(ctx *gin.Context) {
-	var user seedworks.User
-
 	// body works for SDK, the additional info appends to query
-	stubReg := seedworks.Registration{
-		Origin: ctx.Query("origin"),
-		Email:  ctx.Query("email"),
+	stubSignIn := seedworks.SiginIn{
+		Registration: seedworks.Registration{
+			Origin: ctx.Query("origin"),
+			Email:  ctx.Query("email"),
+		},
 	}
 
-	session := relay.store.Get(seedworks.GetSessionKey(stubReg))
-
-	if session == nil {
-		response.BadRequest(ctx, "Session not found")
-		return
-	}
-
-	credential, err := session.WebAuthn.FinishLogin(&user, session.Data, ctx.Request)
+	user, credential, err := relay.store.FinishAuthSession(&stubSignIn, ctx)
 	if err != nil {
 		response.BadRequest(ctx, "SignIn failed: "+err.Error())
 		return
 	}
-	// TODO: save credential to user
+	relay.db.Save(user)
 	response.GetResponse().WithDataSuccess(ctx, credential)
 }

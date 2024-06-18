@@ -14,11 +14,15 @@ func (relay *RelayParty) beginSignIn(ctx *gin.Context) {
 		return
 	}
 
-	if session := relay.store.Get(seedworks.GetSessionKey(signIn.Registration)); session != nil {
+	if session := relay.store.Get(seedworks.GetSessionKey(&signIn.Registration)); session != nil {
 		response.BadRequest(ctx, "Already in SignIn")
 		return
 	} else {
-		if options, err := relay.store.NewAuthSession(signIn.Origin, signIn.Email); err != nil {
+		user, err := relay.db.Find(signIn.Email)
+		if err != nil {
+			response.NotFound(ctx, "email not found")
+		}
+		if options, err := relay.store.NewAuthSession(user, &signIn); err != nil {
 			response.InternalServerError(ctx, err)
 		} else {
 			response.GetResponse().WithDataSuccess(ctx, options.Response)

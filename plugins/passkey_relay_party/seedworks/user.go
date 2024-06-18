@@ -38,3 +38,14 @@ func (user *User) WebAuthnCredentials() []webauthn.Credential {
 func (user *User) WebAuthnIcon() string {
 	return ""
 }
+
+func (user *User) AddCredential(cred *webauthn.Credential) {
+	user.credentials = append(user.credentials, *cred)
+}
+func (user *User) UpdateCredential(cred *webauthn.Credential) {
+	for i, c := range user.credentials {
+		if string(c.ID) == string(cred.ID) {
+			user.credentials[i] = *cred
+		}
+	}
+}

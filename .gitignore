@@ -30,3 +30,5 @@ appsettings.*.yaml
 __debug_bin*
 
 another_node
+
+vendor

@@ -2,7 +2,6 @@ package seedworks
 
 import (
 	"fmt"
-	"net/url"
 	"sync"
 	"time"
 
@@ -123,26 +122,6 @@ func (store *SessionStore) set(key string, webauthn *webauthn.WebAuthn, session 
 	}
 	cache.countdown()
 	store.sessions[key] = cache
-}
-
-func newWebAuthn(origin string) (*webauthn.WebAuthn, error) {
-	u, err := url.Parse(origin)
-	if err != nil {
-		return nil, err
-	}
-	hostname := u.Hostname()
-	wconfig := &webauthn.Config{
-		RPDisplayName: origin,
-		RPID:          hostname,                   // Generally the FQDN for your site
-		RPOrigins:     []string{origin, hostname}, // The origin URLs allowed for WebAuthn requests
-	}
-
-	if webAuthn, err := webauthn.New(wconfig); err != nil {
-		fmt.Println(err)
-		return nil, err
-	} else {
-		return webAuthn, nil
-	}
 }
 
 type sessionCache struct {

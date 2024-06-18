@@ -11,6 +11,9 @@ importers:
       '@simplewebauthn/browser':
         specifier: ^10.0.0
         version: 10.0.0
+      '@simplewebauthn/types':
+        specifier: ^10.0.0
+        version: 10.0.0
       '@types/node':
         specifier: ^20.10.5
         version: 20.10.5

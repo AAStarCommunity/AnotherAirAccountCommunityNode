@@ -1,6 +1,5 @@
 "use client";
 
-import { createUser, getUser } from "app/db";
 import api from "@/app/api";
 import API from "./api/api";
 import {

@@ -30,12 +30,19 @@ func NewInMemorySessionStore() *SessionStore {
 
 func (store *SessionStore) NewRegSession(reg *Registration) (*protocol.CredentialCreation, error) {
 	user := newUser(reg.Email)
-	webauthn, _ := newWebAuthn(reg.Origin)
+	wan, _ := newWebAuthn(reg.Origin)
 	sessionKey := GetSessionKey(reg)
-	if opt, session, err := webauthn.BeginRegistration(user); err != nil {
+
+	authSelect := protocol.AuthenticatorSelection{
+		AuthenticatorAttachment: protocol.Platform,
+		RequireResidentKey:      protocol.ResidentKeyNotRequired(),
+		UserVerification:        protocol.VerificationRequired,
+	}
+
+	if opt, session, err := wan.BeginRegistration(user, webauthn.WithAuthenticatorSelection(authSelect)); err != nil {
 		return nil, err
 	} else {
-		store.set(sessionKey, webauthn, session, user)
+		store.set(sessionKey, wan, session, user)
 		return opt, nil
 	}
 }

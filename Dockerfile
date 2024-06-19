@@ -23,4 +23,6 @@ COPY --from=build-env /go/src/app /aa/
 ENV PATH $PATH:/aa
 
 EXPOSE 80
+EXPOSE 7946/udp
+
 CMD ["/aa/cnode"]

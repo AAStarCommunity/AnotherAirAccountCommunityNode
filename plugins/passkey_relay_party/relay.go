@@ -4,7 +4,6 @@ import (
 	"another_node/internal/community/node"
 	"another_node/plugins/passkey_relay_party/seedworks"
 	storage "another_node/plugins/passkey_relay_party/storage"
-	"errors"
 
 	"github.com/gin-gonic/gin"
 )
@@ -34,7 +33,7 @@ func NewRelay() *RelayParty {
 // FindUserByEmail finds a user by email in relay storage
 func (r *RelayParty) FindUserByEmail(email string) (*seedworks.User, error) {
 	if email == "" {
-		return nil, errors.New("email is empty")
+		return nil, seedworks.EmailEmptyError{}
 	}
 	return r.db.Find(email)
 }

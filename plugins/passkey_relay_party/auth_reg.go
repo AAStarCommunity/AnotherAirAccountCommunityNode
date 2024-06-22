@@ -3,6 +3,7 @@ package plugin_passkey_relay_party
 import (
 	"another_node/internal/web_server/pkg/response"
 	"another_node/plugins/passkey_relay_party/seedworks"
+	"errors"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,7 +15,7 @@ func (relay *RelayParty) beginRegistration(ctx *gin.Context) {
 		return
 	}
 
-	if u, err := relay.FindUserByEmail(reg.Email); err != nil {
+	if u, err := relay.FindUserByEmail(reg.Email); err != nil && !errors.Is(err, seedworks.UserNotFoundError{}) {
 		response.InternalServerError(ctx, err)
 		return
 	} else if u != nil {
@@ -23,7 +24,6 @@ func (relay *RelayParty) beginRegistration(ctx *gin.Context) {
 	}
 
 	// TODO: if the user is not exists but in community, re-register the user
-	
 
 	if session := relay.store.Get(seedworks.GetSessionKey(&reg)); session != nil {
 		response.BadRequest(ctx, "Already in registration")

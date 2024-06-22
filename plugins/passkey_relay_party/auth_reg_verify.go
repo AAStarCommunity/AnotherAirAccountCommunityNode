@@ -27,7 +27,7 @@ func (relay *RelayParty) finishRegistration(ctx *gin.Context) {
 			return
 		} else {
 			relay.db.Save(user)
-			response.GetResponse().WithDataSuccess(ctx, user)
+				response.GetResponse().WithDataSuccess(ctx, user)
 			return
 		}
 	}

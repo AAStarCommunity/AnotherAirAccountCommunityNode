@@ -31,5 +31,5 @@ func (db *InMemory) Find(email string) (*seedworks.User, error) {
 		return user, nil
 	}
 
-	return nil, errors.New("user not found")
+	return nil, seedworks.UserNotFoundError{}
 }

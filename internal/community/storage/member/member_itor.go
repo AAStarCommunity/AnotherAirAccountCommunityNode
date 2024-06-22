@@ -1,11 +1,13 @@
-package storage
+package member_storage
 
 import (
+	"another_node/internal/community/storage"
+
 	"github.com/syndtr/goleveldb/leveldb/util"
 )
 
 func GetMembers(skip, size uint32) Members {
-	if db, err := EnsureOpen(); err != nil {
+	if db, err := storage.EnsureOpen(); err != nil {
 		return nil
 	} else {
 		members := make([]Member, 0)

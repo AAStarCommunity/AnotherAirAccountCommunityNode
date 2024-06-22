@@ -1,6 +1,7 @@
-package storage
+package member_storage
 
 import (
+	"another_node/internal/community/storage"
 	"os"
 	"reflect"
 	"testing"
@@ -236,7 +237,7 @@ func TestUpsertMember(t *testing.T) {
 	os.Setenv("UnitTest", "1")
 	defer func() {
 		os.Unsetenv("UnitTest")
-		Close()
+		storage.Close()
 	}()
 	member := &Member{
 		HashedAccount:   "HelloWorld",

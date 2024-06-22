@@ -1,12 +1,12 @@
 package node
 
 import (
-	"another_node/internal/community/storage"
+	member_storage "another_node/internal/community/storage/member"
 )
 
 // GetPublicKey get public key by hashed account
 func GetPublicKey(hashedAccount *string) string {
-	if member, err := storage.TryFindMember(*hashedAccount); err != nil {
+	if member, err := member_storage.TryFindMember(*hashedAccount); err != nil {
 		return ""
 	} else {
 		return member.PublicKey
@@ -20,12 +20,12 @@ func UpcomingHandler(buf []byte) {
 
 		switch protocol {
 		case MemberStream:
-			if members := storage.UnmarshalMembers(payload); len(members) > 0 {
-				go storage.MergeRemoteAccounts(members)
+			if members := member_storage.UnmarshalMembers(payload); len(members) > 0 {
+				go member_storage.MergeRemoteAccounts(members)
 			}
 
 		case AddrStream:
-			go storage.MergeRemoteAddr(payload)
+			go member_storage.MergeRemoteAddr(payload)
 		}
 	}
 }

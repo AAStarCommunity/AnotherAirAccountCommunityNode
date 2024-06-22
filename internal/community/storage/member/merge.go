@@ -1,4 +1,6 @@
-package storage
+package member_storage
+
+import "another_node/internal/community/storage"
 
 func MergeRemoteAccounts(accounts []Member) error {
 	for _, account := range accounts {
@@ -18,7 +20,7 @@ func MergeRemoteAccounts(accounts []Member) error {
 func MergeRemoteAddr(buf []byte) {
 	nodes := unmarshalNodes(buf)
 	for _, node := range nodes {
-		if db, err := EnsureOpen(); err == nil {
+		if db, err := storage.EnsureOpen(); err == nil {
 			db.Put([]byte(NodeKey(&node)), node.Marshal(), nil)
 		}
 	}

@@ -10,6 +10,7 @@ jwt:
   realm: AASTAR
   idkey: id
 node:
+  standalone: true # running as a single node, demo purpose
   genesis: true
   globalName: genesis-01
   externalAddr: "0.0.0.0"

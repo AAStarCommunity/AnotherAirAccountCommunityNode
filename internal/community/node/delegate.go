@@ -1,7 +1,7 @@
 package node
 
 import (
-	"another_node/internal/community/storage"
+	member_storage "another_node/internal/community/storage/member"
 )
 
 type CommunityDelegate struct {
@@ -38,7 +38,7 @@ func (d *CommunityDelegate) LocalState(join bool) []byte {
 		// TODO: merge []NodeAddr
 		_ = addr
 		skip := uint32(0)
-		members := storage.GetMembers(skip, ^uint32(0))
+		members := member_storage.GetMembers(skip, ^uint32(0))
 		if len(members) > 0 {
 			m := []byte{MemberStream}
 			m = append(m, members.Marshal()...)

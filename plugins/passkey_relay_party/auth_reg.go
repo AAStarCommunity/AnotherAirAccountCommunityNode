@@ -11,12 +11,12 @@ import (
 func (relay *RelayParty) beginRegistration(ctx *gin.Context) {
 	var reg seedworks.Registration
 	if err := ctx.ShouldBindJSON(&reg); err != nil {
-		response.BadRequest(ctx, err)
+		response.BadRequest(ctx, err.Error())
 		return
 	}
 
 	if u, err := relay.FindUserByEmail(reg.Email); err != nil && !errors.Is(err, seedworks.UserNotFoundError{}) {
-		response.InternalServerError(ctx, err)
+		response.InternalServerError(ctx, err.Error())
 		return
 	} else if u != nil {
 		response.BadRequest(ctx, "User already exists")
@@ -30,7 +30,7 @@ func (relay *RelayParty) beginRegistration(ctx *gin.Context) {
 		return
 	} else {
 		if options, err := relay.store.NewRegSession(&reg); err != nil {
-			response.InternalServerError(ctx, err)
+			response.InternalServerError(ctx, err.Error())
 		} else {
 			response.GetResponse().WithDataSuccess(ctx, options.Response)
 		}

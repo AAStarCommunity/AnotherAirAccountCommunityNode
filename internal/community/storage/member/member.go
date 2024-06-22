@@ -1,7 +1,8 @@
-package storage
+package member_storage
 
 import (
 	"another_node/conf"
+	"another_node/internal/community/storage"
 	"bytes"
 	"encoding/binary"
 	"errors"
@@ -121,7 +122,7 @@ func memberKey(member *Member) string {
 
 // UpsertMember update a member if exists and newer than old by version
 func UpsertMember(hashedAccount, publicKey, privateKey, rpcAddress string, rpcPort uint16, version *uint32) error {
-	if db, err := EnsureOpen(); err != nil {
+	if db, err := storage.EnsureOpen(); err != nil {
 		return err
 	} else {
 		newMember := &Member{

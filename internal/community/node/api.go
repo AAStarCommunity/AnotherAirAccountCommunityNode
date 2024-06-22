@@ -2,7 +2,7 @@ package node
 
 import (
 	"another_node/conf"
-	"another_node/internal/community/storage"
+	member_storage "another_node/internal/community/storage/member"
 )
 
 // BindAccount binding a web2 account
@@ -20,10 +20,10 @@ func BindAccount(hashedAccount string, publicKey *string) error {
 	rpcPort := conf.GetNode().ExternalPort
 	version := uint32(0)
 
-	if err := storage.UpsertMember(hashedAccount, *publicKey, privateKeyValut, rpcAddress, rpcPort, &version); err != nil {
+	if err := member_storage.UpsertMember(hashedAccount, *publicKey, privateKeyValut, rpcAddress, rpcPort, &version); err != nil {
 		return err
 	} else {
-		payload := storage.Members{
+		payload := member_storage.Members{
 			{
 				HashedAccount: hashedAccount,
 				PublicKey:     *publicKey,

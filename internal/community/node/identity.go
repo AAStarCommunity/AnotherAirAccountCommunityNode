@@ -3,6 +3,7 @@ package node
 import (
 	"another_node/conf"
 	"another_node/internal/community/storage"
+	member_storage "another_node/internal/community/storage/member"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
@@ -66,11 +67,11 @@ func generateIdentity(db *leveldb.DB) ([]byte, error) {
 	if err = db.Put([]byte("node:addr"), []byte(*addr), nil); err != nil {
 		return nil, err
 	} else {
-		nodeAddr := &storage.NodeAddr{
+		nodeAddr := &member_storage.NodeAddr{
 			Addr:     *addr,
 			Endpoint: conf.GetNode().ExternalAddr + ":" + fmt.Sprint(conf.GetNode().ExternalPort),
 		}
-		db.Put([]byte(storage.NodeKey(nodeAddr)), nodeAddr.Marshal(), nil)
+		db.Put([]byte(member_storage.NodeKey(nodeAddr)), nodeAddr.Marshal(), nil)
 
 		return []byte(*addr), nil
 	}

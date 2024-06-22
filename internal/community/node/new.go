@@ -2,6 +2,7 @@ package node
 
 import (
 	"another_node/conf"
+	"fmt"
 	"log"
 	"strings"
 	"time"
@@ -73,7 +74,11 @@ func New(listen *uint16, globalName *string, entrypoints *string, genesis *bool)
 			Delegate: delegate,
 		}
 
-		go node.listen()
+		if confNode.Standalone {
+			fmt.Println("Node is running in standalone mode")
+		} else {
+			go node.listen()
+		}
 
 		c = &Community{
 			Node: node,

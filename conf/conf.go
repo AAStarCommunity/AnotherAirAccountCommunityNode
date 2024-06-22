@@ -89,6 +89,11 @@ func mappingEnvToConf(fileConf *Conf) (envConf *Conf) {
 		envConf.Jwt.IdKey = fileConf.Jwt.IdKey
 	}
 
+	if node__standalone := os.Getenv("node__standalone"); len(node__standalone) > 0 {
+		envConf.Node.Standalone = node__standalone == "true"
+	} else if fileConf != nil {
+		envConf.Node.Standalone = fileConf.Node.Standalone
+	}
 	if node__genesis := os.Getenv("node__genesis"); len(node__genesis) > 0 {
 		envConf.Node.Genesis = node__genesis == "true"
 	} else if fileConf != nil {

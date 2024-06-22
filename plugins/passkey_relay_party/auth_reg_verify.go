@@ -10,6 +10,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var walletProvider wallet.Provider
+
+func init() {
+	p, err := impl.NewAlchemyProvider(conf.GetProvider().Alchemy)
+	if err != nil {
+		panic(err)
+	}
+
+	walletProvider = p
+}
+
 func (relay *RelayParty) finishRegistration(ctx *gin.Context) {
 
 	// body works for parser, the additional info appends to query
@@ -22,23 +33,14 @@ func (relay *RelayParty) finishRegistration(ctx *gin.Context) {
 		response.BadRequest(ctx, err)
 		return
 	} else {
-		if err := createByAlchemy(user); err != nil {
-			response.InternalServerError(ctx, err)
+		if err := createAA(walletProvider, user); err != nil {
+			response.InternalServerError(ctx, err.Error())
 			return
 		} else {
 			relay.db.Save(user)
-				response.GetResponse().WithDataSuccess(ctx, user)
+			response.GetResponse().WithDataSuccess(ctx, user)
 			return
 		}
-	}
-}
-
-func createByAlchemy(user *seedworks.User) error {
-	apiKey := conf.GetProvider().Alchemy
-	if porvider, err := impl.NewAlchemyProvider(apiKey); err != nil {
-		return err
-	} else {
-		return createAA(porvider, user)
 	}
 }
 

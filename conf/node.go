@@ -5,6 +5,7 @@ import (
 )
 
 type Node struct {
+	Standalone   bool
 	Genesis      bool
 	ExternalAddr string `yaml:"externalAddr"`
 	ExternalPort uint16 `yaml:"externalPort"`
@@ -21,6 +22,7 @@ func GetNode() *Node {
 		if node == nil {
 			j := &getConf().Node
 			node = &Node{
+				Standalone:   j.Standalone,
 				Genesis:      j.Genesis,
 				ExternalAddr: j.ExternalAddr,
 				ExternalPort: j.ExternalPort,

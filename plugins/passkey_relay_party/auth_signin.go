@@ -20,7 +20,7 @@ func (relay *RelayParty) beginSignIn(ctx *gin.Context) {
 	} else {
 		user, err := relay.db.Find(signIn.Email)
 		if err != nil {
-			response.NotFound(ctx, "email not found")
+			response.NotFound(ctx, err.Error())
 		}
 		if options, err := relay.store.NewAuthSession(user, &signIn); err != nil {
 			response.InternalServerError(ctx, err)

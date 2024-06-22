@@ -1,4 +1,4 @@
-package storage
+package member_storage
 
 import (
 	"encoding/binary"

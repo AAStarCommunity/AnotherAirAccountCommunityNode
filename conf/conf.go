@@ -11,10 +11,11 @@ import (
 var once sync.Once
 
 type Conf struct {
-	Web     Web
-	Jwt     JWT
-	Node    Node
-	Storage string
+	Web      Web
+	Jwt      JWT
+	Node     Node
+	Storage  string
+	Provider Provider
 }
 
 var conf *Conf
@@ -44,9 +45,10 @@ func getConfiguration(filePath *string) *Conf {
 
 func mappingEnvToConf(fileConf *Conf) (envConf *Conf) {
 	envConf = &Conf{
-		Web:  Web{},
-		Jwt:  JWT{},
-		Node: Node{},
+		Web:      Web{},
+		Jwt:      JWT{},
+		Node:     Node{},
+		Provider: Provider{},
 	}
 
 	if storage := os.Getenv("storage"); len(storage) > 0 {
@@ -126,6 +128,15 @@ func mappingEnvToConf(fileConf *Conf) (envConf *Conf) {
 			envConf.Node.BindPort = fileConf.Node.BindPort
 		} else {
 			panic("node.bindport is invalid")
+		}
+	}
+	if provider_alchemy := os.Getenv("provider__alchemy"); len(provider_alchemy) > 0 {
+		envConf.Provider.Alchemy = provider_alchemy
+	} else if fileConf != nil {
+		if len(fileConf.Provider.Alchemy) == 0 {
+			panic("provider.alchemy is invalid")
+		} else {
+			envConf.Provider.Alchemy = fileConf.Provider.Alchemy
 		}
 	}
 

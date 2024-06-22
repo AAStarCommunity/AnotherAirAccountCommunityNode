@@ -17,3 +17,5 @@ node:
   bindAddr: "0.0.0.0"
   bindPort: 7946
 storage: another.dat
+provider:
+  alchemy: # ApiKey

@@ -2,6 +2,7 @@ package wallet_storage
 
 import (
 	"log"
+	"strings"
 )
 
 // Wallet represents a raw data of wallet in storage(LevelDb)
@@ -20,7 +21,7 @@ const (
 	walletMarshalHeader = byte(0x01)
 )
 
-const secretKey = "aastar@Planckeraaaaaaaaa"
+const secretKey = "aastar@Plancker^"
 const walletPrefix = "wallet:"
 
 // marshalTotalCap is the total cap of marshaled wallet
@@ -54,7 +55,7 @@ func (w *Wallet) Marshal() []byte {
 		return nil
 	}
 
-	ret := make([]byte, 0, marshalTotalCap)
+	ret := make([]byte, marshalTotalCap)
 	offset := 0
 	copy(ret, []byte{walletMarshalHeader})
 	offset += 1
@@ -66,6 +67,8 @@ func (w *Wallet) Marshal() []byte {
 	offset += privateKeyCap
 	copy(ret[offset:offset+aaAddressCap], aaAddressBytes)
 
+	s := string(ret)
+	_ = s
 	if c, err := crypto(ret, []byte(secretKey)); err != nil {
 		log.Default().Println("crypto error: ", err)
 		return nil
@@ -88,13 +91,13 @@ func (w *Wallet) Unmarshal(data []byte) error {
 		}
 
 		offset := 1
-		w.mnemonic = string(d[offset : offset+mnemonicCap])
+		w.mnemonic = strings.Trim(string(d[offset:offset+mnemonicCap]), "\x00")
 		offset += mnemonicCap
-		w.Address = string(d[offset : offset+addressCap])
+		w.Address = strings.Trim(string(d[offset:offset+addressCap]), "\x00")
 		offset += addressCap
-		w.privateKey = string(d[offset : offset+privateKeyCap])
+		w.privateKey = strings.Trim(string(d[offset:offset+privateKeyCap]), "\x00")
 		offset += privateKeyCap
-		w.AAAdress = string(d[offset : offset+aaAddressCap])
+		w.AAAdress = strings.Trim(string(d[offset:offset+aaAddressCap]), "\x00")
 	}
 
 	return nil

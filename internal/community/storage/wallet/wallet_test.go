@@ -18,5 +18,9 @@ func TestWallet_Marshal_And_Unmarshal(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	reflect.DeepEqual(a, wallet)
+	if reflect.DeepEqual(a, wallet) {
+		t.Log("TestWallet_Marshal_And_Unmarshal passed")
+	} else {
+		t.Error("TestWallet_Marshal_And_Unmarshal failed")
+	}
 }

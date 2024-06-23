@@ -1,7 +1,6 @@
 package member_storage
 
 import (
-	"another_node/conf"
 	"another_node/internal/community/storage"
 	"bytes"
 	"encoding/binary"
@@ -160,24 +159,16 @@ func UpsertMember(hashedAccount, publicKey, privateKey, rpcAddress string, rpcPo
 
 // TryFindMember find a member by hashed account
 func TryFindMember(hashedAccount string) (*Member, error) {
-	if stor, err := conf.GetStorage(); err != nil {
+	if db, err := storage.EnsureOpen(); err != nil {
 		return nil, err
 	} else {
-		if db, err := leveldb.Open(stor, nil); err != nil {
+		if member, err := db.Get([]byte(memberPrefix+hashedAccount), nil); err != nil {
+			if errors.Is(err, leveldb.ErrNotFound) {
+				return nil, nil
+			}
 			return nil, err
 		} else {
-			defer func() {
-				stor.Close()
-				db.Close()
-			}()
-			if member, err := db.Get([]byte(memberPrefix+hashedAccount), nil); err != nil {
-				if errors.Is(err, leveldb.ErrNotFound) {
-					return nil, nil
-				}
-				return nil, err
-			} else {
-				return UnmarshalMember(member)
-			}
+			return UnmarshalMember(member)
 		}
 	}
 }

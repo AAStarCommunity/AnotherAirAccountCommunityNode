@@ -1,8 +1,11 @@
 package wallet_storage
 
 import (
+	"another_node/internal/community/storage"
 	"log"
 	"strings"
+
+	"github.com/syndtr/goleveldb/leveldb/util"
 )
 
 // Wallet represents a raw data of wallet in storage(LevelDb)
@@ -103,6 +106,39 @@ func (w *Wallet) Unmarshal(data []byte) error {
 	return nil
 }
 
-func (w *Wallet) Key() string {
-	return walletPrefix + w.Address
+func (w *Wallet) Key(hashedAccount *string) string {
+	return walletPrefix + *hashedAccount + ":" + w.Address
+}
+
+func UpsertWallet(hashedAccount *string, wallet *Wallet) error {
+	if wallet == nil {
+		return ErrNilWallet{}
+	}
+	if db, err := storage.EnsureOpen(); err != nil {
+		return err
+	} else {
+		return db.Put([]byte(wallet.Key(hashedAccount)), wallet.Marshal(), nil)
+	}
+}
+
+func TryFindWallet(hashedAccount string) ([]Wallet, error) {
+	if db, err := storage.EnsureOpen(); err != nil {
+		return nil, err
+	} else {
+		iter := db.NewIterator(
+			util.BytesPrefix([]byte(walletPrefix+hashedAccount+":")),
+			nil)
+		defer iter.Release()
+
+		var wallets []Wallet
+		for iter.Next() {
+			wallet := Wallet{}
+			if err := wallet.Unmarshal(iter.Value()); err != nil {
+				return nil, err
+			}
+			wallets = append(wallets, wallet)
+		}
+
+		return wallets, nil
+	}
 }

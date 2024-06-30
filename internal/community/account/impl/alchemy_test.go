@@ -1,7 +1,7 @@
 package impl
 
 import (
-	"another_node/internal/community/wallet"
+	"another_node/internal/community/account"
 	"testing"
 )
 
@@ -27,7 +27,7 @@ func TestAlchemyProvider_CreateAccount(t *testing.T) {
 	if err != nil {
 		t.Errorf("Failed to create account: %v", err)
 	}
-	w, err := wallet.NewHdWallet(wallet.HierarchicalPath(wallet.HierarchicalPath_Main_ETH_TestNet))
+	w, err := account.NewHdWallet(account.HierarchicalPath(account.HierarchicalPath_Main_ETH_TestNet))
 	if err != nil {
 		t.Errorf("Failed to create account: %v", err)
 	}

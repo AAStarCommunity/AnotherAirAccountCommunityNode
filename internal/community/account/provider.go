@@ -1,4 +1,4 @@
-package wallet
+package account
 
 type Provider interface {
 	CreateAccount(*HdWallet) (string, error)

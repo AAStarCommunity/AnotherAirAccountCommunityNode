@@ -1,4 +1,4 @@
-package wallet
+package account
 
 import (
 	hdwallet "github.com/miguelmota/go-ethereum-hdwallet"

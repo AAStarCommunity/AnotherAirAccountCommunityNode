@@ -1,7 +1,7 @@
 package impl
 
 import (
-	"another_node/internal/community/wallet"
+	"another_node/internal/community/account"
 	"fmt"
 	"math/big"
 
@@ -13,7 +13,7 @@ type AlchemyProvider struct {
 	rpc string
 }
 
-var _ wallet.Provider = (*AlchemyProvider)(nil)
+var _ account.Provider = (*AlchemyProvider)(nil)
 
 const salt int64 = 1
 
@@ -22,7 +22,7 @@ const EntryPointContractAddress = "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789"
 // see ref: https://docs.alchemy.com/reference/factory-addresses#deployment-addresses
 const AlchemyWalletContractFactory = "0x00004EC70002a32400f8ae005A26081065620D20"
 
-func NewAlchemyProvider(apiKey string) (wallet.Provider, error) {
+func NewAlchemyProvider(apiKey string) (account.Provider, error) {
 	if len(apiKey) == 0 {
 		return nil, fmt.Errorf("API Key is required")
 	}
@@ -35,7 +35,7 @@ func (a *AlchemyProvider) GetRpc() string {
 	return a.rpc
 }
 
-func (a *AlchemyProvider) CreateAccount(wallet *wallet.HdWallet) (string, error) {
+func (a *AlchemyProvider) CreateAccount(wallet *account.HdWallet) (string, error) {
 
 	pk := "0x" + wallet.PrivateKey()
 

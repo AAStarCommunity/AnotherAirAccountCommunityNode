@@ -27,6 +27,10 @@ type SignerGroup struct {
 	threshold int
 }
 
+func (sg *SignerGroup) GetPublicKeys() *bls.PublicKey {
+	return sg.mpk
+}
+
 func NewSignerGroup(threshold int, id ...string) (*SignerGroup, error) {
 	total := len(id)
 	if threshold <= 0 || total <= 0 {
@@ -60,6 +64,18 @@ func NewSignerGroup(threshold int, id ...string) (*SignerGroup, error) {
 
 	// get master public key
 	mpk := msk[0].GetPublicKey()
+
+	return &SignerGroup{
+		Signers:   signers,
+		mpk:       mpk,
+		threshold: threshold,
+	}, nil
+}
+
+func RecoverSignerGroup(threshold int, mpk *bls.PublicKey, signers []Signer) (*SignerGroup, error) {
+	if len(signers) < threshold {
+		return nil, &ErrNotEnoughSigners{}
+	}
 
 	return &SignerGroup{
 		Signers:   signers,

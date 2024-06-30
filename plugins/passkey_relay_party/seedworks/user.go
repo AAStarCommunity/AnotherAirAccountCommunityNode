@@ -1,7 +1,7 @@
 package seedworks
 
 import (
-	"another_node/internal/community/wallet"
+	"another_node/internal/community/account"
 
 	"github.com/go-webauthn/webauthn/webauthn"
 )
@@ -10,7 +10,7 @@ type User struct {
 	id          []byte
 	credentials []webauthn.Credential
 	email       string
-	wallet      *wallet.HdWallet
+	wallet      *account.HdWallet
 	address     string
 }
 
@@ -56,7 +56,7 @@ func (user *User) UpdateCredential(cred *webauthn.Credential) {
 	}
 }
 
-func (user *User) SetWallet(wallet *wallet.HdWallet, address string) {
+func (user *User) SetWallet(wallet *account.HdWallet, address string) {
 	user.wallet = wallet
 	user.address = address
 }

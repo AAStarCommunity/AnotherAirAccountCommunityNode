@@ -8,6 +8,21 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// regPrepare send captcha to email for verifying belongs
+func (relay *RelayParty) regPrepare(ctx *gin.Context) {
+	var reg seedworks.Registration
+	if err := ctx.ShouldBindJSON(&reg); err != nil {
+		response.BadRequest(ctx, err.Error())
+		return
+	}
+
+	if relay.emailStartChallenge(reg.Email, ctx.GetHeader("Accept-Language")) != nil {
+		response.BadRequest(ctx, "challenge failed")
+		return
+	}
+	response.GetResponse().Success(ctx)
+}
+
 func (relay *RelayParty) beginRegistration(ctx *gin.Context) {
 	var reg seedworks.Registration
 	if err := ctx.ShouldBindJSON(&reg); err != nil {
@@ -15,11 +30,16 @@ func (relay *RelayParty) beginRegistration(ctx *gin.Context) {
 		return
 	}
 
-	if u, err := relay.FindUserByEmail(reg.Email); err != nil && !errors.Is(err, seedworks.UserNotFoundError{}) {
+	if u, err := relay.FindUserByEmail(reg.Email); err != nil && !errors.Is(err, seedworks.ErrUserNotFound{}) {
 		response.InternalServerError(ctx, err.Error())
 		return
 	} else if u != nil {
 		response.BadRequest(ctx, "User already exists")
+		return
+	}
+
+	if relay.emailFinishChallenge(reg.Email, reg.Captcha) != nil {
+		response.BadRequest(ctx, "Invalid captcha")
 		return
 	}
 

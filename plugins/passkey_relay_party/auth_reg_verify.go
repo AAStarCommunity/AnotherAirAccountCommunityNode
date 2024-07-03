@@ -1,25 +1,12 @@
 package plugin_passkey_relay_party
 
 import (
-	"another_node/conf"
 	"another_node/internal/community/account"
-	"another_node/internal/community/account/impl"
 	"another_node/internal/web_server/pkg/response"
 	"another_node/plugins/passkey_relay_party/seedworks"
 
 	"github.com/gin-gonic/gin"
 )
-
-var accountProvider account.Provider
-
-func init() {
-	p, err := impl.NewAlchemyProvider(conf.GetProvider().Alchemy)
-	if err != nil {
-		panic(err)
-	}
-
-	accountProvider = p
-}
 
 func (relay *RelayParty) finishRegistration(ctx *gin.Context) {
 
@@ -33,7 +20,7 @@ func (relay *RelayParty) finishRegistration(ctx *gin.Context) {
 		response.BadRequest(ctx, err)
 		return
 	} else {
-		if err := createAA(accountProvider, user); err != nil {
+		if err := createAA(*relay.accountProvider, user); err != nil {
 			response.InternalServerError(ctx, err.Error())
 			return
 		} else {

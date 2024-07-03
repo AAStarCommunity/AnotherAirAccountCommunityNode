@@ -1,0 +1,7 @@
+mail:
+  host: #
+  tls: true
+  port: #
+  user: #
+  password: #
+  replier: "NO-REPLY"

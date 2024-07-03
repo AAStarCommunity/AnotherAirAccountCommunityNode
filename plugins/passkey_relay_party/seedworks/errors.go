@@ -1,15 +1,21 @@
 package seedworks
 
-type UserNotFoundError struct{}
-type EmailEmptyError struct{}
+type ErrUserNotFound struct{}
+type ErrEmailEmpty struct{}
+type ErrInvalidCaptcha struct{}
 
-var _ error = UserNotFoundError{}
-var _ error = EmailEmptyError{}
+var _ error = ErrUserNotFound{}
+var _ error = ErrEmailEmpty{}
+var _ error = ErrInvalidCaptcha{}
 
-func (e UserNotFoundError) Error() string {
+func (e ErrUserNotFound) Error() string {
 	return string("user not found")
 }
 
-func (e EmailEmptyError) Error() string {
+func (e ErrEmailEmpty) Error() string {
 	return string("email is empty")
+}
+
+func (e ErrInvalidCaptcha) Error() string {
+	return string("invalid captcha")
 }

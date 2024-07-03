@@ -13,6 +13,39 @@ definitions:
     type: object
   request.Transfer:
     type: object
+  response.Response:
+    properties:
+      result:
+        $ref: '#/definitions/response.Result'
+    type: object
+  response.Result:
+    properties:
+      code:
+        type: integer
+      cost:
+        type: string
+      data: {}
+      message:
+        type: string
+    type: object
+  seedworks.Registration:
+    properties:
+      captcha:
+        type: string
+      email:
+        type: string
+      origin:
+        type: string
+    type: object
+  seedworks.SiginIn:
+    properties:
+      captcha:
+        type: string
+      email:
+        type: string
+      origin:
+        type: string
+    type: object
 info:
   contact:
     name: AAStar Support
@@ -93,6 +126,124 @@ paths:
             type: array
       tags:
       - Dashboard
+  /api/passkey/v1/reg:
+    post:
+      consumes:
+      - application/json
+      description: Begin the registration process
+      parameters:
+      - description: Begin Registration
+        in: body
+        name: registrationBody
+        required: true
+        schema:
+          $ref: '#/definitions/seedworks.Registration'
+      responses:
+        "200":
+          description: OK
+      summary: sign up step2. begin registration
+      tags:
+      - Plugins Passkey
+  /api/passkey/v1/reg/prepare:
+    post:
+      consumes:
+      - application/json
+      description: Send captcha to email for verifying belongs
+      parameters:
+      - description: Send Captcha to Email
+        in: body
+        name: registrationBody
+        required: true
+        schema:
+          $ref: '#/definitions/seedworks.Registration'
+      responses:
+        "200":
+          description: OK
+      summary: sign up step1. send code
+      tags:
+      - Plugins Passkey
+  /api/passkey/v1/reg/verify:
+    post:
+      consumes:
+      - application/json
+      description: Verify Passkey Registration
+      parameters:
+      - description: Verify Registration
+        in: body
+        name: registrationBody
+        required: true
+        schema:
+          $ref: '#/definitions/seedworks.Registration'
+      responses:
+        "200":
+          description: OK
+      summary: sign up step3. Finish Registration
+      tags:
+      - Plugins Passkey
+  /api/passkey/v1/sign:
+    post:
+      consumes:
+      - application/json
+      description: Begins the sign in process
+      parameters:
+      - description: Sign in details
+        in: body
+        name: signIn
+        required: true
+        schema:
+          $ref: '#/definitions/seedworks.SiginIn'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: sign in step 1. request credential assertion
+      tags:
+      - Plugins Passkey
+  /api/passkey/v1/sign/verify:
+    post:
+      consumes:
+      - application/json
+      description: Finish the sign in process
+      parameters:
+      - description: Origin
+        in: query
+        name: origin
+        required: true
+        type: string
+      - description: Email
+        in: query
+        name: email
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+      summary: sign in step 2. verify credentials
+      tags:
+      - Plugins Passkey
 securityDefinitions:
   JWT:
     description: Type 'Bearer \<TOKEN\>' to correctly set the AccessToken

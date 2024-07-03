@@ -8,6 +8,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// finishRegistration
+// @Summary sign up step3. Finish Registration
+// @Tags Plugins Passkey
+// @Description Verify Passkey Registration
+// @Accept json
+// @Product json
+// @Param registrationBody body seedworks.Registration true "Verify Registration"
+// @Router /api/passkey/v1/reg/verify [post]
+// @Success 200
 func (relay *RelayParty) finishRegistration(ctx *gin.Context) {
 
 	// body works for parser, the additional info appends to query

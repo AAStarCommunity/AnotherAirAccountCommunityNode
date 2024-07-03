@@ -8,7 +8,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// regPrepare send captcha to email for verifying belongs
+// regPrepare
+// @Summary sign up step1. send code
+// @Tags Plugins Passkey
+// @Description Send captcha to email for verifying belongs
+// @Accept json
+// @Product json
+// @Param registrationBody body seedworks.Registration true "Send Captcha to Email"
+// @Router /api/passkey/v1/reg/prepare [post]
+// @Success 200
 func (relay *RelayParty) regPrepare(ctx *gin.Context) {
 	var reg seedworks.Registration
 	if err := ctx.ShouldBindJSON(&reg); err != nil {
@@ -23,6 +31,15 @@ func (relay *RelayParty) regPrepare(ctx *gin.Context) {
 	response.GetResponse().Success(ctx)
 }
 
+// beginRegistration
+// @Summary sign up step2. begin registration
+// @Tags Plugins Passkey
+// @Description Begin the registration process
+// @Accept json
+// @Product json
+// @Param registrationBody body seedworks.Registration true "Begin Registration"
+// @Router /api/passkey/v1/reg [post]
+// @Success 200
 func (relay *RelayParty) beginRegistration(ctx *gin.Context) {
 	var reg seedworks.Registration
 	if err := ctx.ShouldBindJSON(&reg); err != nil {

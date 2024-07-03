@@ -7,6 +7,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// beginSignIn
+// @Summary sign in step 1. request credential assertion
+// @Description Begins the sign in process
+// @Tags Plugins Passkey
+// @Accept json
+// @Produce json
+// @Param signIn body seedworks.SiginIn true "Sign in details"
+// @Success 200 {object} response.Response
+// @Failure 400 {object} response.Response
+// @Failure 404 {object} response.Response
+// @Failure 500 {object} response.Response
+// @Router /api/passkey/v1/sign [post]
 func (relay *RelayParty) beginSignIn(ctx *gin.Context) {
 	var signIn seedworks.SiginIn
 	if err := ctx.ShouldBindJSON(&signIn); err != nil {

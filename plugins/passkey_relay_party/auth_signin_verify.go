@@ -7,6 +7,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// finishSignIn
+// @Summary sign in step 2. verify credentials
+// @Description Finish the sign in process
+// @Tags Plugins Passkey
+// @Accept json
+// @Produce json
+// @Param origin query string true "Origin"
+// @Param email query string true "Email"
+// @Success 200 {object} any "OK"
+// @Failure 400 {object} any "Bad Request"
+// @Router /api/passkey/v1/sign/verify [post]
 func (relay *RelayParty) finishSignIn(ctx *gin.Context) {
 	// body works for SDK, the additional info appends to query
 	stubSignIn := seedworks.SiginIn{

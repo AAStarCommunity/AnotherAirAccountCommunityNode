@@ -70,7 +70,7 @@ func buildSwagger(router *gin.Engine) {
 func Healthz(c *gin.Context) {
 	resp := response.GetResponse()
 	resp.WithDataSuccess(c, gin.H{
-		"hello":   "Eth Paymaster",
+		"hello":   "AAStar Airaccount",
 		"time":    time.Now(),
 		"version": "v1.0.0",
 	})

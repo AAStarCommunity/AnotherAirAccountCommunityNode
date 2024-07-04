@@ -49,7 +49,7 @@ func getConfiguration(filePath *string) *Conf {
 	} else {
 		fmt.Println("getConfiguration" + *filePath)
 		c := Conf{}
-		_ := yaml.Unmarshal(file, &c)
+		_ = yaml.Unmarshal(file, &c)
 		cjson, _ := json.Marshal(c)
 		fmt.Println("getConfiguration JSON", string(cjson))
 		return mappingEnvToConf(&c)

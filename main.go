@@ -44,6 +44,7 @@ func main() {
 	if community, err := node.New(getFlags()); err != nil {
 		panic(err)
 	} else {
+		storage.Init()
 		routers := routers.SetRouters()
 
 		// load http plugins

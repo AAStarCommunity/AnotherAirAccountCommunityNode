@@ -1,6 +1,8 @@
 package conf
 
 import (
+	"encoding/json"
+	"fmt"
 	"os"
 	"strconv"
 	"sync"
@@ -11,11 +13,13 @@ import (
 var once sync.Once
 
 type Conf struct {
-	Web      Web
-	Jwt      JWT
-	Node     Node
-	Storage  string
-	Provider Provider
+	Web                Web
+	Jwt                JWT
+	Node               Node
+	Storage            string
+	Provider           Provider
+	ConfigDb           ConfigDb `yaml:"config_db"`
+	ApiKeyAccessEnable bool     `yaml:"api_key_access_enable"`
 }
 
 var conf *Conf
@@ -26,29 +30,45 @@ func getConf() *Conf {
 		if conf == nil {
 			filePath := getConfFilePath()
 			conf = getConfiguration(filePath)
+			fmt.Println("getConf" + *filePath)
+			fmt.Println("getConfiguration", conf)
 		}
 	})
 	return conf
+}
+func IsApiKeyAccessEnable() bool {
+	return getConf().ApiKeyAccessEnable
 }
 
 // getConfiguration represent get the config from env or file
 // env will overwrite the file
 func getConfiguration(filePath *string) *Conf {
+
 	if file, err := os.ReadFile(*filePath); err != nil {
 		return mappingEnvToConf(nil)
 	} else {
+		fmt.Println("getConfiguration" + *filePath)
 		c := Conf{}
-		yaml.Unmarshal(file, &c)
+		_ := yaml.Unmarshal(file, &c)
+		cjson, _ := json.Marshal(c)
+		fmt.Println("getConfiguration JSON", string(cjson))
 		return mappingEnvToConf(&c)
+
 	}
 }
 
 func mappingEnvToConf(fileConf *Conf) (envConf *Conf) {
 	envConf = &Conf{
-		Web:      Web{},
-		Jwt:      JWT{},
-		Node:     Node{},
-		Provider: Provider{},
+		Web:                Web{},
+		Jwt:                JWT{},
+		Node:               Node{},
+		Provider:           Provider{},
+		ConfigDb:           ConfigDb{},
+		ApiKeyAccessEnable: true,
+	}
+	if fileConf != nil {
+		envConf.ConfigDb = fileConf.ConfigDb
+		envConf.ApiKeyAccessEnable = fileConf.ApiKeyAccessEnable
 	}
 
 	if storage := os.Getenv("storage"); len(storage) > 0 {

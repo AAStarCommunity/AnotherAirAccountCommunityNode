@@ -88,33 +88,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/auth/v1/login": {
-            "post": {
-                "description": "Get AccessToken By ApiKey",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Auth"
-                ],
-                "parameters": [
-                    {
-                        "description": "AccessToken Model",
-                        "name": "credential",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/request.ClientCredential"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created"
-                    }
-                }
-            }
-        },
         "/api/dashboard/v1/node": {
             "get": {
                 "description": "get node members",
@@ -139,6 +112,22 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/healthz": {
+            "get": {
+                "description": "Get Healthz",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Healthz"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -149,14 +138,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "publicKey": {
-                    "type": "string"
-                }
-            }
-        },
-        "request.ClientCredential": {
-            "type": "object",
-            "properties": {
-                "apiKey": {
                     "type": "string"
                 }
             }

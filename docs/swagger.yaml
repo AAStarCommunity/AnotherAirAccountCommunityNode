@@ -6,11 +6,6 @@ definitions:
       publicKey:
         type: string
     type: object
-  request.ClientCredential:
-    properties:
-      apiKey:
-        type: string
-    type: object
   request.Transfer:
     type: object
 info:
@@ -60,23 +55,6 @@ paths:
       - JWT: []
       tags:
       - Account
-  /api/auth/v1/login:
-    post:
-      consumes:
-      - application/json
-      description: Get AccessToken By ApiKey
-      parameters:
-      - description: AccessToken Model
-        in: body
-        name: credential
-        required: true
-        schema:
-          $ref: '#/definitions/request.ClientCredential'
-      responses:
-        "201":
-          description: Created
-      tags:
-      - Auth
   /api/dashboard/v1/node:
     get:
       consumes:
@@ -93,6 +71,16 @@ paths:
             type: array
       tags:
       - Dashboard
+  /api/healthz:
+    get:
+      consumes:
+      - application/json
+      description: Get Healthz
+      responses:
+        "200":
+          description: OK
+      tags:
+      - Healthz
 securityDefinitions:
   JWT:
     description: Type 'Bearer \<TOKEN\>' to correctly set the AccessToken

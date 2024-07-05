@@ -2,8 +2,10 @@ package account_v1
 
 import (
 	"another_node/internal/community/node"
+	"another_node/internal/web_server/pkg"
 	"another_node/internal/web_server/pkg/request"
 	"another_node/internal/web_server/pkg/response"
+	"errors"
 
 	"github.com/gin-gonic/gin"
 )
@@ -28,5 +30,32 @@ func Bind(ctx *gin.Context) {
 		response.InternalServerError(ctx, err)
 	} else {
 		response.Created(ctx, nil)
+	}
+}
+
+func RpcBind() pkg.RpcMethodFunctionFunc {
+	return func(ctx *gin.Context, jsonRpcRequest *pkg.JsonRpcRequest) (*interface{}, error) {
+		req := request.Bind{}
+		errors.Is(ctx.ShouldBindJSON(&req), nil)
+		if jsonRpcRequest.Params == nil || len(jsonRpcRequest.Params) <= 0 {
+			return nil, errors.New("invalid request [params is empty]")
+		}
+
+		accountParam := jsonRpcRequest.Params[0]
+		if accountParam == nil {
+			return nil, errors.New("invalid request [account is empty]")
+		}
+		req.Account = accountParam.(string)
+
+		publicKeyParam := jsonRpcRequest.Params[1]
+		if publicKeyParam == nil {
+			return nil, errors.New("invalid request [publicKey is empty]")
+		}
+
+		if err := node.BindAccount(req.Account, &req.PublicKey); err != nil {
+			return nil, err
+		} else {
+			return nil, nil
+		}
 	}
 }

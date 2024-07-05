@@ -22,9 +22,14 @@ func getFlags() (listen *uint16, name *string, joinAddrs *string, genesis *bool)
 	listen = &listenVal
 	name = flag.String("name", "", "Node name")
 	joinAddrs = flag.String("join", "", "Addresses of nodes to join (comma-separated)")
-	genesis = flag.Bool("genesis", false, "Is this genesis node")
-	flag.Parse()
-	fmt.Println("[getFlags] : listen:", *listen, "name:", *name, "join:", *joinAddrs, "genesis:", *genesis)
+	genesisStr := flag.String("genesis", "", "Is this genesis node")
+	if *genesisStr == "" {
+		fmt.Println("genesis is empty")
+		genesis = nil
+	} else {
+		genesis = flag.Bool("genesis", false, "Is this genesis node")
+	}
+	fmt.Println("[getFlags] : listen:", listen, "name:", name, "join:", joinAddrs, "genesis:", genesis)
 	return
 }
 

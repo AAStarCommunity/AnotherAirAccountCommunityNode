@@ -1,3 +1,4 @@
+basePath: /api
 definitions:
   request.Bind:
     properties:
@@ -25,13 +26,16 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/request.Bind'
+      - description: apiKey
+        in: query
+        name: apiKey
+        required: true
+        type: string
       produces:
       - application/json
       responses:
         "201":
           description: Created
-      security:
-      - JWT: []
       tags:
       - Account
   /api/account/v1/transfer:
@@ -46,13 +50,16 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/request.Transfer'
+      - description: apiKey
+        in: query
+        name: apiKey
+        required: true
+        type: string
       produces:
       - application/json
       responses:
         "201":
           description: Created
-      security:
-      - JWT: []
       tags:
       - Account
   /api/dashboard/v1/node:
@@ -81,10 +88,4 @@ paths:
           description: OK
       tags:
       - Healthz
-securityDefinitions:
-  JWT:
-    description: Type 'Bearer \<TOKEN\>' to correctly set the AccessToken
-    in: header
-    name: Authorization
-    type: apiKey
 swagger: "2.0"

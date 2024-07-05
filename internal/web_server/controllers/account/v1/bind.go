@@ -15,8 +15,8 @@ import (
 // @Produce json
 // @Success 201
 // @Param bind body request.Bind true "Account Binding"
+// @Param apiKey query string true "apiKey"
 // @Router /api/account/v1/bind [POST]
-// @Security JWT
 func Bind(ctx *gin.Context) {
 	var req request.Bind
 	if err := ctx.ShouldBindJSON(&req); err != nil {

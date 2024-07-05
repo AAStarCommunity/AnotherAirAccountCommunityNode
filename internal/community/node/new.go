@@ -57,7 +57,7 @@ func New(listen *uint16, globalName *string, entrypoints *string, genesis *bool)
 
 	var err error
 	var list *memberlist.Memberlist
-
+	fmt.Printf("ready to create memberlist with conf: %v\n", conf)
 	if list, err = memberlist.Create(conf); err == nil {
 
 		if !confNode.Genesis {

@@ -8,6 +8,7 @@ import (
 	"another_node/internal/web_server/routers"
 	plugin_passkey_relay_party "another_node/plugins/passkey_relay_party"
 	"flag"
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -23,16 +24,12 @@ func getFlags() (listen *uint16, name *string, joinAddrs *string, genesis *bool)
 	joinAddrs = flag.String("join", "", "Addresses of nodes to join (comma-separated)")
 	genesis = flag.Bool("genesis", false, "Is this genesis node")
 	flag.Parse()
-
+	fmt.Println("[getFlags] : listen:", *listen, "name:", *name, "join:", *joinAddrs, "genesis:", *genesis)
 	return
 }
 
 // @contact.name   AAStar Support
 // @contact.url    https://aastar.xyz
-// @securityDefinitions.apikey JWT
-// @in header
-// @name Authorization
-// @description Type 'Bearer \<TOKEN\>' to correctly set the AccessToken
 // @BasePath /api
 func main() {
 
@@ -56,7 +53,7 @@ func main() {
 			if port == 0 {
 				panic("port is invalid")
 			}
-
+			fmt.Println("community node created Port is: ", port)
 			portStr := strconv.Itoa(conf.GetWeb().Port)
 			if !strings.HasPrefix(portStr, ":") {
 				portStr = ":" + portStr

@@ -6,14 +6,10 @@
             "url": "https://aastar.xyz"
         }
     },
+    "basePath": "/api",
     "paths": {
         "/api/account/v1/bind": {
             "post": {
-                "security": [
-                    {
-                        "JWT": []
-                    }
-                ],
                 "description": "bind a account to community node",
                 "consumes": [
                     "application/json"
@@ -33,6 +29,13 @@
                         "schema": {
                             "$ref": "#/definitions/request.Bind"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "apiKey",
+                        "name": "apiKey",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -44,11 +47,6 @@
         },
         "/api/account/v1/transfer": {
             "post": {
-                "security": [
-                    {
-                        "JWT": []
-                    }
-                ],
                 "description": "transfer a TX",
                 "consumes": [
                     "application/json"
@@ -68,6 +66,13 @@
                         "schema": {
                             "$ref": "#/definitions/request.Transfer"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "apiKey",
+                        "name": "apiKey",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -133,14 +138,6 @@
         },
         "request.Transfer": {
             "type": "object"
-        }
-    },
-    "securityDefinitions": {
-        "JWT": {
-            "description": "Type 'Bearer \\\u003cTOKEN\\\u003e' to correctly set the AccessToken",
-            "type": "apiKey",
-            "name": "Authorization",
-            "in": "header"
         }
     }
 }

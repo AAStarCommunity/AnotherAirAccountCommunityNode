@@ -2,7 +2,6 @@ package pkg
 
 import (
 	mapset "github.com/deckarep/golang-set/v2"
-	"github.com/gin-gonic/gin"
 	"golang.org/x/time/rate"
 )
 
@@ -14,7 +13,7 @@ type ApiKeyModel struct {
 	NetWorkLimitEnable bool               `json:"network_limit_enable"`
 	DomainWhitelist    mapset.Set[string] `json:"domain_whitelist"`
 	IPWhiteList        mapset.Set[string] `json:"ip_white_list"`
-	AiraccountEnable   bool               `json:"airaccount_enable"`
+	AirAccountEnable   bool               `json:"airaccount_enable"`
 }
 
 type RpcMethodFunctionFunc = func(ctx *gin.Context, jsonRpcRequest *JsonRpcRequest) (result *interface{}, err error)

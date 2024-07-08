@@ -30,7 +30,7 @@ func getConf() *Conf {
 		if conf == nil {
 			filePath := getConfFilePath()
 			conf = getConfiguration(filePath)
-			fmt.Printf("Airaccount getConfPath: [%s]", *filePath)
+			fmt.Printf("AirAccount getConfPath: [%s]", *filePath)
 		}
 	})
 	return conf

@@ -34,15 +34,15 @@ func SetRouters() (routers *gin.Engine) {
 
 	// development mode
 	if conf.Environment.IsDevelopment() {
-		gin.SetMode(gin.ReleaseMode) // debugger mode
-		buildSwagger(routers)        // build swagger
+		gin.SetMode(gin.DebugMode) // debugger mode
 	}
+	buildSwagger(routers) // build swagger
 
 	// use middlewares
 	routers.Use(handlers...)
 	routers.GET("/api/healthz", Healthz)
 	if conf.IsApiKeyAccessEnable() {
-		fmt.Println("[Airaccount] Api Key Access Enable")
+		fmt.Println("[AirAccount] Api Key Access Enable")
 		routers.Use(middlewares.ApiVerificationHandler())
 	}
 	buildRouters(routers)
@@ -70,7 +70,7 @@ func buildSwagger(router *gin.Engine) {
 func Healthz(c *gin.Context) {
 	resp := response.GetResponse()
 	resp.WithDataSuccess(c, gin.H{
-		"hello":   "AAStar Airaccount",
+		"hello":   "AAStar AirAccount",
 		"time":    time.Now(),
 		"version": "v1.0.0",
 	})

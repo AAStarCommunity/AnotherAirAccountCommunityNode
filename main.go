@@ -17,19 +17,25 @@ var httpPlugins = make([]plugin.HttpPlugin, 0)
 
 func getFlags() (listen *uint16, name *string, joinAddrs *string, genesis *bool) {
 	// 解析命令行参数
-	listenTmp := flag.Uint("listen", 0, "Listen port number")
-	listenVal := uint16(*listenTmp)
-	listen = &listenVal
+	listenTmp := flag.Int("listen", 0, "Listen port number")
 	name = flag.String("name", "", "Node name")
 	joinAddrs = flag.String("join", "", "Addresses of nodes to join (comma-separated)")
-	genesisStr := flag.String("genesis", "", "Is this genesis node")
-	if *genesisStr == "" {
-		fmt.Println("genesis is empty")
-		genesis = nil
+	explicitGenesisVar := flag.Bool("genesis", false, "Is this genesis node")
+	flag.Parse()
+
+	if listenTmp == nil {
+		m := uint16(7946)
+		listen = &m
 	} else {
-		genesis = flag.Bool("genesis", false, "Is this genesis node")
+		m := uint16(*listenTmp)
+		listen = &m
 	}
-	fmt.Println("[getFlags] : listen:", listen, "name:", name, "join:", joinAddrs, "genesis:", genesis)
+
+	flag.CommandLine.Visit(func(f *flag.Flag) {
+		if f.Name == "genesis" {
+			genesis = explicitGenesisVar
+		}
+	})
 	return
 }
 

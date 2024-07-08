@@ -17,7 +17,7 @@ func ApiVerificationHandler() gin.HandlerFunc {
 			response.BadRequest(c, "ApiKey is mandatory, visit to https://dashboard.aastar.io for more detail")
 			return
 		}
-		apiModel, err := storage.GetAPiInfoByApiKey(apiKey)
+		apiModel, err := storage.GetApiInfoByApiKey(apiKey)
 		if err != nil {
 			response.BadRequest(c, "can Not Find Your Api Key")
 			return
@@ -26,8 +26,8 @@ func ApiVerificationHandler() gin.HandlerFunc {
 			response.BadRequest(c, "api Key Is Disabled")
 			return
 		}
-		if !apiModel.AiraccountEnable {
-			response.BadRequest(c, "api Key Is Disabled Airaccount")
+		if !apiModel.AirAccountEnable {
+			response.BadRequest(c, "api Key Is Disabled AirAccount")
 			return
 		}
 

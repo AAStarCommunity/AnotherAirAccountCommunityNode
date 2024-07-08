@@ -1,14 +1,10 @@
+basePath: /api
 definitions:
   request.Bind:
     properties:
       account:
         type: string
       publicKey:
-        type: string
-    type: object
-  request.ClientCredential:
-    properties:
-      apiKey:
         type: string
     type: object
   request.Transfer:
@@ -30,13 +26,16 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/request.Bind'
+      - description: apiKey
+        in: query
+        name: apiKey
+        required: true
+        type: string
       produces:
       - application/json
       responses:
         "201":
           description: Created
-      security:
-      - JWT: []
       tags:
       - Account
   /api/account/v1/transfer:
@@ -51,32 +50,18 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/request.Transfer'
+      - description: apiKey
+        in: query
+        name: apiKey
+        required: true
+        type: string
       produces:
       - application/json
       responses:
         "201":
           description: Created
-      security:
-      - JWT: []
       tags:
       - Account
-  /api/auth/v1/login:
-    post:
-      consumes:
-      - application/json
-      description: Get AccessToken By ApiKey
-      parameters:
-      - description: AccessToken Model
-        in: body
-        name: credential
-        required: true
-        schema:
-          $ref: '#/definitions/request.ClientCredential'
-      responses:
-        "201":
-          description: Created
-      tags:
-      - Auth
   /api/dashboard/v1/node:
     get:
       consumes:
@@ -93,10 +78,14 @@ paths:
             type: array
       tags:
       - Dashboard
-securityDefinitions:
-  JWT:
-    description: Type 'Bearer \<TOKEN\>' to correctly set the AccessToken
-    in: header
-    name: Authorization
-    type: apiKey
+  /api/healthz:
+    get:
+      consumes:
+      - application/json
+      description: Get Healthz
+      responses:
+        "200":
+          description: OK
+      tags:
+      - Healthz
 swagger: "2.0"

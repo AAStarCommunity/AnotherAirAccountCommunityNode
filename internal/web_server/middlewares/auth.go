@@ -1,10 +1,8 @@
 package middlewares
 
 import (
-	"another_node/conf"
-	"time"
-
-	jwt "github.com/appleboy/gin-jwt/v2"
+	"another_node/internal/community/storage"
+	"another_node/internal/web_server/pkg/response"
 	"github.com/gin-gonic/gin"
 )
 
@@ -12,58 +10,45 @@ type ApiKey struct {
 	Key string `form:"apiKey" json:"apiKey" binding:"required"`
 }
 
-var jwtMiddleware *jwt.GinJWTMiddleware
+func ApiVerificationHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		apiKey := c.Query("apiKey")
+		if apiKey == "" {
+			response.BadRequest(c, "ApiKey is mandatory, visit to https://dashboard.aastar.io for more detail")
+			return
+		}
+		apiModel, err := storage.GetApiInfoByApiKey(apiKey)
+		if err != nil {
+			response.BadRequest(c, "can Not Find Your Api Key")
+			return
+		}
+		if apiModel.Disable {
+			response.BadRequest(c, "api Key Is Disabled")
+			return
+		}
+		if !apiModel.AirAccountEnable {
+			response.BadRequest(c, "api Key Is Disabled AirAccount")
+			return
+		}
 
-func GinJwtMiddleware() *jwt.GinJWTMiddleware {
-	return jwtMiddleware
-}
+		if !VerifyRateLimit(*apiModel) {
+			response.BadRequest(c, "too many requests")
+			return
+		}
 
-func AuthHandler() gin.HandlerFunc {
-	m, _ := jwt.New(&jwt.GinJWTMiddleware{
-		Realm:       conf.GetJwtKey().Realm,
-		Key:         []byte(conf.GetJwtKey().Security),
-		Timeout:     time.Hour * 24,
-		MaxRefresh:  time.Hour / 2,
-		IdentityKey: "jti",
-		PayloadFunc: func(data interface{}) jwt.MapClaims {
-			if v, ok := data.(string); ok {
-				return jwt.MapClaims{
-					"jti": v,
-				}
+		if apiModel.IPWhiteList != nil && apiModel.IPWhiteList.Cardinality() > 0 {
+			clientIp := c.ClientIP()
+			if !apiModel.IPWhiteList.Contains(clientIp) {
+				response.BadRequest(c, "ip not in whitelist")
+				return
 			}
-			return jwt.MapClaims{}
-		},
-		Authenticator: func(c *gin.Context) (interface{}, error) {
-			var apiKey ApiKey
-			if err := c.ShouldBind(&apiKey); err != nil {
-				return "", jwt.ErrMissingLoginValues
+		}
+		if apiModel.DomainWhitelist != nil && apiModel.DomainWhitelist.Cardinality() > 0 {
+			domain := c.Request.Host
+			if !apiModel.DomainWhitelist.Contains(domain) {
+				response.BadRequest(c, "domain not in whitelist")
+				return
 			}
-
-			// TODO: verify if the key is correct
-			return apiKey.Key, nil
-
-			// if incorrect
-			//return nil, jwt.ErrFailedAuthentication
-		},
-		Authorizator: func(data interface{}, c *gin.Context) bool {
-			// always return true unless the permission feature started
-			return true
-		},
-		Unauthorized: func(c *gin.Context, code int, message string) {
-			c.JSON(code, gin.H{
-				"code":    code,
-				"message": message,
-			})
-		},
-		TokenLookup:   "header: Authorization",
-		TokenHeadName: "Bearer",
-		TimeFunc:      time.Now,
-		HTTPStatusMessageFunc: func(e error, c *gin.Context) string {
-			return "401 Unauthorized"
-		},
-	})
-
-	jwtMiddleware = m
-
-	return m.MiddlewareFunc()
+		}
+	}
 }

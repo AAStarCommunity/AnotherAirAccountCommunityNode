@@ -5,6 +5,14 @@ db:
   password: #change it
   host: #change it
   schema: aastar # db schema
+config_db:
+  host: # change it
+  port: #change it
+  user: #change it
+  password:
+  db_name:
+  tz: # timezone
+  ssl_mode: # disable
 jwt:
   security: thisisunsafeuntilyouchangit
   realm: AASTAR
@@ -20,3 +28,4 @@ node:
 storage: another.dat
 provider:
   alchemy: # ApiKey
+api_key_access_enable: #true

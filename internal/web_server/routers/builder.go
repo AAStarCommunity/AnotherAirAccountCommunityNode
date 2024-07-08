@@ -7,8 +7,8 @@ import (
 )
 
 func buildRouters(router *gin.Engine) {
-
 	router.GET("/api/dashboard/v1/node", dashboard_v1.Node)
 	router.POST("/api/account/v1/bind", account_v1.Bind)
-	router.POST("api/account/v1/rpc", JsonRpcHandle)
+	router.POST("/api/account/v1/sign", account_v1.Sign)
+	router.POST("/api/v1/airaccount_rpc/:network", JsonRpcHandle)
 }

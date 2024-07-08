@@ -40,18 +40,17 @@ type BaseData struct {
 
 type ApiKeyDbModel struct {
 	BaseData
-	UserId    int64          `gorm:"column:user_id;type:integer" json:"user_id"`
-	Disable   bool           `gorm:"column:disable;type:bool" json:"disable"`
-	ApiKey    string         `gorm:"column:api_key;type:varchar(255)" json:"api_key"`
-	KeyName   string         `gorm:"column:key_name;type:varchar(255)" json:"key_name"`
-	DeletedAt gorm.DeletedAt `gorm:"softDelete:flag" json:"deleted_at"`
-	Extra     datatypes.JSON `gorm:"column:extra" json:"extra"`
+	UserId  int64          `gorm:"column:user_id;type:integer" json:"user_id"`
+	Disable bool           `gorm:"column:disable;type:bool" json:"disable"`
+	ApiKey  string         `gorm:"column:api_key;type:varchar(255)" json:"api_key"`
+	KeyName string         `gorm:"column:key_name;type:varchar(255)" json:"key_name"`
+	Extra   datatypes.JSON `gorm:"column:extra" json:"extra"`
 }
 
 func (*ApiKeyDbModel) TableName() string {
 	return "aastar_api_key"
 }
-func GetAPiInfoByApiKey(apiKey string) (*pkg.ApiKeyModel, error) {
+func GetApiInfoByApiKey(apiKey string) (*pkg.ApiKeyModel, error) {
 	apikeyModel := &ApiKeyDbModel{}
 	tx := configDb.Where("api_key = ?", apiKey).First(&apikeyModel)
 	if tx.Error != nil {
@@ -64,11 +63,11 @@ func GetAPiInfoByApiKey(apiKey string) (*pkg.ApiKeyModel, error) {
 	return apikeyRes, nil
 }
 
-type APiModelExtra struct {
+type ApiModelExtra struct {
 	NetWorkLimitEnable bool     `json:"network_limit_enable"`
 	DomainWhitelist    []string `json:"domain_whitelist"`
 	IPWhiteList        []string `json:"ip_white_list"`
-	AiraccountEnable   bool     `json:"airaccount_enable"`
+	AirAccountEnable   bool     `json:"airaccount_enable"`
 }
 
 func convertApiKeyDbModelToApiKeyModel(apiKeyDbModel *ApiKeyDbModel) *pkg.ApiKeyModel {
@@ -80,7 +79,7 @@ func convertApiKeyDbModelToApiKeyModel(apiKeyDbModel *ApiKeyDbModel) *pkg.ApiKey
 	if apiKeyDbModel.Extra != nil {
 		// convert To map
 		eJson, _ := apiKeyDbModel.Extra.MarshalJSON()
-		apiKeyExtra := &APiModelExtra{}
+		apiKeyExtra := &ApiModelExtra{}
 		err := json.Unmarshal(eJson, apiKeyExtra)
 		if err != nil {
 			return nil
@@ -98,7 +97,7 @@ func convertApiKeyDbModelToApiKeyModel(apiKeyDbModel *ApiKeyDbModel) *pkg.ApiKey
 				apiKeyModel.DomainWhitelist.Add(v)
 			}
 		}
-		apiKeyModel.AiraccountEnable = apiKeyExtra.AiraccountEnable
+		apiKeyModel.AirAccountEnable = apiKeyExtra.AirAccountEnable
 
 	}
 	return apiKeyModel

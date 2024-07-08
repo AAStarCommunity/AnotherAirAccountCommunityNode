@@ -24,8 +24,8 @@ func (env *Env) GetEnvName() *string {
 }
 
 func getConfFilePath() *string {
-	if os.Getenv("app_setting_path") != "" {
-		path := os.Getenv("app_setting_path")
+	if os.Getenv("app_conf_path") != "" {
+		path := os.Getenv("app_conf_path")
 		return &path
 	}
 	path := fmt.Sprintf("conf/appsettings.%s.yaml", strings.ToLower(Environment.Name))

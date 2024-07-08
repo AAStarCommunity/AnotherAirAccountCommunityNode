@@ -13,5 +13,5 @@ type ApiKeyModel struct {
 	NetWorkLimitEnable bool               `json:"network_limit_enable"`
 	DomainWhitelist    mapset.Set[string] `json:"domain_whitelist"`
 	IPWhiteList        mapset.Set[string] `json:"ip_white_list"`
-	AiraccountEnable   bool               `json:"airaccount_enable"`
+	AirAccountEnable   bool               `json:"airaccount_enable"`
 }

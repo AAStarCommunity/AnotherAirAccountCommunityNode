@@ -35,3 +35,6 @@ yarn-error.log*
 # vercel
 .vercel
 .env*.local
+
+/conf/appsettings.prod.yaml
+/conf/appsettings.dev.yaml

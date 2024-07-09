@@ -20,11 +20,6 @@ const docTemplate = `{
     "paths": {
         "/api/account/v1/bind": {
             "post": {
-                "security": [
-                    {
-                        "JWT": []
-                    }
-                ],
                 "description": "bind a account to community node",
                 "consumes": [
                     "application/json"
@@ -44,6 +39,13 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/request.Bind"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "apiKey",
+                        "name": "apiKey",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -55,11 +57,6 @@ const docTemplate = `{
         },
         "/api/account/v1/transfer": {
             "post": {
-                "security": [
-                    {
-                        "JWT": []
-                    }
-                ],
                 "description": "transfer a TX",
                 "consumes": [
                     "application/json"
@@ -79,33 +76,13 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/request.Transfer"
                         }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created"
-                    }
-                }
-            }
-        },
-        "/api/auth/v1/login": {
-            "post": {
-                "description": "Get AccessToken By ApiKey",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Auth"
-                ],
-                "parameters": [
+                    },
                     {
-                        "description": "AccessToken Model",
-                        "name": "credential",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/request.ClientCredential"
-                        }
+                        "type": "string",
+                        "description": "apiKey",
+                        "name": "apiKey",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -136,6 +113,22 @@ const docTemplate = `{
                                 "type": "string"
                             }
                         }
+                    }
+                }
+            }
+        },
+        "/api/healthz": {
+            "get": {
+                "description": "Get Healthz",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Healthz"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
                     }
                 }
             }
@@ -334,14 +327,6 @@ const docTemplate = `{
                 }
             }
         },
-        "request.ClientCredential": {
-            "type": "object",
-            "properties": {
-                "apiKey": {
-                    "type": "string"
-                }
-            }
-        },
         "request.Transfer": {
             "type": "object"
         },
@@ -396,14 +381,6 @@ const docTemplate = `{
                 }
             }
         }
-    },
-    "securityDefinitions": {
-        "JWT": {
-            "description": "Type 'Bearer \\\u003cTOKEN\\\u003e' to correctly set the AccessToken",
-            "type": "apiKey",
-            "name": "Authorization",
-            "in": "header"
-        }
     }
 }`
 
@@ -411,7 +388,7 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "",
 	Host:             "",
-	BasePath:         "",
+	BasePath:         "/api",
 	Schemes:          []string{},
 	Title:            "",
 	Description:      "",

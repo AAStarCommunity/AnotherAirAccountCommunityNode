@@ -5,12 +5,13 @@ import (
 	"another_node/docs"
 	"another_node/internal/web_server/middlewares"
 	"another_node/internal/web_server/pkg/response"
-	"io"
-	"net/http"
-
+	"fmt"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"io"
+	"net/http"
+	"time"
 )
 
 // SetRouters setting the routers
@@ -34,12 +35,16 @@ func SetRouters() (routers *gin.Engine) {
 	// development mode
 	if conf.Environment.IsDevelopment() {
 		gin.SetMode(gin.DebugMode) // debugger mode
-		buildSwagger(routers)      // build swagger
 	}
+	buildSwagger(routers) // build swagger
 
 	// use middlewares
 	routers.Use(handlers...)
-
+	routers.GET("/api/healthz", Healthz)
+	if conf.IsApiKeyAccessEnable() {
+		fmt.Println("[AirAccount] Api Key Access Enable")
+		routers.Use(middlewares.ApiVerificationHandler())
+	}
 	buildRouters(routers)
 
 	routers.NoRoute(func(ctx *gin.Context) {
@@ -53,4 +58,20 @@ func SetRouters() (routers *gin.Engine) {
 func buildSwagger(router *gin.Engine) {
 	docs.SwaggerInfo.BasePath = "/"
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+}
+
+// Healthz
+// @Tags Healthz
+// @Description Get Healthz
+// @Accept json
+// @Product json
+// @Router /api/healthz [get]
+// @Success 200
+func Healthz(c *gin.Context) {
+	resp := response.GetResponse()
+	resp.WithDataSuccess(c, gin.H{
+		"hello":   "AAStar AirAccount",
+		"time":    time.Now(),
+		"version": "v1.0.0",
+	})
 }

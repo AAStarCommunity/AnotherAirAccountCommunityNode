@@ -8,15 +8,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// transfer a TX
+// Transfer a TX
 // @Tags Account
 // @Description transfer a TX
 // @Accept json
 // @Produce json
 // @Success 201
 // @Param tx body request.Transfer true "Transfer TX"
+// @Param apiKey query string true "apiKey"
 // @Router /api/account/v1/transfer [POST]
-// @Security JWT
 func Transfer(ctx *gin.Context) {
 	var req request.Bind
 	if err := ctx.ShouldBindJSON(&req); err != nil {

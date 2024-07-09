@@ -1,5 +1,47 @@
 basePath: /api
 definitions:
+  global_const.Network:
+    enum:
+    - ethereum-mainnet
+    - ethereum-sepolia
+    - optimism-mainnet
+    - optimism-sepolia
+    - arbitrum-one
+    - arbitrum-nova
+    - arbitrum-sepolia
+    - scroll-mainnet
+    - scroll-sepolia
+    - starknet-mainnet
+    - starknet-sepolia
+    - base-mainnet
+    - base-sepolia
+    type: string
+    x-enum-varnames:
+    - EthereumMainnet
+    - EthereumSepolia
+    - OptimismMainnet
+    - OptimismSepolia
+    - ArbitrumOne
+    - ArbitrumNova
+    - ArbitrumSpeolia
+    - ScrollMainnet
+    - ScrollSepolia
+    - StarketMainnet
+    - StarketSepolia
+    - BaseMainnet
+    - BaseSepolia
+  pkg.JsonRpcRequest:
+    properties:
+      id:
+        type: integer
+      jsonrpc:
+        type: string
+      method:
+        type: string
+      params:
+        items: {}
+        type: array
+    type: object
   request.Bind:
     properties:
       account:
@@ -30,6 +72,8 @@ definitions:
         type: string
       email:
         type: string
+      network:
+        $ref: '#/definitions/global_const.Network'
       origin:
         type: string
     type: object
@@ -39,6 +83,8 @@ definitions:
         type: string
       email:
         type: string
+      network:
+        $ref: '#/definitions/global_const.Network'
       origin:
         type: string
     type: object
@@ -64,6 +110,18 @@ paths:
         name: apiKey
         required: true
         type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+      tags:
+      - Account
+  /api/account/v1/sign:
+    post:
+      consumes:
+      - application/json
+      description: sign a account to community node
       produces:
       - application/json
       responses:
@@ -239,4 +297,31 @@ paths:
       summary: sign in step 2. verify credentials
       tags:
       - Plugins Passkey
+  /api/v1/airaccount_rpc/{network}:
+    post:
+      consumes:
+      - application/json
+      description: AirAccount JSON-RPC API
+      parameters:
+      - description: Network
+        in: path
+        name: network
+        required: true
+        type: string
+      - description: JsonRpcRequest Model
+        in: body
+        name: rpcRequest
+        required: true
+        schema:
+          $ref: '#/definitions/pkg.JsonRpcRequest'
+      - description: apiKey
+        in: query
+        name: apiKey
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+      tags:
+      - JsonRpcHandle
 swagger: "2.0"

@@ -45,6 +45,25 @@
                 }
             }
         },
+        "/api/account/v1/sign": {
+            "post": {
+                "description": "sign a account to community node",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Account"
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    }
+                }
+            }
+        },
         "/api/account/v1/transfer": {
             "post": {
                 "description": "transfer a TX",
@@ -303,9 +322,101 @@
                     }
                 }
             }
+        },
+        "/api/v1/airaccount_rpc/{network}": {
+            "post": {
+                "description": "AirAccount JSON-RPC API",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "JsonRpcHandle"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Network",
+                        "name": "network",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "JsonRpcRequest Model",
+                        "name": "rpcRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/pkg.JsonRpcRequest"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "apiKey",
+                        "name": "apiKey",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "global_const.Network": {
+            "type": "string",
+            "enum": [
+                "ethereum-mainnet",
+                "ethereum-sepolia",
+                "optimism-mainnet",
+                "optimism-sepolia",
+                "arbitrum-one",
+                "arbitrum-nova",
+                "arbitrum-sepolia",
+                "scroll-mainnet",
+                "scroll-sepolia",
+                "starknet-mainnet",
+                "starknet-sepolia",
+                "base-mainnet",
+                "base-sepolia"
+            ],
+            "x-enum-varnames": [
+                "EthereumMainnet",
+                "EthereumSepolia",
+                "OptimismMainnet",
+                "OptimismSepolia",
+                "ArbitrumOne",
+                "ArbitrumNova",
+                "ArbitrumSpeolia",
+                "ScrollMainnet",
+                "ScrollSepolia",
+                "StarketMainnet",
+                "StarketSepolia",
+                "BaseMainnet",
+                "BaseSepolia"
+            ]
+        },
+        "pkg.JsonRpcRequest": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "jsonrpc": {
+                    "type": "string"
+                },
+                "method": {
+                    "type": "string"
+                },
+                "params": {
+                    "type": "array",
+                    "items": {}
+                }
+            }
+        },
         "request.Bind": {
             "type": "object",
             "properties": {
@@ -352,6 +463,9 @@
                 "email": {
                     "type": "string"
                 },
+                "network": {
+                    "$ref": "#/definitions/global_const.Network"
+                },
                 "origin": {
                     "type": "string"
                 }
@@ -365,6 +479,9 @@
                 },
                 "email": {
                     "type": "string"
+                },
+                "network": {
+                    "$ref": "#/definitions/global_const.Network"
                 },
                 "origin": {
                     "type": "string"

@@ -1,7 +1,10 @@
 package plugin_passkey_relay_party
 
 import (
+	"another_node/internal/global_const"
+
 	"another_node/internal/community/account"
+	"another_node/internal/community/chain"
 	"another_node/internal/web_server/pkg/response"
 	"another_node/plugins/passkey_relay_party/seedworks"
 
@@ -21,15 +24,16 @@ func (relay *RelayParty) finishRegistration(ctx *gin.Context) {
 
 	// body works for parser, the additional info appends to query
 	stubReg := seedworks.Registration{
-		Origin: ctx.Query("origin"),
-		Email:  ctx.Query("email"),
+		Origin:  ctx.Query("origin"),
+		Email:   ctx.Query("email"),
+		Network: global_const.Network(ctx.Query("network")),
 	}
 
 	if user, err := relay.store.FinishRegSession(&stubReg, ctx); err != nil {
 		response.BadRequest(ctx, err)
 		return
 	} else {
-		if err := createAA(*relay.accountProvider, user); err != nil {
+		if err := createAA(user, stubReg.Network); err != nil {
 			response.InternalServerError(ctx, err.Error())
 			return
 		} else {
@@ -41,15 +45,15 @@ func (relay *RelayParty) finishRegistration(ctx *gin.Context) {
 }
 
 // createAA represents creating an Account Abstraction for the user
-func createAA(provider account.Provider, user *seedworks.User) error {
+func createAA(user *seedworks.User, network global_const.Network) error {
 	if w, err := account.NewHdWallet(account.HierarchicalPath_Main_ETH_TestNet); err != nil {
 		return err
 	} else {
-		address, err := provider.CreateAccount(w)
+		address, err := chain.CreateSmartAccount(w, network)
 		if err != nil {
 			return err
 		}
-		user.SetWallet(w, address)
+		user.SetWallet(w, address, network)
 		return nil
 	}
 }

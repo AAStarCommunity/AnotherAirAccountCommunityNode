@@ -22,6 +22,8 @@ go.work
 
 appsettings.*.yaml
 
+/conf/network_config.json
+
 .idea
 .vscode
 

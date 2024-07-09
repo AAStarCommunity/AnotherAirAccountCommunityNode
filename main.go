@@ -9,6 +9,7 @@ import (
 	plugin_passkey_relay_party "another_node/plugins/passkey_relay_party"
 	"flag"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -53,6 +54,11 @@ func main() {
 		panic(err)
 	} else {
 		storage.Init()
+		networkConfigPath := os.Getenv("network_config_path")
+		if networkConfigPath == "" {
+			networkConfigPath = "./conf/network_config.json"
+		}
+		conf.InitNetworkConfig(networkConfigPath)
 		routers := routers.SetRouters()
 
 		// load http plugins

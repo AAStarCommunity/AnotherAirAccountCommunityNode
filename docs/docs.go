@@ -55,6 +55,25 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/account/v1/sign": {
+            "post": {
+                "description": "sign a account to community node",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Account"
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    }
+                }
+            }
+        },
         "/api/account/v1/transfer": {
             "post": {
                 "description": "transfer a TX",
@@ -132,9 +151,68 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/v1/airaccount_rpc/{network}": {
+            "post": {
+                "description": "Airaccount JSON-RPC API",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "JsonRpcHandle"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Network",
+                        "name": "network",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "JsonRpcRequest Model",
+                        "name": "rpcRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/pkg.JsonRpcRequest"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "apiKey",
+                        "name": "apiKey",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "pkg.JsonRpcRequest": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "jsonrpc": {
+                    "type": "string"
+                },
+                "method": {
+                    "type": "string"
+                },
+                "params": {
+                    "type": "array",
+                    "items": {}
+                }
+            }
+        },
         "request.Bind": {
             "type": "object",
             "properties": {

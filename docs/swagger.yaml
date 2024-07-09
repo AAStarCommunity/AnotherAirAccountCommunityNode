@@ -1,5 +1,17 @@
 basePath: /api
 definitions:
+  pkg.JsonRpcRequest:
+    properties:
+      id:
+        type: integer
+      jsonrpc:
+        type: string
+      method:
+        type: string
+      params:
+        items: {}
+        type: array
+    type: object
   request.Bind:
     properties:
       account:
@@ -31,6 +43,18 @@ paths:
         name: apiKey
         required: true
         type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+      tags:
+      - Account
+  /api/account/v1/sign:
+    post:
+      consumes:
+      - application/json
+      description: sign a account to community node
       produces:
       - application/json
       responses:
@@ -88,4 +112,31 @@ paths:
           description: OK
       tags:
       - Healthz
+  /api/v1/airaccount_rpc/{network}:
+    post:
+      consumes:
+      - application/json
+      description: Airaccount JSON-RPC API
+      parameters:
+      - description: Network
+        in: path
+        name: network
+        required: true
+        type: string
+      - description: JsonRpcRequest Model
+        in: body
+        name: rpcRequest
+        required: true
+        schema:
+          $ref: '#/definitions/pkg.JsonRpcRequest'
+      - description: apiKey
+        in: query
+        name: apiKey
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+      tags:
+      - JsonRpcHandle
 swagger: "2.0"

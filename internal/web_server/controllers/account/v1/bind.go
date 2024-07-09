@@ -36,7 +36,6 @@ func Bind(ctx *gin.Context) {
 func RpcBind() pkg.RpcMethodFunctionFunc {
 	return func(ctx *gin.Context, jsonRpcRequest *pkg.JsonRpcRequest) (interface{}, error) {
 		req := request.Bind{}
-		errors.Is(ctx.ShouldBindJSON(&req), nil)
 		if jsonRpcRequest.Params == nil || len(jsonRpcRequest.Params) <= 0 {
 			return nil, errors.New("invalid request [params is empty]")
 		}
@@ -47,8 +46,11 @@ func RpcBind() pkg.RpcMethodFunctionFunc {
 		if accountParam == nil {
 			return nil, errors.New("invalid request [account is empty]")
 		}
-		req.Account = accountParam.(string)
-
+		if account, ok := accountParam.(string); !ok {
+			return nil, errors.New("invalid request [account is not string]")
+		} else {
+			req.Account = account
+		}
 		publicKeyParam := jsonRpcRequest.Params[1]
 		if publicKeyParam == nil {
 			return nil, errors.New("invalid request [publicKey is empty]")

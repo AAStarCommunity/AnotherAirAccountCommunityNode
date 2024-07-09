@@ -36,7 +36,6 @@ func Sign(ctx *gin.Context) {
 func RpcSign() pkg.RpcMethodFunctionFunc {
 	return func(ctx *gin.Context, jsonRpcRequest *pkg.JsonRpcRequest) (interface{}, error) {
 		req := request.Sign{}
-		errors.Is(ctx.ShouldBindJSON(&req), nil)
 		if jsonRpcRequest.Params == nil || len(jsonRpcRequest.Params) <= 0 {
 			return nil, errors.New("invalid request [params is empty]")
 		}

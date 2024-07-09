@@ -22,11 +22,16 @@ import (
 // @Success 200
 func (relay *RelayParty) finishRegistration(ctx *gin.Context) {
 
+	if ctx.Query("network") != string(global_const.OptimismSepolia) {
+		response.BadRequest(ctx, "network not supported")
+		return
+	}
+
 	// body works for parser, the additional info appends to query
 	stubReg := seedworks.Registration{
 		Origin:  ctx.Query("origin"),
 		Email:   ctx.Query("email"),
-		Network: global_const.Network(ctx.Query("network")),
+		Network: global_const.OptimismSepolia,
 	}
 
 	if user, err := relay.store.FinishRegSession(&stubReg, ctx); err != nil {

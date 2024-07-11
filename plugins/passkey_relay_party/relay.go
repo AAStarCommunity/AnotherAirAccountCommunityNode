@@ -7,6 +7,7 @@ import (
 	"another_node/internal/community/node"
 	"another_node/plugins/passkey_relay_party/seedworks"
 	storage "another_node/plugins/passkey_relay_party/storage"
+	"another_node/plugins/passkey_relay_party/storage/migrations"
 
 	"github.com/gin-gonic/gin"
 )
@@ -29,8 +30,10 @@ func (r *RelayParty) RegisterRoutes(router *gin.Engine, community *node.Communit
 }
 
 func NewRelay() *RelayParty {
+	migrations.AutoMigrate()
+
 	return &RelayParty{
-		db:    storage.NewInMemory(),
+		db:    storage.NewPgsqlStorage(),
 		store: seedworks.NewInMemorySessionStore(),
 		accountProvider: func() *account.Provider {
 			p, err := impl.NewAlchemyProvider(conf.GetProvider().Alchemy)

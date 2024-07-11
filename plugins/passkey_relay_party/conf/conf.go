@@ -21,15 +21,16 @@ type Conf struct {
 		Password string
 		Replier  string
 	}
+	DbConnection string
+	VaultSecret  string // encrypt & decrypt data into/from db
 }
 
-var conf *Conf
+var config *Conf
 
-// Get 读取配置
-// 优先使用环境变量，如果为空，则使用对应的appsettings.*.yaml
+// Get read config from env or file (env 1st)
 func Get() *Conf {
 	once.Do(func() {
-		if conf == nil {
+		if config == nil {
 			mailHost := os.Getenv("mail__host")
 			mailTls := os.Getenv("mail__tls")
 			mailPortStr := os.Getenv("mail__port")
@@ -42,10 +43,25 @@ func Get() *Conf {
 			mailPassword := os.Getenv("mail__password")
 			replier := os.Getenv("mail__replier")
 
+			dbConnection := os.Getenv("passkey_db_connection")
+			vaultSecret := os.Getenv("passkey_vault_secret")
+
 			filePath := getConfFilePath()
 			confFile := getConfiguration(filePath)
 
-			conf = &Conf{
+			config = &Conf{
+				DbConnection: func() string {
+					if dbConnection == "" {
+						return confFile.DbConnection
+					}
+					return dbConnection
+				}(),
+				VaultSecret: func() string {
+					if vaultSecret == "" {
+						return confFile.VaultSecret
+					}
+					return vaultSecret
+				}(),
 				Mail: struct {
 					Host     string
 					Tls      bool
@@ -94,10 +110,10 @@ func Get() *Conf {
 			}
 		}
 	})
-	return conf
+	return config
 }
 
-// getConfiguration 读取配置
+// getConfiguration read config from file
 func getConfiguration(filePath *string) *Conf {
 	if file, err := os.ReadFile(*filePath); err != nil {
 		panic("conf lost")

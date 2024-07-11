@@ -9,8 +9,9 @@ func (rp *RelayParty) emailStartChallenge(mail, acceptLanguage string) error {
 
 	captcha := seedworks.GenCaptcha(6)
 
-	var body string
+	var subject, body string
 	if strings.EqualFold(acceptLanguage, "zh") {
+		subject = "验证您的邮箱"
 		body = `
 验证您的邮箱
 <br />
@@ -18,17 +19,18 @@ func (rp *RelayParty) emailStartChallenge(mail, acceptLanguage string) error {
 此验证码将在 <b>10</b> 分钟后失效，非本人操作请忽略。<br />
 `
 	} else {
+		subject = "Verify Your Email"
 		body = `
 Verify
 <br />
 <h2>` + captcha + `</h2>
-Invalidate in <b>10</b> minutes, ignore if you were confused about this mail<br />
+Invalidate in <b>10</b> minutes, ignore it if you were confused about this mail<br />
 `
 	}
 
 	if err := sendMail(
 		mail,
-		"Verify Your Email",
+		subject,
 		body,
 		"text/html",
 	); err != nil {

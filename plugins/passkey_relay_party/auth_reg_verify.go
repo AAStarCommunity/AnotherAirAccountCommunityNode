@@ -51,7 +51,7 @@ func (relay *RelayParty) finishRegistration(ctx *gin.Context) {
 
 // createAA represents creating an Account Abstraction for the user
 func createAA(user *seedworks.User, network global_const.Network) error {
-	if w, err := account.NewHdWallet(account.HierarchicalPath_Main_ETH_TestNet); err != nil {
+	if w, err := account.NewHdWallet(account.HierarchicalPath_ETH); err != nil {
 		return err
 	} else {
 		address, err := chain.CreateSmartAccount(w, network)

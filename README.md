@@ -41,3 +41,9 @@ swag init -g ./main.go
 go mod tidy
 go run ./cmd/server/main.go
 ```
+
+### Docker启动
+
+```shell
+docker-compose -f ./example/one-click-deploy/docker-compose.yaml up -d
+```

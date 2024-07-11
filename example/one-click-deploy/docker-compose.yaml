@@ -1,0 +1,21 @@
+services:
+  db:
+      image: postgres
+      ports:
+        - "5432:5432"
+      environment:
+        - POSTGRES_DB=airaccount
+        - POSTGRES_USER=aastar
+        - POSTGRES_PASSWORD=123456
+
+  pgadmin4:
+      container_name: my_pgadmin4
+      image: dpage/pgadmin4:2024-05-27-1
+      restart: "always"
+      environment:
+        PGADMIN_DEFAULT_EMAIL: "aastar@gmail.com"
+        PGADMIN_DEFAULT_PASSWORD: "123456"
+      ports:
+        - "5050:80"
+      extra_hosts:
+        - "host.docker.internal:host-gateway"

@@ -8,7 +8,7 @@ import (
 type HierarchicalPath string
 
 // HierarchicalPath_ETH is the default path for Mainet / Eth / TestNet
-const HierarchicalPath_Main_ETH_TestNet HierarchicalPath = "m/44'/60'/0'/0/0"
+const HierarchicalPath_ETH HierarchicalPath = "m/44'/60'/0'/0/0"
 
 type HdWallet struct {
 	mnemonic   string

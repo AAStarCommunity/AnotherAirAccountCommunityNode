@@ -27,7 +27,7 @@ func TestAlchemyProvider_CreateAccount(t *testing.T) {
 	if err != nil {
 		t.Errorf("Failed to create account: %v", err)
 	}
-	w, err := account.NewHdWallet(account.HierarchicalPath(account.HierarchicalPath_Main_ETH_TestNet))
+	w, err := account.NewHdWallet(account.HierarchicalPath(account.HierarchicalPath_ETH))
 	if err != nil {
 		t.Errorf("Failed to create account: %v", err)
 	}

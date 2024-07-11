@@ -5,7 +5,7 @@ import (
 )
 
 func TestNewHdWallet(t *testing.T) {
-	hierarchicalPath := HierarchicalPath(HierarchicalPath_Main_ETH_TestNet)
+	hierarchicalPath := HierarchicalPath(HierarchicalPath_ETH)
 
 	wallet, err := NewHdWallet(hierarchicalPath)
 	if err != nil {

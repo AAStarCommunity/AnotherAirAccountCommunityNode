@@ -23,8 +23,8 @@ func (relay *RelayParty) regPrepare(ctx *gin.Context) {
 		response.BadRequest(ctx, err.Error())
 		return
 	}
-
-	if relay.emailStartChallenge(reg.Email, ctx.GetHeader("Accept-Language")) != nil {
+	err := relay.emailStartChallenge(reg.Email, ctx.GetHeader("Accept-Language"))
+	if err != nil {
 		response.BadRequest(ctx, "challenge failed")
 		return
 	}

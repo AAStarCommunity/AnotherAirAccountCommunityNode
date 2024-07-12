@@ -12,7 +12,7 @@ import (
 
 var once sync.Once
 
-type Conf struct {
+type PassKeyConf struct {
 	Mail struct {
 		Host     string
 		Tls      bool
@@ -25,10 +25,10 @@ type Conf struct {
 	VaultSecret  string // encrypt & decrypt data into/from db
 }
 
-var config *Conf
+var config *PassKeyConf
 
 // Get read config from env or file (env 1st)
-func Get() *Conf {
+func Get() *PassKeyConf {
 	once.Do(func() {
 		if config == nil {
 			mailHost := os.Getenv("mail__host")
@@ -49,7 +49,7 @@ func Get() *Conf {
 			filePath := getConfFilePath()
 			confFile := getConfiguration(filePath)
 
-			config = &Conf{
+			config = &PassKeyConf{
 				DbConnection: func() string {
 					if dbConnection == "" {
 						return confFile.DbConnection
@@ -114,11 +114,11 @@ func Get() *Conf {
 }
 
 // getConfiguration read config from file
-func getConfiguration(filePath *string) *Conf {
+func getConfiguration(filePath *string) *PassKeyConf {
 	if file, err := os.ReadFile(*filePath); err != nil {
 		panic("conf lost")
 	} else {
-		c := Conf{}
+		c := PassKeyConf{}
 		err := yaml.Unmarshal(file, &c)
 		if err != nil {
 			panic("conf lost")
@@ -128,6 +128,10 @@ func getConfiguration(filePath *string) *Conf {
 }
 
 func getConfFilePath() *string {
+	osPtah := os.Getenv("passkey_conf_path")
+	if osPtah != "" {
+		return &osPtah
+	}
 	envName := "prod"
 	if len(os.Getenv("Env")) > 0 {
 		envName = os.Getenv("Env")

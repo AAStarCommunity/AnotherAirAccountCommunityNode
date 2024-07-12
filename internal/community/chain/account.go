@@ -81,20 +81,19 @@ func CreateSmartAccount(wallet *account.HdWallet, network global_const.Network) 
 		return "", "", err
 	}
 	factoryAddress := common.HexToAddress(factoryAddressStr)
-	initCodeByte, err := GetAccountInitCode(address, factoryAddress, salt)
+	initCodeStr, err = getAccountInitCode(address, factoryAddress, salt)
 	if err != nil {
 		return "", "", err
 	}
-	initCodeStr = "Ox" + hex.EncodeToString(initCodeByte)
 	return address.Hex(), initCodeStr, nil
 }
 
-func GetAccountInitCode(accountAddress common.Address, factoryAddress common.Address, salt int64) ([]byte, error) {
+func getAccountInitCode(accountAddress common.Address, factoryAddress common.Address, salt int64) (string, error) {
 	data, err := creatAccountAbi.Pack("createAccount", accountAddress, big.NewInt(salt))
 	if err != nil {
-		return nil, xerrors.Errorf("error encoding function data: %v", err)
+		return "", xerrors.Errorf("error encoding function data: %v", err)
 	}
 	data = append(factoryAddress.Bytes(), data...)
-
-	return data, nil
+	initCodeStr := "Ox" + hex.EncodeToString(data)
+	return initCodeStr, nil
 }

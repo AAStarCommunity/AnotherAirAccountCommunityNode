@@ -26,6 +26,7 @@ func New(listen *uint16, globalName *string, entrypoints *string, genesis *bool)
 			Node: &Node{},
 		}, nil
 	} else {
+		fmt.Println("Node is running in cluster mode")
 		if genesis != nil {
 			confNode.Genesis = *genesis
 		}

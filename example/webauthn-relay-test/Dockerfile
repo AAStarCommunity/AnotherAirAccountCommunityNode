@@ -7,6 +7,8 @@ COPY . .
 RUN pnpm install \
     && pnpm build
 
+ENV NEXT_PUBLIC_BASE_URL=https://anotherairaccountcommunitynode.onrender.com
+
 EXPOSE 80
 
 CMD ["pnpm", "start"]

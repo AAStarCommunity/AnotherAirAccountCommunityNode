@@ -12,4 +12,4 @@ COPY . ./
 
 EXPOSE 80
 
-CMD ["pnpm", "next", "start", "-p", "80"]
+CMD ["pnpm", "start"]

@@ -21,10 +21,6 @@ type PassKeyConf struct {
 		Password string
 		Replier  string
 	}
-	RelayParty struct {
-		DisplayName string `yaml:"display_name"`
-		Id          string `yaml:"id"` // relay party id
-	} `yaml:"relay_party"`
 	DbConnection string `yaml:"db_connection"` // db connection string
 	VaultSecret  string `yaml:"vault_secret"`  // encrypt & decrypt data into/from db
 }
@@ -54,13 +50,6 @@ func Get() *PassKeyConf {
 			confFile := getConfiguration(filePath)
 
 			config = &PassKeyConf{
-				RelayParty: struct {
-					DisplayName string `yaml:"display_name"`
-					Id          string `yaml:"id"` // relay party id
-				}{
-					DisplayName: confFile.RelayParty.DisplayName,
-					Id:          confFile.RelayParty.Id,
-				},
 				DbConnection: func() string {
 					if dbConnection == "" {
 						return confFile.DbConnection

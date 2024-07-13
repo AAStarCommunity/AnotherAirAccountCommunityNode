@@ -1,3 +1,6 @@
+relay_party:
+  display_name: #
+  id: #
 mail:
   host: #
   tls: true

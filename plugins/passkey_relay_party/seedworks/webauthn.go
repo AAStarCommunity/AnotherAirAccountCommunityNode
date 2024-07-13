@@ -1,6 +1,7 @@
 package seedworks
 
 import (
+	"another_node/plugins/passkey_relay_party/conf"
 	"fmt"
 	"net/url"
 
@@ -14,8 +15,8 @@ func newWebAuthn(origin string) (*webauthn.WebAuthn, error) {
 	}
 	hostname := u.Hostname()
 	wconfig := &webauthn.Config{
-		RPDisplayName: origin,
-		RPID:          hostname,                   // Generally the FQDN for your site
+		RPDisplayName: conf.Get().RelayParty.DisplayName,
+		RPID:          conf.Get().RelayParty.Id,   // Generally the FQDN for your site
 		RPOrigins:     []string{origin, hostname}, // The origin URLs allowed for WebAuthn requests
 	}
 

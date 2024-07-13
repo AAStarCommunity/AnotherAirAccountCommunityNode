@@ -9,6 +9,7 @@ import (
 	plugin_passkey_relay_party "another_node/plugins/passkey_relay_party"
 	"flag"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -43,6 +44,10 @@ func getFlags() (listen *uint16, name *string, joinAddrs *string, genesis *bool)
 // @contact.url    https://aastar.xyz
 // @BasePath /api
 func main() {
+
+	if healthz := os.Getenv("healthz"); len(healthz) > 0 {
+		preventSuspend(healthz)
+	}
 
 	defer func() {
 		storage.Close()

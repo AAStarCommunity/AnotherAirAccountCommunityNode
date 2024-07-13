@@ -2,14 +2,10 @@ FROM node:20.14.0-alpine3.20
 
 RUN npm install -g pnpm
 
-WORKDIR /usr/src/app
+COPY . .
 
-COPY package.json pnpm-lock.yaml ./
-
-RUN pnpm install
-RUN pnpm build
-
-COPY . ./
+RUN pnpm install \
+    && pnpm build
 
 EXPOSE 80
 

@@ -36,6 +36,15 @@ definitions:
       message:
         type: string
     type: object
+  seedworks.FinishRegistration:
+    properties:
+      email:
+        type: string
+      network:
+        $ref: '#/definitions/seedworks.Network'
+      origin:
+        type: string
+    type: object
   seedworks.Network:
     enum:
     - ethereum-mainnet
@@ -72,8 +81,6 @@ definitions:
         type: string
       email:
         type: string
-      network:
-        $ref: '#/definitions/seedworks.Network'
       origin:
         type: string
     type: object
@@ -88,8 +95,6 @@ definitions:
         type: string
       email:
         type: string
-      network:
-        $ref: '#/definitions/seedworks.Network'
       origin:
         type: string
     type: object
@@ -231,7 +236,7 @@ paths:
         name: registrationBody
         required: true
         schema:
-          $ref: '#/definitions/seedworks.Registration'
+          $ref: '#/definitions/seedworks.FinishRegistration'
       responses:
         "200":
           description: OK

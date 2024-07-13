@@ -8,7 +8,12 @@ type RegistrationPrepare struct {
 
 type Registration struct {
 	RegistrationPrepare
-	Origin  string         `json:"origin"`
-	Captcha string         `json:"captcha"`
-	Network consts.Network `json:"network"`
+	Origin  string `json:"origin"`
+	Captcha string `json:"captcha"`
+}
+
+type FinishRegistration struct {
+	RegistrationPrepare
+	Origin  string       `json:"origin"`
+	Network consts.Chain `json:"network"`
 }

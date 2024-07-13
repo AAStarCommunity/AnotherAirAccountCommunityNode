@@ -6,6 +6,6 @@ type PasskeySession struct {
 	storage.BaseData
 }
 
-func (u *PasskeySession) TableName() string {
+func (PasskeySession) TableName() string {
 	return "passkey_sessions"
 }

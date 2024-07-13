@@ -9,6 +9,10 @@ func (rp *RelayParty) emailStartChallenge(mail, acceptLanguage string) error {
 
 	captcha := seedworks.GenCaptcha(6)
 
+	if err := rp.db.SaveChallenge(mail, captcha); err != nil {
+		return err
+	}
+
 	var subject, body string
 	if strings.EqualFold(acceptLanguage, "zh") || strings.EqualFold(acceptLanguage, "zh-cn") {
 		subject = "验证您的邮箱"
@@ -37,10 +41,10 @@ Invalidate in <b>10</b> minutes, ignore it if you were confused about this mail<
 		return err
 	}
 
-	return rp.db.SaveChallenge(mail, captcha)
+	return nil
 }
 
-func (rp *RelayParty) emailFinishChallenge(mail, code string) error {
+func (rp *RelayParty) emailChallenge(mail, code string) error {
 	if !rp.db.Challenge(mail, code) {
 		return seedworks.ErrInvalidCaptcha{}
 	}

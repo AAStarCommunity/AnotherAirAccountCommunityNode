@@ -10,8 +10,8 @@ import (
 	"github.com/go-webauthn/webauthn/webauthn"
 )
 
-func GetSessionKey(reg *Registration) string {
-	return reg.Origin + ":" + reg.Email
+func GetSessionKey(origin, id string) string {
+	return origin + ":" + id
 }
 
 type SessionStore struct {
@@ -30,7 +30,7 @@ func NewInMemorySessionStore() *SessionStore {
 func (store *SessionStore) NewRegSession(reg *Registration) (*protocol.CredentialCreation, error) {
 	user := newUser(reg.Email)
 	wan, _ := newWebAuthn(reg.Origin)
-	sessionKey := GetSessionKey(reg)
+	sessionKey := GetSessionKey(reg.Origin, reg.Email)
 
 	authSelect := protocol.AuthenticatorSelection{
 		AuthenticatorAttachment: protocol.Platform,
@@ -46,8 +46,8 @@ func (store *SessionStore) NewRegSession(reg *Registration) (*protocol.Credentia
 	}
 }
 
-func (store *SessionStore) FinishRegSession(reg *Registration, ctx *gin.Context) (*User, error) {
-	key := GetSessionKey(reg)
+func (store *SessionStore) FinishRegSession(reg *FinishRegistration, ctx *gin.Context) (*User, error) {
+	key := GetSessionKey(reg.Origin, reg.Email)
 	if session := store.Get(key); session == nil {
 		return nil, fmt.Errorf("%s: not found", reg.Email)
 	} else {
@@ -67,7 +67,7 @@ func (store *SessionStore) NewAuthSession(user *User, signIn *SiginIn) (*protoco
 	}
 
 	webauthn, _ := newWebAuthn(signIn.Origin)
-	sessionKey := GetSessionKey(&signIn.Registration)
+	sessionKey := GetSessionKey(signIn.Origin, signIn.Email)
 	if opt, session, err := webauthn.BeginLogin(user); err != nil {
 		return nil, err
 	} else {
@@ -77,7 +77,7 @@ func (store *SessionStore) NewAuthSession(user *User, signIn *SiginIn) (*protoco
 }
 
 func (store *SessionStore) FinishAuthSession(signIn *SiginIn, ctx *gin.Context) (*User, *webauthn.Credential, error) {
-	key := GetSessionKey(&signIn.Registration)
+	key := GetSessionKey(signIn.Origin, signIn.Email)
 	if session := store.Get(key); session == nil {
 		return nil, nil, fmt.Errorf("%s: not found", signIn.Email)
 	} else {

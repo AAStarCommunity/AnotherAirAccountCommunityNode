@@ -26,7 +26,7 @@ func (relay *RelayParty) beginSignIn(ctx *gin.Context) {
 		return
 	}
 
-	if session := relay.store.Get(seedworks.GetSessionKey(&signIn.Registration)); session != nil {
+	if session := relay.store.Get(seedworks.GetSessionKey(signIn.Origin, signIn.Email)); session != nil {
 		response.BadRequest(ctx, "Already in SignIn")
 		return
 	} else {

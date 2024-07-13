@@ -50,7 +50,7 @@ func (db *InMemory) SaveChallenge(email, code string) error {
 }
 func (db *InMemory) Challenge(email, code string) bool {
 	if v, ok := db.captchas[email]; ok {
-		if v.code == code && time.Now().Sub(v.time) < 10*time.Minute {
+		if v.code == code && time.Since(v.time) < 10*time.Minute {
 			return true
 		}
 	}

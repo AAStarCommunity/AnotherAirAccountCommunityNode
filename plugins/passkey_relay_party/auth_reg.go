@@ -24,7 +24,12 @@ func (relay *RelayParty) beginRegistration(ctx *gin.Context) {
 		return
 	}
 
-	if u, err := relay.FindUserByEmail(reg.Email); err != nil && !errors.Is(err, seedworks.ErrUserNotFound{}) {
+	if err := relay.emailChallenge(reg.Email, reg.Captcha); err != nil {
+		response.BadRequest(ctx, err.Error())
+		return
+	}
+
+	if u, err := relay.findUserByEmail(reg.Email); err != nil && !errors.Is(err, seedworks.ErrUserNotFound{}) {
 		response.InternalServerError(ctx, err.Error())
 		return
 	} else if u != nil {
@@ -32,15 +37,10 @@ func (relay *RelayParty) beginRegistration(ctx *gin.Context) {
 		return
 	}
 
-	if relay.emailFinishChallenge(reg.Email, reg.Captcha) != nil {
-		response.BadRequest(ctx, "Invalid captcha")
-		return
-	}
-
 	// TODO: if the user is not exists but in community, re-register the user
 
-	if session := relay.store.Get(seedworks.GetSessionKey(&reg)); session != nil {
-		response.BadRequest(ctx, "Already in registration")
+	if session := relay.store.Get(seedworks.GetSessionKey(reg.Origin, reg.Email)); session != nil {
+		response.BadRequest(ctx, "Already in registration process")
 		return
 	} else {
 		if options, err := relay.store.NewRegSession(&reg); err != nil {

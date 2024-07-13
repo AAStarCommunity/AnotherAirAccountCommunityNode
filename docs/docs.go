@@ -225,7 +225,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/seedworks.Registration"
+                            "$ref": "#/definitions/seedworks.FinishRegistration"
                         }
                     }
                 ],
@@ -431,6 +431,20 @@ const docTemplate = `{
                 }
             }
         },
+        "seedworks.FinishRegistration": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "network": {
+                    "$ref": "#/definitions/seedworks.Network"
+                },
+                "origin": {
+                    "type": "string"
+                }
+            }
+        },
         "seedworks.Network": {
             "type": "string",
             "enum": [
@@ -473,9 +487,6 @@ const docTemplate = `{
                 "email": {
                     "type": "string"
                 },
-                "network": {
-                    "$ref": "#/definitions/seedworks.Network"
-                },
                 "origin": {
                     "type": "string"
                 }
@@ -497,9 +508,6 @@ const docTemplate = `{
                 },
                 "email": {
                     "type": "string"
-                },
-                "network": {
-                    "$ref": "#/definitions/seedworks.Network"
                 },
                 "origin": {
                     "type": "string"

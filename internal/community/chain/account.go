@@ -11,7 +11,7 @@ import (
 
 const salt int64 = 1
 
-func CreateSmartAccount(wallet *account.HdWallet, network seedworks.Network) (string, error) {
+func CreateSmartAccount(wallet *account.HdWallet, network seedworks.Chain) (string, error) {
 	pk := "0x" + wallet.PrivateKey()
 	networkConfig := conf.GetNetworkConfigByNetwork(network)
 	if networkConfig == nil {

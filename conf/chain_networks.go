@@ -7,7 +7,7 @@ import (
 )
 
 var onceChainNetwork sync.Once
-var networkConfigMap map[seedworks.Network]*ChainNetworkConfig
+var networkConfigMap map[seedworks.Chain]*ChainNetworkConfig
 
 type ChainNetworkConfig struct {
 	ChainId              string `json:"chain_id"`
@@ -19,11 +19,11 @@ type ChainNetworkConfig struct {
 	RpcUrl               string `json:"rpc_url"`
 }
 
-func GetNetworkConfigByNetwork(network seedworks.Network) *ChainNetworkConfig {
+func GetNetworkConfigByNetwork(network seedworks.Chain) *ChainNetworkConfig {
 	onceChainNetwork.Do(func() {
 		if len(networkConfigMap) == 0 {
 			j := getConf().ChainNetworks
-			networkConfigMap = make(map[seedworks.Network]*ChainNetworkConfig)
+			networkConfigMap = make(map[seedworks.Chain]*ChainNetworkConfig)
 			for key, value := range j {
 				var v ChainNetworkConfig
 				_ = json.Unmarshal([]byte(value), &v)
@@ -36,7 +36,7 @@ func GetNetworkConfigByNetwork(network seedworks.Network) *ChainNetworkConfig {
 				if v.V06FactoryAddress == "" {
 					panic(key + " v06 factory address is empty")
 				}
-				networkConfigMap[seedworks.Network(key)] = &v
+				networkConfigMap[seedworks.Chain(key)] = &v
 			}
 		}
 	})

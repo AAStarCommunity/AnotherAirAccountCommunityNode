@@ -45,8 +45,8 @@ func NewRelay() *RelayParty {
 	}
 }
 
-// FindUserByEmail finds a user by email in relay storage
-func (r *RelayParty) FindUserByEmail(email string) (*seedworks.User, error) {
+// findUserByEmail finds a user by email in relay storage
+func (r *RelayParty) findUserByEmail(email string) (*seedworks.User, error) {
 	if email == "" {
 		return nil, seedworks.ErrEmailEmpty{}
 	}

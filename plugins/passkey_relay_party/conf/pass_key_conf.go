@@ -22,7 +22,7 @@ type PassKeyConf struct {
 		Replier  string
 	}
 	DbConnection string `yaml:"db_connection"` // db connection string
-	VaultSecret  string `yaml:"vault_secret"`  // encrypt & decrypt data into/from db
+	VaultSecret  []byte `yaml:"vault_secret"`  // encrypt & decrypt data into/from db
 }
 
 var config *PassKeyConf
@@ -44,7 +44,7 @@ func Get() *PassKeyConf {
 			replier := os.Getenv("mail__replier")
 
 			dbConnection := os.Getenv("passkey_db_connection")
-			vaultSecret := os.Getenv("passkey_vault_secret")
+			vaultSecret := []byte(os.Getenv("passkey_vault_secret"))
 
 			filePath := getConfFilePath()
 			confFile := getConfiguration(filePath)
@@ -56,8 +56,8 @@ func Get() *PassKeyConf {
 					}
 					return dbConnection
 				}(),
-				VaultSecret: func() string {
-					if vaultSecret == "" {
+				VaultSecret: func() []byte {
+					if len(vaultSecret) == 0 {
 						return confFile.VaultSecret
 					}
 					return vaultSecret

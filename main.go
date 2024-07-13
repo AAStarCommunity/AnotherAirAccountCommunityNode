@@ -9,12 +9,33 @@ import (
 	plugin_passkey_relay_party "another_node/plugins/passkey_relay_party"
 	"flag"
 	"fmt"
+	"io"
+	"log"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var httpPlugins = make([]plugin.HttpPlugin, 0)
+
+func preventSuspend(host string) {
+
+	go func() {
+		t := time.Tick(time.Second * 30)
+		for {
+			if resp, err := http.Get(host); err != nil {
+				log.Default().Printf("error: " + err.Error())
+			} else {
+				if b, err := io.ReadAll(resp.Body); err == nil {
+					log.Default().Printf("health: " + string(b))
+				}
+			}
+			<-t
+		}
+	}()
+}
 
 func getFlags() (listen *uint16, name *string, joinAddrs *string, genesis *bool) {
 	// 解析命令行参数

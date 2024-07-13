@@ -2,6 +2,7 @@ package plugin_passkey_relay_party
 
 import (
 	consts "another_node/internal/seedworks"
+	"strings"
 
 	"another_node/internal/community/account"
 	"another_node/internal/community/chain"
@@ -44,6 +45,11 @@ func (relay *RelayParty) finishRegistration(ctx *gin.Context) {
 		response.BadRequest(ctx, err)
 		return
 	} else {
+		// TODO: special logic for align testing
+		if strings.HasSuffix(stubReg.Email, "@aastar.org") {
+			response.GetResponse().WithDataSuccess(ctx, user)
+			return
+		}
 		if err := createAA(user, stubReg.Network); err != nil {
 			response.InternalServerError(ctx, err.Error())
 			return

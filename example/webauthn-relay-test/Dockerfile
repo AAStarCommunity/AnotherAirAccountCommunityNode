@@ -14,10 +14,10 @@ COPY package.json pnpm-lock.yaml ./
 RUN pnpm install
 
 # 复制项目文件到工作目录
-COPY . .
+COPY . ./
 
 # 应用运行在哪个端口
-EXPOSE 10000
+EXPOSE 3000
 
 # 运行应用
 CMD ["pnpm", "dev"]

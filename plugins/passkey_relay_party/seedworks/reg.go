@@ -1,10 +1,14 @@
 package seedworks
 
-import "another_node/internal/global_const"
+import consts "another_node/internal/seedworks"
+
+type RegistrationPrepare struct {
+	Email string `json:"email"`
+}
 
 type Registration struct {
-	Origin  string `json:"origin"`
-	Email   string `json:"email"`
-	Captcha string `json:"captcha"`
-	Network global_const.Network `json:"network"`
+	RegistrationPrepare
+	Origin  string         `json:"origin"`
+	Captcha string         `json:"captcha"`
+	Network consts.Network `json:"network"`
 }

@@ -22,8 +22,10 @@ func (relay *RelayParty) finishSignIn(ctx *gin.Context) {
 	// body works for SDK, the additional info appends to query
 	stubSignIn := seedworks.SiginIn{
 		Registration: seedworks.Registration{
+			RegistrationPrepare: seedworks.RegistrationPrepare{
+				Email: ctx.Query("email"),
+			},
 			Origin: ctx.Query("origin"),
-			Email:  ctx.Query("email"),
 		},
 	}
 

@@ -5,5 +5,5 @@ mail:
   user: #
   password: #
   replier: "NO-REPLY"
-dbConnection: #
-vaultSecret: #
+db_connection: #
+vault_secret: #

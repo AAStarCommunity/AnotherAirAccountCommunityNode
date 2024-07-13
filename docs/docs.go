@@ -197,7 +197,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/seedworks.Registration"
+                            "$ref": "#/definitions/seedworks.RegistrationPrepare"
                         }
                     }
                 ],
@@ -376,39 +376,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "global_const.Network": {
-            "type": "string",
-            "enum": [
-                "ethereum-mainnet",
-                "ethereum-sepolia",
-                "optimism-mainnet",
-                "optimism-sepolia",
-                "arbitrum-one",
-                "arbitrum-nova",
-                "arbitrum-sepolia",
-                "scroll-mainnet",
-                "scroll-sepolia",
-                "starknet-mainnet",
-                "starknet-sepolia",
-                "base-mainnet",
-                "base-sepolia"
-            ],
-            "x-enum-varnames": [
-                "EthereumMainnet",
-                "EthereumSepolia",
-                "OptimismMainnet",
-                "OptimismSepolia",
-                "ArbitrumOne",
-                "ArbitrumNova",
-                "ArbitrumSpeolia",
-                "ScrollMainnet",
-                "ScrollSepolia",
-                "StarketMainnet",
-                "StarketSepolia",
-                "BaseMainnet",
-                "BaseSepolia"
-            ]
-        },
         "pkg.JsonRpcRequest": {
             "type": "object",
             "properties": {
@@ -464,6 +431,39 @@ const docTemplate = `{
                 }
             }
         },
+        "seedworks.Network": {
+            "type": "string",
+            "enum": [
+                "ethereum-mainnet",
+                "ethereum-sepolia",
+                "optimism-mainnet",
+                "optimism-sepolia",
+                "arbitrum-one",
+                "arbitrum-nova",
+                "arbitrum-sepolia",
+                "scroll-mainnet",
+                "scroll-sepolia",
+                "starknet-mainnet",
+                "starknet-sepolia",
+                "base-mainnet",
+                "base-sepolia"
+            ],
+            "x-enum-varnames": [
+                "EthereumMainnet",
+                "EthereumSepolia",
+                "OptimismMainnet",
+                "OptimismSepolia",
+                "ArbitrumOne",
+                "ArbitrumNova",
+                "ArbitrumSpeolia",
+                "ScrollMainnet",
+                "ScrollSepolia",
+                "StarketMainnet",
+                "StarketSepolia",
+                "BaseMainnet",
+                "BaseSepolia"
+            ]
+        },
         "seedworks.Registration": {
             "type": "object",
             "properties": {
@@ -474,9 +474,17 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "network": {
-                    "$ref": "#/definitions/global_const.Network"
+                    "$ref": "#/definitions/seedworks.Network"
                 },
                 "origin": {
+                    "type": "string"
+                }
+            }
+        },
+        "seedworks.RegistrationPrepare": {
+            "type": "object",
+            "properties": {
+                "email": {
                     "type": "string"
                 }
             }
@@ -491,7 +499,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "network": {
-                    "$ref": "#/definitions/global_const.Network"
+                    "$ref": "#/definitions/seedworks.Network"
                 },
                 "origin": {
                     "type": "string"

@@ -21,8 +21,8 @@ type PassKeyConf struct {
 		Password string
 		Replier  string
 	}
-	DbConnection string
-	VaultSecret  string // encrypt & decrypt data into/from db
+	DbConnection string `yaml:"db_connection"` // db connection string
+	VaultSecret  string `yaml:"vault_secret"`  // encrypt & decrypt data into/from db
 }
 
 var config *PassKeyConf

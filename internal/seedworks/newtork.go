@@ -1,4 +1,4 @@
-package global_const
+package seedworks
 
 import mapset "github.com/deckarep/golang-set/v2"
 

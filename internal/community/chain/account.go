@@ -3,7 +3,7 @@ package chain
 import (
 	"another_node/conf"
 	"another_node/internal/community/account"
-	"another_node/internal/global_const"
+	"another_node/internal/seedworks"
 
 	"github.com/pavankpdev/goaa"
 	"golang.org/x/xerrors"
@@ -11,7 +11,7 @@ import (
 
 const salt int64 = 1
 
-func CreateSmartAccount(wallet *account.HdWallet, network global_const.Network) (string, error) {
+func CreateSmartAccount(wallet *account.HdWallet, network seedworks.Network) (string, error) {
 	pk := "0x" + wallet.PrivateKey()
 	networkConfig := conf.GetNetworkConfigByNetwork(network)
 	if networkConfig == nil {

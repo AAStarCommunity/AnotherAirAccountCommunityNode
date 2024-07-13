@@ -13,13 +13,14 @@ import (
 var once sync.Once
 
 type Conf struct {
+	DbConnection       string `yaml:"db_connection"`
 	Web                Web
 	Jwt                JWT
 	Node               Node
 	Storage            string
 	Provider           Provider
-	ConfigDb           ConfigDb `yaml:"config_db"`
-	ApiKeyAccessEnable bool     `yaml:"api_key_access_enable"`
+	ChainNetworks      map[string]string `yaml:"chain_networks"`
+	ApiKeyAccessEnable bool              `yaml:"api_key_access_enable"`
 }
 
 var conf *Conf
@@ -62,12 +63,12 @@ func mappingEnvToConf(fileConf *Conf) (envConf *Conf) {
 		Jwt:                JWT{},
 		Node:               Node{},
 		Provider:           Provider{},
-		ConfigDb:           ConfigDb{},
 		ApiKeyAccessEnable: true,
 	}
 	if fileConf != nil {
-		envConf.ConfigDb = fileConf.ConfigDb
+		envConf.DbConnection = fileConf.DbConnection
 		envConf.ApiKeyAccessEnable = fileConf.ApiKeyAccessEnable
+		envConf.ChainNetworks = fileConf.ChainNetworks
 	}
 
 	if storage := os.Getenv("storage"); len(storage) > 0 {

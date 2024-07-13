@@ -1,35 +1,17 @@
 package storage
 
 import (
-	"another_node/conf"
 	"another_node/internal/web_server/pkg"
+	"another_node/plugins/passkey_relay_party/conf"
 	"encoding/json"
 	"errors"
-	"sync"
 	"time"
 
 	mapset "github.com/deckarep/golang-set/v2"
 	"golang.org/x/xerrors"
 	"gorm.io/datatypes"
-	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
-
-var (
-	configDb *gorm.DB
-	onlyOnce = sync.Once{}
-)
-
-func Init() {
-	onlyOnce.Do(func() {
-		configDBDsn := conf.GetConfigDbDSN()
-		configDBVar, err := gorm.Open(postgres.Open(configDBDsn), &gorm.Config{})
-		if err != nil {
-			panic(err)
-		}
-		configDb = configDBVar
-	})
-}
 
 type BaseData struct {
 	// ID
@@ -53,7 +35,7 @@ func (*ApiKeyDbModel) TableName() string {
 }
 func GetApiInfoByApiKey(apiKey string) (*pkg.ApiKeyModel, error) {
 	apikeyModel := &ApiKeyDbModel{}
-	tx := configDb.Where("api_key = ?", apiKey).First(&apikeyModel)
+	tx := conf.GetDbClient().Where("api_key = ?", apiKey).First(&apikeyModel)
 	if tx.Error != nil {
 		if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
 			return nil, tx.Error

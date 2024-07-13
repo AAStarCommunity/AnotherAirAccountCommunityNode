@@ -20,7 +20,7 @@ func GetDbClient() *gorm.DB {
 			dbClient, _ = getInMemoryDbClient()
 			dbClient = dbClient.Debug()
 		} else {
-			_db, err := gorm.Open(postgres.Open(config.DbConnection), &gorm.Config{
+			_db, err := gorm.Open(postgres.Open(Get().DbConnection), &gorm.Config{
 				DisableForeignKeyConstraintWhenMigrating: true,
 			})
 			if err != nil {

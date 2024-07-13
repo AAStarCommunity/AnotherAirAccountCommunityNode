@@ -14,7 +14,7 @@ import (
 // @Description Send captcha to email for verifying belongs
 // @Accept json
 // @Product json
-// @Param registrationBody body seedworks.Registration true "Send Captcha to Email"
+// @Param registrationBody body seedworks.RegistrationPrepare true "Send Captcha to Email"
 // @Router /api/passkey/v1/reg/prepare [post]
 // @Success 200
 func (relay *RelayParty) regPrepare(ctx *gin.Context) {

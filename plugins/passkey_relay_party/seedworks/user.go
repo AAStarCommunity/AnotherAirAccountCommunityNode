@@ -2,7 +2,7 @@ package seedworks
 
 import (
 	"another_node/internal/community/account"
-	"another_node/internal/global_const"
+	consts "another_node/internal/seedworks"
 
 	"github.com/go-webauthn/webauthn/webauthn"
 )
@@ -13,7 +13,7 @@ type User struct {
 	email       string
 	wallet      *account.HdWallet
 	address     string
-	addressMap  map[global_const.Network]string
+	addressMap  map[consts.Network]string
 }
 
 func newUser(email string) *User {
@@ -58,7 +58,7 @@ func (user *User) UpdateCredential(cred *webauthn.Credential) {
 	}
 }
 
-func (user *User) SetWallet(wallet *account.HdWallet, address string, network global_const.Network) {
+func (user *User) SetWallet(wallet *account.HdWallet, address string, network consts.Network) {
 	user.wallet = wallet
 	user.address = address
 }

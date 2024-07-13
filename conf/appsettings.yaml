@@ -1,18 +1,6 @@
 web:
   port: 8080
-db:
-  user: # change it
-  password: #change it
-  host: #change it
-  schema: aastar # db schema
-config_db:
-  host: # change it
-  port: #change it
-  user: #change it
-  password:
-  db_name:
-  tz: # timezone
-  ssl_mode: # disable
+db_connection: #
 jwt:
   security: thisisunsafeuntilyouchangit
   realm: AASTAR
@@ -29,3 +17,24 @@ storage: another.dat
 provider:
   alchemy: # ApiKey
 api_key_access_enable: #true
+chain_networks: # not supported in env, only in appsettings.yaml
+  "ethereum-sepolia": | 
+    {
+      "chain_id": "11155111",
+      "is_test": true,
+      "v06_entrypoint_address" : "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789",
+      "v07_entrypoint_address" : "0x0000000071727De22E5E9d8BAf0edAc6f37da032",
+      "v06_factory_address" : "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789",
+      "v07_factory_address" : "0x0000000071727De22E5E9d8BAf0edAc6f37da032",
+      "rpc_url": "https://eth-sepolia.g.alchemy.com/v2/<API_KEY>"
+    }
+  "optimism-sepolia": |
+    {
+      "chain_id": "11155420",
+      "is_test": true,
+      "v06_entrypoint_address" : "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789",
+      "v07_entrypoint_address" : "0x0000000071727De22E5E9d8BAf0edAc6f37da032",
+      "v06_factory_address" : "0x00004EC70002a32400f8ae005A26081065620D20",
+      "v07_factory_address" : "0x00004EC70002a32400f8ae005A26081065620D20",
+      "rpc_url": "https://opt-sepolia.g.alchemy.com/v2/<API_KEY>"
+    }

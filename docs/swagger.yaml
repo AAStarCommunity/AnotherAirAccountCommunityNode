@@ -1,35 +1,5 @@
 basePath: /api
 definitions:
-  global_const.Network:
-    enum:
-    - ethereum-mainnet
-    - ethereum-sepolia
-    - optimism-mainnet
-    - optimism-sepolia
-    - arbitrum-one
-    - arbitrum-nova
-    - arbitrum-sepolia
-    - scroll-mainnet
-    - scroll-sepolia
-    - starknet-mainnet
-    - starknet-sepolia
-    - base-mainnet
-    - base-sepolia
-    type: string
-    x-enum-varnames:
-    - EthereumMainnet
-    - EthereumSepolia
-    - OptimismMainnet
-    - OptimismSepolia
-    - ArbitrumOne
-    - ArbitrumNova
-    - ArbitrumSpeolia
-    - ScrollMainnet
-    - ScrollSepolia
-    - StarketMainnet
-    - StarketSepolia
-    - BaseMainnet
-    - BaseSepolia
   pkg.JsonRpcRequest:
     properties:
       id:
@@ -66,6 +36,36 @@ definitions:
       message:
         type: string
     type: object
+  seedworks.Network:
+    enum:
+    - ethereum-mainnet
+    - ethereum-sepolia
+    - optimism-mainnet
+    - optimism-sepolia
+    - arbitrum-one
+    - arbitrum-nova
+    - arbitrum-sepolia
+    - scroll-mainnet
+    - scroll-sepolia
+    - starknet-mainnet
+    - starknet-sepolia
+    - base-mainnet
+    - base-sepolia
+    type: string
+    x-enum-varnames:
+    - EthereumMainnet
+    - EthereumSepolia
+    - OptimismMainnet
+    - OptimismSepolia
+    - ArbitrumOne
+    - ArbitrumNova
+    - ArbitrumSpeolia
+    - ScrollMainnet
+    - ScrollSepolia
+    - StarketMainnet
+    - StarketSepolia
+    - BaseMainnet
+    - BaseSepolia
   seedworks.Registration:
     properties:
       captcha:
@@ -73,8 +73,13 @@ definitions:
       email:
         type: string
       network:
-        $ref: '#/definitions/global_const.Network'
+        $ref: '#/definitions/seedworks.Network'
       origin:
+        type: string
+    type: object
+  seedworks.RegistrationPrepare:
+    properties:
+      email:
         type: string
     type: object
   seedworks.SiginIn:
@@ -84,7 +89,7 @@ definitions:
       email:
         type: string
       network:
-        $ref: '#/definitions/global_const.Network'
+        $ref: '#/definitions/seedworks.Network'
       origin:
         type: string
     type: object
@@ -208,7 +213,7 @@ paths:
         name: registrationBody
         required: true
         schema:
-          $ref: '#/definitions/seedworks.Registration'
+          $ref: '#/definitions/seedworks.RegistrationPrepare'
       responses:
         "200":
           description: OK

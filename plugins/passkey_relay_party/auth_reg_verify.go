@@ -1,7 +1,7 @@
 package plugin_passkey_relay_party
 
 import (
-	"another_node/internal/global_const"
+	consts "another_node/internal/seedworks"
 
 	"another_node/internal/community/account"
 	"another_node/internal/community/chain"
@@ -22,16 +22,22 @@ import (
 // @Success 200
 func (relay *RelayParty) finishRegistration(ctx *gin.Context) {
 
-	if ctx.Query("network") != string(global_const.OptimismSepolia) {
+	// TODO: for tokyo ONLY
+	network := consts.Network(ctx.Query("network"))
+	if len(network) > 0 && network != consts.OptimismSepolia {
 		response.BadRequest(ctx, "network not supported")
 		return
+	} else {
+		network = consts.OptimismSepolia
 	}
 
 	// body works for parser, the additional info appends to query
 	stubReg := seedworks.Registration{
+		RegistrationPrepare: seedworks.RegistrationPrepare{
+			Email: ctx.Query("email"),
+		},
 		Origin:  ctx.Query("origin"),
-		Email:   ctx.Query("email"),
-		Network: global_const.OptimismSepolia,
+		Network: consts.Network(ctx.Query("network")),
 	}
 
 	if user, err := relay.store.FinishRegSession(&stubReg, ctx); err != nil {
@@ -50,7 +56,7 @@ func (relay *RelayParty) finishRegistration(ctx *gin.Context) {
 }
 
 // createAA represents creating an Account Abstraction for the user
-func createAA(user *seedworks.User, network global_const.Network) error {
+func createAA(user *seedworks.User, network consts.Network) error {
 	if w, err := account.NewHdWallet(account.HierarchicalPath_ETH); err != nil {
 		return err
 	} else {

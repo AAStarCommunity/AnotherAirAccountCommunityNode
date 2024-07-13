@@ -10,7 +10,7 @@ func (rp *RelayParty) emailStartChallenge(mail, acceptLanguage string) error {
 	captcha := seedworks.GenCaptcha(6)
 
 	var subject, body string
-	if strings.EqualFold(acceptLanguage, "zh") {
+	if strings.EqualFold(acceptLanguage, "zh") || strings.EqualFold(acceptLanguage, "zh-cn") {
 		subject = "验证您的邮箱"
 		body = `
 验证您的邮箱

@@ -5,13 +5,14 @@ import (
 	"another_node/internal/web_server/pkg"
 	"encoding/json"
 	"errors"
+	"sync"
+	"time"
+
 	mapset "github.com/deckarep/golang-set/v2"
 	"golang.org/x/xerrors"
 	"gorm.io/datatypes"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"sync"
-	"time"
 )
 
 var (

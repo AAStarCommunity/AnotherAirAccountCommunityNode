@@ -136,8 +136,6 @@ func getConfFilePath() *string {
 	if len(os.Getenv("Env")) > 0 {
 		envName = os.Getenv("Env")
 	}
-	pwd, _ := os.Getwd()
-	_ = pwd
 	path := fmt.Sprintf("plugins/passkey_relay_party/conf/appsettings.%s.yaml", strings.ToLower(envName))
 	if _, err := os.Stat(path); err != nil && os.IsNotExist(err) {
 		path = "plugins/passkey_relay_party/conf/appsettings.yaml"

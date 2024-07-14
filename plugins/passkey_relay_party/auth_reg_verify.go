@@ -54,7 +54,7 @@ func (relay *RelayParty) finishRegistration(ctx *gin.Context) {
 			response.InternalServerError(ctx, err.Error())
 			return
 		} else {
-			relay.db.Save(user)
+			relay.db.Save(user, false)
 			response.GetResponse().WithDataSuccess(ctx, user)
 			return
 		}

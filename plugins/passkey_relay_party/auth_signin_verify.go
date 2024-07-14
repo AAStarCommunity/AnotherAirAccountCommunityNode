@@ -34,6 +34,6 @@ func (relay *RelayParty) finishSignIn(ctx *gin.Context) {
 		response.BadRequest(ctx, "SignIn failed: "+err.Error())
 		return
 	}
-	relay.db.Save(user)
+	relay.db.Save(user, true)
 	response.GetResponse().WithDataSuccess(ctx, credential)
 }

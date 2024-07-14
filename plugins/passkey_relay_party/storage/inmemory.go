@@ -24,7 +24,7 @@ func NewInMemory() *InMemory {
 	}
 }
 
-func (db *InMemory) Save(user *seedworks.User) error {
+func (db *InMemory) Save(user *seedworks.User, allowUpdate bool) error {
 	if user == nil {
 		return errors.New("user is nil")
 	}

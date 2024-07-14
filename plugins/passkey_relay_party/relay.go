@@ -30,13 +30,13 @@ func (r *RelayParty) RegisterRoutes(router *gin.Engine, community *node.Communit
 	router.POST("/api/passkey/v1/sign", r.beginSignIn)
 	router.POST("/api/passkey/v1/sign/verify", r.finishSignIn)
 
+	_ = router.Use(AuthHandler())
 	{
 		// APIs needs signin here
 		router.GET("/api/passkey/v1/imauthz", r.imauthz)
 		router.POST("/api/passkey/v1/payment/sign", r.beginSignPayment)
 		router.POST("/api/passkey/v1/payment/sign/verify", r.finishSignPayment)
 	}
-	_ = router.Use(AuthHandler())
 
 	r.node = community
 }

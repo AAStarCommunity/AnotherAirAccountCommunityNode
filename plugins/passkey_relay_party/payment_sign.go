@@ -8,7 +8,7 @@ import (
 )
 
 // beginSignPayment
-// @Summary sign payment request credential assertion
+// @Summary begin sign payment request credential assertion
 // @Description Begins the sign process for payment
 // @Tags Plugins Passkey
 // @Accept json
@@ -40,7 +40,7 @@ func (relay *RelayParty) beginSignPayment(ctx *gin.Context) {
 }
 
 // finishSignPayment
-// @Summary sign payment request credential assertion
+// @Summary finish sign payment request credential assertion
 // @Description Finish the sign process for payment
 // @Tags Plugins Passkey
 // @Accept json

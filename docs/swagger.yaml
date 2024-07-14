@@ -246,7 +246,7 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/response.Response'
-      summary: sign payment request credential assertion
+      summary: begin sign payment request credential assertion
       tags:
       - Plugins Passkey
   /api/passkey/v1/payment/sign/verify:
@@ -268,7 +268,7 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/response.Response'
-      summary: sign payment request credential assertion
+      summary: finish sign payment request credential assertion
       tags:
       - Plugins Passkey
   /api/passkey/v1/reg:

@@ -188,7 +188,7 @@ const docTemplate = `{
                 "tags": [
                     "Plugins Passkey"
                 ],
-                "summary": "sign payment request credential assertion",
+                "summary": "begin sign payment request credential assertion",
                 "parameters": [
                     {
                         "description": "Sign payment details",
@@ -222,7 +222,7 @@ const docTemplate = `{
                 "tags": [
                     "Plugins Passkey"
                 ],
-                "summary": "sign payment request credential assertion",
+                "summary": "finish sign payment request credential assertion",
                 "parameters": [
                     {
                         "description": "Sign payment details",

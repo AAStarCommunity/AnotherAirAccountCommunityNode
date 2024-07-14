@@ -47,7 +47,7 @@ export const PasskeyLogin = async (formData: FormData) => {
   let resp = await generateAuthPasskeyPublicKey(email);
 
   if (resp) {
-    alert("signin success");
+    window.location.href = "/payment";
   } else {
     alert("signin failed")
   }
@@ -67,6 +67,7 @@ const generateAuthPasskeyPublicKey = async (email: string) => {
         email,
       attest
     );
+
     return verifyResp.status === 200;
   }
 };

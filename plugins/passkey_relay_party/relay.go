@@ -15,10 +15,11 @@ import (
 )
 
 type RelayParty struct {
-	db              storage.Db
-	store           *seedworks.SessionStore
-	node            *node.Community
-	accountProvider *account.Provider
+	db               storage.Db
+	authSessionStore *seedworks.SessionStore
+	signSessionStore *seedworks.SessionStore
+	node             *node.Community
+	accountProvider  *account.Provider
 }
 
 func (r *RelayParty) RegisterRoutes(router *gin.Engine, community *node.Community) {
@@ -29,11 +30,13 @@ func (r *RelayParty) RegisterRoutes(router *gin.Engine, community *node.Communit
 	router.POST("/api/passkey/v1/sign", r.beginSignIn)
 	router.POST("/api/passkey/v1/sign/verify", r.finishSignIn)
 
-	_ = router.Use(AuthHandler())
 	{
 		// APIs needs signin here
 		router.GET("/api/passkey/v1/imauthz", r.imauthz)
+		router.POST("/api/passkey/v1/payment/sign", r.beginSignPayment)
+		router.POST("/api/passkey/v1/payment/sign/verify", r.finishSignPayment)
 	}
+	_ = router.Use(AuthHandler())
 
 	r.node = community
 }
@@ -42,8 +45,9 @@ func NewRelay() *RelayParty {
 	migrations.AutoMigrate()
 
 	return &RelayParty{
-		db:    storage.NewPgsqlStorage(),
-		store: seedworks.NewInMemorySessionStore(),
+		db:               storage.NewPgsqlStorage(),
+		authSessionStore: seedworks.NewInMemorySessionStore(),
+		signSessionStore: seedworks.NewInMemorySessionStore(),
 		accountProvider: func() *account.Provider {
 			p, err := impl.NewAlchemyProvider(conf.GetProvider().Alchemy)
 			if err != nil {

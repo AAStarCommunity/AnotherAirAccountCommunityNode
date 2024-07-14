@@ -41,7 +41,7 @@ func (relay *RelayParty) finishRegistration(ctx *gin.Context) {
 		Network: consts.Chain(ctx.Query("network")),
 	}
 
-	if user, err := relay.store.FinishRegSession(&stubReg, ctx); err != nil {
+	if user, err := relay.authSessionStore.FinishRegSession(&stubReg, ctx); err != nil {
 		response.BadRequest(ctx, err)
 		return
 	} else {

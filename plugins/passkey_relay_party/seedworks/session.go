@@ -2,6 +2,7 @@ package seedworks
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -10,8 +11,12 @@ import (
 	"github.com/go-webauthn/webauthn/webauthn"
 )
 
-func GetSessionKey(origin, id string) string {
-	return origin + ":" + id
+func GetSessionKey(origin, id string, ext ...string) string {
+	m := ""
+	if len(ext) > 0 {
+		m = ":" + strings.Join(ext, ":")
+	}
+	return origin + ":" + id + m
 }
 
 type SessionStore struct {
@@ -87,6 +92,45 @@ func (store *SessionStore) FinishAuthSession(signIn *SiginIn, ctx *gin.Context) 
 			return &session.User, cred, nil
 		} else {
 			return nil, nil, err
+		}
+	}
+}
+
+func (store *SessionStore) NewSignSession(user *User, paymentSign *PaymentSign) (*protocol.CredentialAssertion, error) {
+	if user == nil || paymentSign == nil {
+		return nil, fmt.Errorf("user or signIn is nil")
+	}
+
+	webAuthn, _ := newWebAuthn(paymentSign.Origin)
+	sessionKey := GetSessionKey(paymentSign.Origin, paymentSign.Email, paymentSign.Nonce)
+	if opt, session, err := webAuthn.BeginLogin(user, func(opt *protocol.PublicKeyCredentialRequestOptions) {
+		if opt.Extensions == nil {
+			opt.Extensions = make(map[string]interface{})
+		}
+		opt.Extensions["amount"] = paymentSign.Amount
+		opt.Extensions["nonce"] = paymentSign.Nonce
+	}); err != nil {
+		return nil, err
+	} else {
+		store.set(sessionKey, webAuthn, session, user)
+		return opt, nil
+	}
+}
+
+func (store *SessionStore) FinishSignSession(paymentSign *PaymentSign, ctx *gin.Context) (*User, error) {
+	key := GetSessionKey(paymentSign.Origin, paymentSign.Email, paymentSign.Nonce)
+	if session := store.Get(key); session == nil {
+		return nil, fmt.Errorf("%s: not found", paymentSign.Email)
+	} else {
+		if _, err := session.WebAuthn.FinishLogin(&session.User, session.Data, ctx.Request); err == nil {
+			store.remove(key)
+			paymentSign.Amount = session.Data.Extensions["amount"].(string)
+			if paymentSign.Nonce != session.Data.Extensions["nonce"].(string) {
+				return nil, fmt.Errorf("nonce not match")
+			}
+			return &session.User, nil
+		} else {
+			return nil, err
 		}
 	}
 }

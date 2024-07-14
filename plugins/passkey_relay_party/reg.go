@@ -43,11 +43,11 @@ func (relay *RelayParty) beginRegistration(ctx *gin.Context) {
 
 	// TODO: if the user is not exists but in community, re-register the user
 
-	if session := relay.store.Get(seedworks.GetSessionKey(reg.Origin, reg.Email)); session != nil {
+	if session := relay.authSessionStore.Get(seedworks.GetSessionKey(reg.Origin, reg.Email)); session != nil {
 		response.BadRequest(ctx, "Already in registration process")
 		return
 	} else {
-		if options, err := relay.store.NewRegSession(&reg); err != nil {
+		if options, err := relay.authSessionStore.NewRegSession(&reg); err != nil {
 			response.InternalServerError(ctx, err.Error())
 		} else {
 			response.GetResponse().WithDataSuccess(ctx, options.Response)

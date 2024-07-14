@@ -12,6 +12,10 @@ import {
 export const PasskeyPayment = async (formData: FormData) => {
   let amount = formData.get("amount") as string;
   let resp = await generateAuthPasskeyPublicKey("ab@de.com", amount);
+
+  if (resp) {
+    alert("Payment successful");
+  }
 };
 
 const generateAuthPasskeyPublicKey = async (email: string, amount: string) => {

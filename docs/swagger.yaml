@@ -83,6 +83,22 @@ definitions:
       origin:
         type: string
     type: object
+  seedworks.PaymentSign:
+    properties:
+      amount:
+        type: string
+      email:
+        type: string
+      nonce:
+        type: string
+      origin:
+        type: string
+    required:
+    - amount
+    - email
+    - nonce
+    - origin
+    type: object
   seedworks.Registration:
     properties:
       captcha:
@@ -211,6 +227,50 @@ paths:
       - JWT: []
       tags:
       - Demo
+  /api/passkey/v1/payment/sign:
+    post:
+      consumes:
+      - application/json
+      description: Begins the sign process for payment
+      parameters:
+      - description: Sign payment details
+        in: body
+        name: paymentSign
+        required: true
+        schema:
+          $ref: '#/definitions/seedworks.PaymentSign'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: sign payment request credential assertion
+      tags:
+      - Plugins Passkey
+  /api/passkey/v1/payment/sign/verify:
+    post:
+      consumes:
+      - application/json
+      description: Finish the sign process for payment
+      parameters:
+      - description: Sign payment details
+        in: body
+        name: paymentSign
+        required: true
+        schema:
+          $ref: '#/definitions/seedworks.PaymentSign'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: sign payment request credential assertion
+      tags:
+      - Plugins Passkey
   /api/passkey/v1/reg:
     post:
       consumes:

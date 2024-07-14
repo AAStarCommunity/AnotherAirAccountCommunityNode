@@ -176,6 +176,74 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/passkey/v1/payment/sign": {
+            "post": {
+                "description": "Begins the sign process for payment",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Plugins Passkey"
+                ],
+                "summary": "sign payment request credential assertion",
+                "parameters": [
+                    {
+                        "description": "Sign payment details",
+                        "name": "paymentSign",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/seedworks.PaymentSign"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/passkey/v1/payment/sign/verify": {
+            "post": {
+                "description": "Finish the sign process for payment",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Plugins Passkey"
+                ],
+                "summary": "sign payment request credential assertion",
+                "parameters": [
+                    {
+                        "description": "Sign payment details",
+                        "name": "paymentSign",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/seedworks.PaymentSign"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/api/passkey/v1/reg": {
             "post": {
                 "description": "Begin the registration process",
@@ -510,6 +578,29 @@ const docTemplate = `{
                 },
                 "network": {
                     "$ref": "#/definitions/seedworks.Chain"
+                },
+                "origin": {
+                    "type": "string"
+                }
+            }
+        },
+        "seedworks.PaymentSign": {
+            "type": "object",
+            "required": [
+                "amount",
+                "email",
+                "nonce",
+                "origin"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "nonce": {
+                    "type": "string"
                 },
                 "origin": {
                     "type": "string"

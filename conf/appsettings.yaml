@@ -1,10 +1,6 @@
 web:
   port: 8080
 db_connection: #
-jwt:
-  security: thisisunsafeuntilyouchangit
-  realm: AASTAR
-  idkey: id
 node:
   standalone: true # running as a single node, demo purpose
   genesis: true

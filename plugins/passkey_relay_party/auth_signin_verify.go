@@ -7,6 +7,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type siginInResponse struct {
+	Code   int    `json:"code"`
+	Expire string `json:"expire"`
+	Token  string `json:"token"`
+}
+
 // finishSignIn
 // @Summary sign in step 2. verify credentials
 // @Description Finish the sign in process
@@ -15,7 +21,7 @@ import (
 // @Produce json
 // @Param origin query string true "Origin"
 // @Param email query string true "Email"
-// @Success 200 {object} any "OK"
+// @Success 200 {object} siginInResponse "OK"
 // @Failure 400 {object} any "Bad Request"
 // @Router /api/passkey/v1/sign/verify [post]
 func (relay *RelayParty) finishSignIn(ctx *gin.Context) {
@@ -29,11 +35,13 @@ func (relay *RelayParty) finishSignIn(ctx *gin.Context) {
 		},
 	}
 
-	user, credential, err := relay.store.FinishAuthSession(&stubSignIn, ctx)
+	user, _, err := relay.store.FinishAuthSession(&stubSignIn, ctx)
 	if err != nil {
 		response.BadRequest(ctx, "SignIn failed: "+err.Error())
 		return
 	}
+
 	relay.db.Save(user, true)
-	response.GetResponse().WithDataSuccess(ctx, credential)
+
+	ginJwtMiddleware().LoginHandler(ctx)
 }

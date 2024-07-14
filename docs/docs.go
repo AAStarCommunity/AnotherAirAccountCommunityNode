@@ -321,7 +321,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object"
+                            "$ref": "#/definitions/plugin_passkey_relay_party.siginInResponse"
                         }
                     },
                     "400": {
@@ -394,6 +394,20 @@ const docTemplate = `{
                 }
             }
         },
+        "plugin_passkey_relay_party.siginInResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "expire": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
         "request.Bind": {
             "type": "object",
             "properties": {
@@ -431,21 +445,7 @@ const docTemplate = `{
                 }
             }
         },
-        "seedworks.FinishRegistration": {
-            "type": "object",
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "network": {
-                    "$ref": "#/definitions/seedworks.Network"
-                },
-                "origin": {
-                    "type": "string"
-                }
-            }
-        },
-        "seedworks.Network": {
+        "seedworks.Chain": {
             "type": "string",
             "enum": [
                 "ethereum-mainnet",
@@ -477,6 +477,20 @@ const docTemplate = `{
                 "BaseMainnet",
                 "BaseSepolia"
             ]
+        },
+        "seedworks.FinishRegistration": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "network": {
+                    "$ref": "#/definitions/seedworks.Chain"
+                },
+                "origin": {
+                    "type": "string"
+                }
+            }
         },
         "seedworks.Registration": {
             "type": "object",

@@ -8,8 +8,10 @@ import (
 	"another_node/plugins/passkey_relay_party/seedworks"
 	storage "another_node/plugins/passkey_relay_party/storage"
 	"another_node/plugins/passkey_relay_party/storage/migrations"
+	"errors"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type RelayParty struct {
@@ -20,11 +22,17 @@ type RelayParty struct {
 }
 
 func (r *RelayParty) RegisterRoutes(router *gin.Engine, community *node.Community) {
+
 	router.POST("/api/passkey/v1/reg/prepare", r.regPrepare)
 	router.POST("/api/passkey/v1/reg", r.beginRegistration)
 	router.POST("/api/passkey/v1/reg/verify", r.finishRegistration)
 	router.POST("/api/passkey/v1/sign", r.beginSignIn)
 	router.POST("/api/passkey/v1/sign/verify", r.finishSignIn)
+
+	_ = router.Use(AuthHandler())
+	{
+		// APIs needs signin here
+	}
 
 	r.node = community
 }
@@ -50,5 +58,14 @@ func (r *RelayParty) findUserByEmail(email string) (*seedworks.User, error) {
 	if email == "" {
 		return nil, seedworks.ErrEmailEmpty{}
 	}
-	return r.db.Find(email)
+
+	u, err := r.db.Find(email)
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, seedworks.ErrUserNotFound{}
+		}
+	}
+
+	return u, err
 }

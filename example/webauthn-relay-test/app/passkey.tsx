@@ -24,7 +24,7 @@ export const PasskeyRegister = async (formData: FormData) => {
 
 const generateRegPasskeyPublicKey = async (email: string) => {
   const origin = window.location.origin;
-  const resp = await api.post(API.PASSKEY_REG, { email, origin });
+  const resp = await api.post(API.PASSKEY_REG, { email, origin, captcha: "111111" });
   const json = resp.data.data as PublicKeyCredentialCreationOptionsJSON;
   console.log(JSON.stringify(json, null, 2));
   if (json !== null) {
@@ -34,7 +34,8 @@ const generateRegPasskeyPublicKey = async (email: string) => {
         "?origin=" +
         encodeURIComponent(origin) +
         "&email=" +
-        email,
+        email + 
+        "&network=optimism-sepolia",
       attest
     );
     console.log(verifyResp.data);

@@ -15,7 +15,6 @@ var once sync.Once
 type Conf struct {
 	DbConnection       string `yaml:"db_connection"`
 	Web                Web
-	Jwt                JWT
 	Node               Node
 	Storage            string
 	Provider           Provider
@@ -60,7 +59,6 @@ func getConfiguration(filePath *string) *Conf {
 func mappingEnvToConf(fileConf *Conf) (envConf *Conf) {
 	envConf = &Conf{
 		Web:                Web{},
-		Jwt:                JWT{},
 		Node:               Node{},
 		Provider:           Provider{},
 		ApiKeyAccessEnable: true,
@@ -91,22 +89,6 @@ func mappingEnvToConf(fileConf *Conf) (envConf *Conf) {
 		} else {
 			panic("web.port is invalid")
 		}
-	}
-
-	if jwt__security := os.Getenv("jwt__security"); len(jwt__security) > 0 {
-		envConf.Jwt.Security = jwt__security
-	} else if fileConf != nil {
-		envConf.Jwt.Security = fileConf.Jwt.Security
-	}
-	if jwt__realm := os.Getenv("jwt__realm"); len(jwt__realm) > 0 {
-		envConf.Jwt.Security = jwt__realm
-	} else if fileConf != nil {
-		envConf.Jwt.Realm = fileConf.Jwt.Realm
-	}
-	if jwt__idkey := os.Getenv("jwt__idkey"); len(jwt__idkey) > 0 {
-		envConf.Jwt.Security = jwt__idkey
-	} else if fileConf != nil {
-		envConf.Jwt.IdKey = fileConf.Jwt.IdKey
 	}
 
 	if node__standalone := os.Getenv("node__standalone"); len(node__standalone) > 0 {

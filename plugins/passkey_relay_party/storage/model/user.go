@@ -9,7 +9,7 @@ type User struct {
 	storage.BaseData
 	Email       string     `json:"email" gorm:"type:varchar(255);unique_index"`
 	LastLoginAt *time.Time `json:"last_login_at" gorm:"column:last_login_at"`
-	Rawdata     string     `json:"-" gorm:"type:tinytext;column:rawdata"`
+	Rawdata     string     `json:"-" gorm:"type:text;column:rawdata"`
 }
 
 func (User) TableName() string {

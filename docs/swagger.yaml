@@ -12,6 +12,15 @@ definitions:
         items: {}
         type: array
     type: object
+  plugin_passkey_relay_party.siginInResponse:
+    properties:
+      code:
+        type: integer
+      expire:
+        type: string
+      token:
+        type: string
+    type: object
   request.Bind:
     properties:
       account:
@@ -36,16 +45,7 @@ definitions:
       message:
         type: string
     type: object
-  seedworks.FinishRegistration:
-    properties:
-      email:
-        type: string
-      network:
-        $ref: '#/definitions/seedworks.Network'
-      origin:
-        type: string
-    type: object
-  seedworks.Network:
+  seedworks.Chain:
     enum:
     - ethereum-mainnet
     - ethereum-sepolia
@@ -75,6 +75,15 @@ definitions:
     - StarketSepolia
     - BaseMainnet
     - BaseSepolia
+  seedworks.FinishRegistration:
+    properties:
+      email:
+        type: string
+      network:
+        $ref: '#/definitions/seedworks.Chain'
+      origin:
+        type: string
+    type: object
   seedworks.Registration:
     properties:
       captcha:
@@ -299,7 +308,7 @@ paths:
         "200":
           description: OK
           schema:
-            type: object
+            $ref: '#/definitions/plugin_passkey_relay_party.siginInResponse'
         "400":
           description: Bad Request
           schema:

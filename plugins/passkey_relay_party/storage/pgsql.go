@@ -5,6 +5,7 @@ import (
 	passkey_conf "another_node/plugins/passkey_relay_party/conf"
 	"another_node/plugins/passkey_relay_party/seedworks"
 	"another_node/plugins/passkey_relay_party/storage/model"
+	"errors"
 	"time"
 
 	"gorm.io/gorm"
@@ -20,17 +21,11 @@ var _ Db = (*PgsqlStorage)(nil)
 func NewPgsqlStorage() *PgsqlStorage {
 	return &PgsqlStorage{
 		client:      conf.GetDbClient(),
-		vaultSecret: passkey_conf.Get().VaultSecret,
+		vaultSecret: []byte(passkey_conf.Get().VaultSecret),
 	}
 }
 
 func (db *PgsqlStorage) Save(user *seedworks.User, allowUpdate bool) error {
-	sqlDB, err := db.client.DB()
-	if err != nil {
-		panic(err)
-	}
-	defer sqlDB.Close()
-
 	if data, err := user.Marshal(); err != nil {
 		return err
 	} else {
@@ -53,7 +48,7 @@ func (db *PgsqlStorage) Save(user *seedworks.User, allowUpdate bool) error {
 			} else {
 				if exists != nil {
 					return seedworks.ErrUserAlreadyExists{}
-				} else if err != nil {
+				} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 					return err
 				}
 
@@ -67,12 +62,6 @@ func (db *PgsqlStorage) Save(user *seedworks.User, allowUpdate bool) error {
 }
 
 func (db *PgsqlStorage) Find(email string) (*seedworks.User, error) {
-	sqlDB, err := db.client.DB()
-	if err != nil {
-		panic(err)
-	}
-	defer sqlDB.Close()
-
 	user := model.User{}
 	if err := db.client.Where("email = ?", email).First(&user).Error; err != nil {
 		return nil, err
@@ -86,12 +75,6 @@ func (db *PgsqlStorage) Find(email string) (*seedworks.User, error) {
 }
 
 func (db *PgsqlStorage) SaveChallenge(email, captcha string) error {
-	sqlDB, err := db.client.DB()
-	if err != nil {
-		panic(err)
-	}
-	defer sqlDB.Close()
-
 	return db.client.Model(&model.CaptchaChallenge{}).Create(&model.CaptchaChallenge{
 		Type:   model.Email,
 		Object: email,
@@ -100,14 +83,8 @@ func (db *PgsqlStorage) SaveChallenge(email, captcha string) error {
 }
 
 func (db *PgsqlStorage) Challenge(email, captcha string) bool {
-	sqlDB, err := db.client.DB()
-	if err != nil {
-		panic(err)
-	}
-	defer sqlDB.Close()
-
 	success := false
-	err = db.client.Transaction(func(tx *gorm.DB) error {
+	err := db.client.Transaction(func(tx *gorm.DB) error {
 		challenge := model.CaptchaChallenge{}
 		if err := tx.
 			Where("object = ? AND code = ? AND type = ?", email, captcha, model.Email).

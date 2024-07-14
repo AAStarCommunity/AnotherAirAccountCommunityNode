@@ -21,13 +21,14 @@ type PassKeyConf struct {
 		Password string
 		Replier  string
 	}
+	Jwt          JWT    `yaml:"jwt"`
 	DbConnection string `yaml:"db_connection"` // db connection string
-	VaultSecret  []byte `yaml:"vault_secret"`  // encrypt & decrypt data into/from db
+	VaultSecret  string `yaml:"vault_secret"`  // encrypt & decrypt data into/from db
 }
 
 var config *PassKeyConf
 
-// Get read config from env or file (env 1st)
+// Get read config from env take precedence over configfile
 func Get() *PassKeyConf {
 	once.Do(func() {
 		if config == nil {
@@ -44,7 +45,11 @@ func Get() *PassKeyConf {
 			replier := os.Getenv("mail__replier")
 
 			dbConnection := os.Getenv("passkey_db_connection")
-			vaultSecret := []byte(os.Getenv("passkey_vault_secret"))
+			vaultSecret := os.Getenv("passkey_vault_secret")
+
+			jwt__security := os.Getenv("jwt__security")
+			jwt__realm := os.Getenv("jwt__realm")
+			jwt__idkey := os.Getenv("jwt__idkey")
 
 			filePath := getConfFilePath()
 			confFile := getConfiguration(filePath)
@@ -56,11 +61,27 @@ func Get() *PassKeyConf {
 					}
 					return dbConnection
 				}(),
-				VaultSecret: func() []byte {
+				VaultSecret: func() string {
 					if len(vaultSecret) == 0 {
 						return confFile.VaultSecret
 					}
 					return vaultSecret
+				}(),
+				Jwt: func() JWT {
+					if jwt__security == "" {
+						jwt__security = confFile.Jwt.Security
+					}
+					if jwt__realm == "" {
+						jwt__realm = confFile.Jwt.Realm
+					}
+					if jwt__idkey == "" {
+						jwt__idkey = confFile.Jwt.IdKey
+					}
+					return JWT{
+						Security: jwt__security,
+						Realm:    jwt__realm,
+						IdKey:    jwt__idkey,
+					}
 				}(),
 				Mail: struct {
 					Host     string

@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type siginInResponse struct {
+type SiginInResponse struct {
 	Code   int    `json:"code"`
 	Expire string `json:"expire"`
 	Token  string `json:"token"`
@@ -21,7 +21,7 @@ type siginInResponse struct {
 // @Produce json
 // @Param origin query string true "Origin"
 // @Param email query string true "Email"
-// @Success 200 {object} siginInResponse "OK"
+// @Success 200 {object} SiginInResponse "OK"
 // @Failure 400 {object} any "Bad Request"
 // @Router /api/passkey/v1/sign/verify [post]
 func (relay *RelayParty) finishSignIn(ctx *gin.Context) {

@@ -32,6 +32,7 @@ func (r *RelayParty) RegisterRoutes(router *gin.Engine, community *node.Communit
 	_ = router.Use(AuthHandler())
 	{
 		// APIs needs signin here
+		router.GET("/api/passkey/v1/imauthz", r.imauthz)
 	}
 
 	r.node = community

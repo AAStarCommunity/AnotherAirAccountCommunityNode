@@ -61,6 +61,9 @@ func getFlags() (listen *uint16, name *string, joinAddrs *string, genesis *bool)
 	return
 }
 
+// @securityDefinitions.apikey JWT
+// @in header
+// @name Authorization
 // @contact.name   AAStar Support
 // @contact.url    https://aastar.xyz
 // @BasePath /api

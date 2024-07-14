@@ -9,10 +9,7 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "contact": {
-            "name": "AAStar Support",
-            "url": "https://aastar.xyz"
-        },
+        "contact": {},
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
@@ -148,6 +145,33 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "OK"
+                    }
+                }
+            }
+        },
+        "/api/passkey/v1/imauthz": {
+            "get": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "a demo api to show api is authorized after signin",
+                "tags": [
+                    "Demo"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "user is authorized",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object"
+                        }
                     }
                 }
             }
@@ -321,7 +345,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/plugin_passkey_relay_party.siginInResponse"
+                            "$ref": "#/definitions/plugin_passkey_relay_party.SiginInResponse"
                         }
                     },
                     "400": {
@@ -394,7 +418,7 @@ const docTemplate = `{
                 }
             }
         },
-        "plugin_passkey_relay_party.siginInResponse": {
+        "plugin_passkey_relay_party.SiginInResponse": {
             "type": "object",
             "properties": {
                 "code": {
@@ -528,6 +552,13 @@ const docTemplate = `{
                 }
             }
         }
+    },
+    "securityDefinitions": {
+        "JWT": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
     }
 }`
 
@@ -535,7 +566,7 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "",
 	Host:             "",
-	BasePath:         "/api",
+	BasePath:         "",
 	Schemes:          []string{},
 	Title:            "",
 	Description:      "",

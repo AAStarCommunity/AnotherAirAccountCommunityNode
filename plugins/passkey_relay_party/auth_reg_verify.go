@@ -55,7 +55,8 @@ func (relay *RelayParty) finishRegistration(ctx *gin.Context) {
 			return
 		} else {
 			relay.db.Save(user, false)
-			response.GetResponse().WithDataSuccess(ctx, user)
+
+			ginJwtMiddleware().LoginHandler(ctx)
 			return
 		}
 	}

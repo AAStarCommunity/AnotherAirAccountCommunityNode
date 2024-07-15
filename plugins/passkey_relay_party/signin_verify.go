@@ -19,8 +19,9 @@ type SiginInResponse struct {
 // @Tags Plugins Passkey
 // @Accept json
 // @Produce json
-// @Param origin query string true "Origin"
-// @Param email query string true "Email"
+// @Param email  query string true "user email" Format(email)
+// @Param origin query string true "origin"
+// @Param signinBody body protocol.CredentialAssertionResponse true "Verify SignIn"
 // @Success 200 {object} SiginInResponse "OK"
 // @Failure 400 {object} any "Bad Request"
 // @Router /api/passkey/v1/sign/verify [post]

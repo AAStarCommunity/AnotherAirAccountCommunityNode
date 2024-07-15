@@ -191,7 +191,7 @@ const docTemplate = `{
                 "summary": "begin sign payment request credential assertion",
                 "parameters": [
                     {
-                        "description": "Sign payment details",
+                        "description": "send challenge to passkey for sign",
                         "name": "paymentSign",
                         "in": "body",
                         "required": true,
@@ -204,7 +204,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/response.Response"
+                            "$ref": "#/definitions/protocol.PublicKeyCredentialRequestOptions"
                         }
                     }
                 }
@@ -225,13 +225,35 @@ const docTemplate = `{
                 "summary": "finish sign payment request credential assertion",
                 "parameters": [
                     {
-                        "description": "Sign payment details",
+                        "description": "Verify SignIn",
                         "name": "paymentSign",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/seedworks.PaymentSign"
+                            "$ref": "#/definitions/protocol.CredentialAssertionResponse"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "format": "email",
+                        "description": "user email",
+                        "name": "email",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "origin",
+                        "name": "origin",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "nonce",
+                        "name": "nonce",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -267,7 +289,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/protocol.PublicKeyCredentialCreationOptions"
+                        }
                     }
                 }
             }
@@ -312,18 +337,42 @@ const docTemplate = `{
                 "summary": "sign up step3. Finish Registration",
                 "parameters": [
                     {
+                        "type": "string",
+                        "format": "email",
+                        "description": "user email",
+                        "name": "email",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "origin",
+                        "name": "origin",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "network",
+                        "name": "network",
+                        "in": "query"
+                    },
+                    {
                         "description": "Verify Registration",
                         "name": "registrationBody",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/seedworks.FinishRegistration"
+                            "$ref": "#/definitions/protocol.CredentialCreationResponse"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/plugin_passkey_relay_party.regVerifyResponse"
+                        }
                     }
                 }
             }
@@ -356,7 +405,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/response.Response"
+                            "$ref": "#/definitions/protocol.PublicKeyCredentialRequestOptions"
                         }
                     },
                     "400": {
@@ -396,17 +445,27 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Origin",
-                        "name": "origin",
+                        "format": "email",
+                        "description": "user email",
+                        "name": "email",
                         "in": "query",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Email",
-                        "name": "email",
+                        "description": "origin",
+                        "name": "origin",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "description": "Verify SignIn",
+                        "name": "signinBody",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/protocol.CredentialAssertionResponse"
+                        }
                     }
                 ],
                 "responses": {
@@ -500,6 +559,405 @@ const docTemplate = `{
                 }
             }
         },
+        "plugin_passkey_relay_party.regVerifyResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "expire": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "protocol.AuthenticationExtensions": {
+            "type": "object",
+            "additionalProperties": true
+        },
+        "protocol.AuthenticationExtensionsClientOutputs": {
+            "type": "object",
+            "additionalProperties": true
+        },
+        "protocol.AuthenticatorAssertionResponse": {
+            "type": "object",
+            "properties": {
+                "authenticatorData": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "clientDataJSON": {
+                    "description": "From the spec https://www.w3.org/TR/webauthn/#dom-authenticatorresponse-clientdatajson\nThis attribute contains a JSON serialization of the client data passed to the authenticator\nby the client in its call to either create() or get().",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "signature": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "userHandle": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "protocol.AuthenticatorAttachment": {
+            "type": "string",
+            "enum": [
+                "platform",
+                "cross-platform"
+            ],
+            "x-enum-varnames": [
+                "Platform",
+                "CrossPlatform"
+            ]
+        },
+        "protocol.AuthenticatorAttestationResponse": {
+            "type": "object",
+            "properties": {
+                "attestationObject": {
+                    "description": "AttestationObject is the byte slice version of attestationObject.\nThis attribute contains an attestation object, which is opaque to, and\ncryptographically protected against tampering by, the client. The\nattestation object contains both authenticator data and an attestation\nstatement. The former contains the AAGUID, a unique credential ID, and\nthe credential public key. The contents of the attestation statement are\ndetermined by the attestation statement format used by the authenticator.\nIt also contains any additional information that the Relying Party's server\nrequires to validate the attestation statement, as well as to decode and\nvalidate the authenticator data along with the JSON-serialized client data.",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "clientDataJSON": {
+                    "description": "From the spec https://www.w3.org/TR/webauthn/#dom-authenticatorresponse-clientdatajson\nThis attribute contains a JSON serialization of the client data passed to the authenticator\nby the client in its call to either create() or get().",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "transports": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "protocol.AuthenticatorSelection": {
+            "type": "object",
+            "properties": {
+                "authenticatorAttachment": {
+                    "description": "AuthenticatorAttachment If this member is present, eligible authenticators are filtered to only\nauthenticators attached with the specified AuthenticatorAttachment enum.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/protocol.AuthenticatorAttachment"
+                        }
+                    ]
+                },
+                "requireResidentKey": {
+                    "description": "RequireResidentKey this member describes the Relying Party's requirements regarding resident\ncredentials. If the parameter is set to true, the authenticator MUST create a client-side-resident\npublic key credential source when creating a public key credential.",
+                    "type": "boolean"
+                },
+                "residentKey": {
+                    "description": "ResidentKey this member describes the Relying Party's requirements regarding resident\ncredentials per Webauthn Level 2.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/protocol.ResidentKeyRequirement"
+                        }
+                    ]
+                },
+                "userVerification": {
+                    "description": "UserVerification This member describes the Relying Party's requirements regarding user verification for\nthe create() operation. Eligible authenticators are filtered to only those capable of satisfying this\nrequirement.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/protocol.UserVerificationRequirement"
+                        }
+                    ]
+                }
+            }
+        },
+        "protocol.AuthenticatorTransport": {
+            "type": "string",
+            "enum": [
+                "usb",
+                "nfc",
+                "ble",
+                "hybrid",
+                "internal"
+            ],
+            "x-enum-varnames": [
+                "USB",
+                "NFC",
+                "BLE",
+                "Hybrid",
+                "Internal"
+            ]
+        },
+        "protocol.ConveyancePreference": {
+            "type": "string",
+            "enum": [
+                "none",
+                "indirect",
+                "direct",
+                "enterprise"
+            ],
+            "x-enum-varnames": [
+                "PreferNoAttestation",
+                "PreferIndirectAttestation",
+                "PreferDirectAttestation",
+                "PreferEnterpriseAttestation"
+            ]
+        },
+        "protocol.CredentialAssertionResponse": {
+            "type": "object",
+            "properties": {
+                "authenticatorAttachment": {
+                    "type": "string"
+                },
+                "clientExtensionResults": {
+                    "$ref": "#/definitions/protocol.AuthenticationExtensionsClientOutputs"
+                },
+                "id": {
+                    "description": "ID is The credential’s identifier. The requirements for the\nidentifier are distinct for each type of credential. It might\nrepresent a username for username/password tuples, for example.",
+                    "type": "string"
+                },
+                "rawId": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "response": {
+                    "$ref": "#/definitions/protocol.AuthenticatorAssertionResponse"
+                },
+                "type": {
+                    "description": "Type is the value of the object’s interface object's [[type]] slot,\nwhich specifies the credential type represented by this object.\nThis should be type \"public-key\" for Webauthn credentials.",
+                    "type": "string"
+                }
+            }
+        },
+        "protocol.CredentialCreationResponse": {
+            "type": "object",
+            "properties": {
+                "authenticatorAttachment": {
+                    "type": "string"
+                },
+                "clientExtensionResults": {
+                    "$ref": "#/definitions/protocol.AuthenticationExtensionsClientOutputs"
+                },
+                "id": {
+                    "description": "ID is The credential’s identifier. The requirements for the\nidentifier are distinct for each type of credential. It might\nrepresent a username for username/password tuples, for example.",
+                    "type": "string"
+                },
+                "rawId": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "response": {
+                    "$ref": "#/definitions/protocol.AuthenticatorAttestationResponse"
+                },
+                "transports": {
+                    "description": "Deprecated: Transports is deprecated due to upstream changes to the API.\nUse the Transports field of AuthenticatorAttestationResponse\ninstead. Transports is kept for backward compatibility, and should not\nbe used by new clients.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "type": {
+                    "description": "Type is the value of the object’s interface object's [[type]] slot,\nwhich specifies the credential type represented by this object.\nThis should be type \"public-key\" for Webauthn credentials.",
+                    "type": "string"
+                }
+            }
+        },
+        "protocol.CredentialDescriptor": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "description": "CredentialID The ID of a credential to allow/disallow.",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "transports": {
+                    "description": "The authenticator transports that can be used.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/protocol.AuthenticatorTransport"
+                    }
+                },
+                "type": {
+                    "description": "The valid credential types.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/protocol.CredentialType"
+                        }
+                    ]
+                }
+            }
+        },
+        "protocol.CredentialParameter": {
+            "type": "object",
+            "properties": {
+                "alg": {
+                    "$ref": "#/definitions/webauthncose.COSEAlgorithmIdentifier"
+                },
+                "type": {
+                    "$ref": "#/definitions/protocol.CredentialType"
+                }
+            }
+        },
+        "protocol.CredentialType": {
+            "type": "string",
+            "enum": [
+                "public-key"
+            ],
+            "x-enum-varnames": [
+                "PublicKeyCredentialType"
+            ]
+        },
+        "protocol.PublicKeyCredentialCreationOptions": {
+            "type": "object",
+            "properties": {
+                "attestation": {
+                    "$ref": "#/definitions/protocol.ConveyancePreference"
+                },
+                "authenticatorSelection": {
+                    "$ref": "#/definitions/protocol.AuthenticatorSelection"
+                },
+                "challenge": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "excludeCredentials": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/protocol.CredentialDescriptor"
+                    }
+                },
+                "extensions": {
+                    "$ref": "#/definitions/protocol.AuthenticationExtensions"
+                },
+                "pubKeyCredParams": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/protocol.CredentialParameter"
+                    }
+                },
+                "rp": {
+                    "$ref": "#/definitions/protocol.RelyingPartyEntity"
+                },
+                "timeout": {
+                    "type": "integer"
+                },
+                "user": {
+                    "$ref": "#/definitions/protocol.UserEntity"
+                }
+            }
+        },
+        "protocol.PublicKeyCredentialRequestOptions": {
+            "type": "object",
+            "properties": {
+                "allowCredentials": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/protocol.CredentialDescriptor"
+                    }
+                },
+                "challenge": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "extensions": {
+                    "$ref": "#/definitions/protocol.AuthenticationExtensions"
+                },
+                "rpId": {
+                    "type": "string"
+                },
+                "timeout": {
+                    "type": "integer"
+                },
+                "userVerification": {
+                    "$ref": "#/definitions/protocol.UserVerificationRequirement"
+                }
+            }
+        },
+        "protocol.RelyingPartyEntity": {
+            "type": "object",
+            "properties": {
+                "icon": {
+                    "description": "A serialized URL which resolves to an image associated with the entity. For example,\nthis could be a user’s avatar or a Relying Party's logo. This URL MUST be an a priori\nauthenticated URL. Authenticators MUST accept and store a 128-byte minimum length for\nan icon member’s value. Authenticators MAY ignore an icon member’s value if its length\nis greater than 128 bytes. The URL’s scheme MAY be \"data\" to avoid fetches of the URL,\nat the cost of needing more storage.\n\nDeprecated: this has been removed from the specification recommendations.",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "A unique identifier for the Relying Party entity, which sets the RP ID.",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "A human-palatable name for the entity. Its function depends on what the PublicKeyCredentialEntity represents:\n\nWhen inherited by PublicKeyCredentialRpEntity it is a human-palatable identifier for the Relying Party,\nintended only for display. For example, \"ACME Corporation\", \"Wonderful Widgets, Inc.\" or \"ОАО Примертех\".\n\nWhen inherited by PublicKeyCredentialUserEntity, it is a human-palatable identifier for a user account. It is\nintended only for display, i.e., aiding the user in determining the difference between user accounts with similar\ndisplayNames. For example, \"alexm\", \"alex.p.mueller@example.com\" or \"+14255551234\".",
+                    "type": "string"
+                }
+            }
+        },
+        "protocol.ResidentKeyRequirement": {
+            "type": "string",
+            "enum": [
+                "discouraged",
+                "preferred",
+                "required"
+            ],
+            "x-enum-varnames": [
+                "ResidentKeyRequirementDiscouraged",
+                "ResidentKeyRequirementPreferred",
+                "ResidentKeyRequirementRequired"
+            ]
+        },
+        "protocol.UserEntity": {
+            "type": "object",
+            "properties": {
+                "displayName": {
+                    "description": "A human-palatable name for the user account, intended only for display.\nFor example, \"Alex P. Müller\" or \"田中 倫\". The Relying Party SHOULD let\nthe user choose this, and SHOULD NOT restrict the choice more than necessary.",
+                    "type": "string"
+                },
+                "icon": {
+                    "description": "A serialized URL which resolves to an image associated with the entity. For example,\nthis could be a user’s avatar or a Relying Party's logo. This URL MUST be an a priori\nauthenticated URL. Authenticators MUST accept and store a 128-byte minimum length for\nan icon member’s value. Authenticators MAY ignore an icon member’s value if its length\nis greater than 128 bytes. The URL’s scheme MAY be \"data\" to avoid fetches of the URL,\nat the cost of needing more storage.\n\nDeprecated: this has been removed from the specification recommendations.",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "ID is the user handle of the user account entity. To ensure secure operation,\nauthentication and authorization decisions MUST be made on the basis of this id\nmember, not the displayName nor name members. See Section 6.1 of\n[RFC8266](https://www.w3.org/TR/webauthn/#biblio-rfc8266)."
+                },
+                "name": {
+                    "description": "A human-palatable name for the entity. Its function depends on what the PublicKeyCredentialEntity represents:\n\nWhen inherited by PublicKeyCredentialRpEntity it is a human-palatable identifier for the Relying Party,\nintended only for display. For example, \"ACME Corporation\", \"Wonderful Widgets, Inc.\" or \"ОАО Примертех\".\n\nWhen inherited by PublicKeyCredentialUserEntity, it is a human-palatable identifier for a user account. It is\nintended only for display, i.e., aiding the user in determining the difference between user accounts with similar\ndisplayNames. For example, \"alexm\", \"alex.p.mueller@example.com\" or \"+14255551234\".",
+                    "type": "string"
+                }
+            }
+        },
+        "protocol.UserVerificationRequirement": {
+            "type": "string",
+            "enum": [
+                "required",
+                "preferred",
+                "discouraged"
+            ],
+            "x-enum-comments": {
+                "VerificationPreferred": "This is the default"
+            },
+            "x-enum-varnames": [
+                "VerificationRequired",
+                "VerificationPreferred",
+                "VerificationDiscouraged"
+            ]
+        },
         "request.Bind": {
             "type": "object",
             "properties": {
@@ -533,53 +991,6 @@ const docTemplate = `{
                 },
                 "data": {},
                 "message": {
-                    "type": "string"
-                }
-            }
-        },
-        "seedworks.Chain": {
-            "type": "string",
-            "enum": [
-                "ethereum-mainnet",
-                "ethereum-sepolia",
-                "optimism-mainnet",
-                "optimism-sepolia",
-                "arbitrum-one",
-                "arbitrum-nova",
-                "arbitrum-sepolia",
-                "scroll-mainnet",
-                "scroll-sepolia",
-                "starknet-mainnet",
-                "starknet-sepolia",
-                "base-mainnet",
-                "base-sepolia"
-            ],
-            "x-enum-varnames": [
-                "EthereumMainnet",
-                "EthereumSepolia",
-                "OptimismMainnet",
-                "OptimismSepolia",
-                "ArbitrumOne",
-                "ArbitrumNova",
-                "ArbitrumSpeolia",
-                "ScrollMainnet",
-                "ScrollSepolia",
-                "StarketMainnet",
-                "StarketSepolia",
-                "BaseMainnet",
-                "BaseSepolia"
-            ]
-        },
-        "seedworks.FinishRegistration": {
-            "type": "object",
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "network": {
-                    "$ref": "#/definitions/seedworks.Chain"
-                },
-                "origin": {
                     "type": "string"
                 }
             }
@@ -642,6 +1053,37 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "webauthncose.COSEAlgorithmIdentifier": {
+            "type": "integer",
+            "enum": [
+                -7,
+                -35,
+                -36,
+                -65535,
+                -257,
+                -258,
+                -259,
+                -37,
+                -38,
+                -39,
+                -8,
+                -47
+            ],
+            "x-enum-varnames": [
+                "AlgES256",
+                "AlgES384",
+                "AlgES512",
+                "AlgRS1",
+                "AlgRS256",
+                "AlgRS384",
+                "AlgRS512",
+                "AlgPS256",
+                "AlgPS384",
+                "AlgPS512",
+                "AlgEdDSA",
+                "AlgES256K"
+            ]
         }
     },
     "securityDefinitions": {

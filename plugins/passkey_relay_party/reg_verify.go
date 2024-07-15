@@ -12,15 +12,24 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type regVerifyResponse struct {
+	Code   int    `json:"code"`
+	Token  string `json:"token"`
+	Expire string `json:"expire"`
+}
+
 // finishRegistration
 // @Summary sign up step3. Finish Registration
 // @Tags Plugins Passkey
 // @Description Verify Passkey Registration
 // @Accept json
 // @Product json
-// @Param registrationBody body seedworks.FinishRegistration true "Verify Registration"
+// @Param email  query string true "user email" Format(email)
+// @Param origin query string true "origin"
+// @Param network query string false "network"
+// @Param registrationBody body protocol.CredentialCreationResponse true "Verify Registration"
 // @Router /api/passkey/v1/reg/verify [post]
-// @Success 200
+// @Success 200 {object} regVerifyResponse
 func (relay *RelayParty) finishRegistration(ctx *gin.Context) {
 
 	// TODO: for tokyo ONLY

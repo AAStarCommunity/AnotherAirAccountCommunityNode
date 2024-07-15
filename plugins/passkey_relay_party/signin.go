@@ -14,7 +14,7 @@ import (
 // @Accept json
 // @Produce json
 // @Param signIn body seedworks.SiginIn true "Sign in details"
-// @Success 200 {object} response.Response
+// @Success 200 {object} protocol.PublicKeyCredentialRequestOptions
 // @Failure 400 {object} response.Response
 // @Failure 404 {object} response.Response
 // @Failure 500 {object} response.Response

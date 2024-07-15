@@ -30,7 +30,7 @@ go install github.com/swaggo/swag/cmd/swag@latest
 #### 1.2 init swag
 
 ```shell
-swag init -g ./main.go
+swag init --pd -g ./main.go
 ```
 
 > FAQ: [Unknown LeftDelim and RightDelim in swag.Spec](https://github.com/swaggo/swag/issues/1568)

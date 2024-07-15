@@ -13,8 +13,8 @@ import (
 // @Tags Plugins Passkey
 // @Accept json
 // @Produce json
-// @Param paymentSign body seedworks.PaymentSign true "Sign payment details"
-// @Success 200 {object} response.Response
+// @Param paymentSign body seedworks.PaymentSign true "send challenge to passkey for sign"
+// @Success 200 {object} protocol.PublicKeyCredentialRequestOptions
 // @Router /api/passkey/v1/payment/sign [post]
 func (relay *RelayParty) beginSignPayment(ctx *gin.Context) {
 	var payment seedworks.PaymentSign
@@ -45,7 +45,10 @@ func (relay *RelayParty) beginSignPayment(ctx *gin.Context) {
 // @Tags Plugins Passkey
 // @Accept json
 // @Produce json
-// @Param paymentSign body seedworks.PaymentSign true "Sign payment details"
+// @Param paymentSign body protocol.CredentialAssertionResponse true "Verify SignIn"
+// @Param email  query string true "user email" Format(email)
+// @Param origin query string true "origin"
+// @Param nonce query string true "nonce"
 // @Success 200 {object} response.Response
 // @Router /api/passkey/v1/payment/sign/verify [post]
 func (relay *RelayParty) finishSignPayment(ctx *gin.Context) {

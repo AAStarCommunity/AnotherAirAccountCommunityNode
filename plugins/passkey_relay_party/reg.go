@@ -17,14 +17,13 @@ import (
 // @Product json
 // @Param registrationBody body seedworks.Registration true "Begin Registration"
 // @Router /api/passkey/v1/reg [post]
-// @Success 200
+// @Success 200 {object} protocol.PublicKeyCredentialCreationOptions
 func (relay *RelayParty) beginRegistration(ctx *gin.Context) {
 	var reg seedworks.Registration
 	if err := ctx.ShouldBindJSON(&reg); err != nil {
 		response.BadRequest(ctx, err.Error())
 		return
 	}
-
 	// TODO: special logic for align testing
 	if !strings.HasSuffix(reg.Email, "@aastar.org") && reg.Captcha != "111111" {
 		if err := relay.emailChallenge(reg.Email, reg.Captcha); err != nil {

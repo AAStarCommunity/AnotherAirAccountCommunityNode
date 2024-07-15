@@ -15,7 +15,7 @@ func TestCreateAccount(t *testing.T) {
 		t.Errorf("Failed to create account: %v", err)
 	}
 
-	address, err := CreateSmartAccount(w, seedworks.EthereumSepolia)
+	address, initCode, err := CreateSmartAccount(w, global_const.OptimismSepolia)
 	if err != nil {
 		t.Errorf("Failed to create account: %v", err)
 	}
@@ -23,6 +23,7 @@ func TestCreateAccount(t *testing.T) {
 		t.Error("Expected account to be created, but got empty string")
 	}
 	t.Logf("address: %v", address)
+	t.Logf("initCode: %v", initCode)
 
 	// test code
 }

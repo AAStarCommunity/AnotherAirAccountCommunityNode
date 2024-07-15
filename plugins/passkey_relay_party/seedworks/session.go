@@ -58,7 +58,7 @@ func (store *SessionStore) FinishRegSession(reg *FinishRegistration, ctx *gin.Co
 	} else {
 		if cred, err := session.WebAuthn.FinishRegistration(&session.User, session.Data, ctx.Request); err == nil {
 			session.User.AddCredential(cred)
-			store.remove(key)
+			store.Remove(key)
 			return &session.User, nil
 		} else {
 			return nil, err
@@ -87,7 +87,7 @@ func (store *SessionStore) FinishAuthSession(signIn *SiginIn, ctx *gin.Context) 
 		return nil, nil, fmt.Errorf("%s: not found", signIn.Email)
 	} else {
 		if cred, err := session.WebAuthn.FinishLogin(&session.User, session.Data, ctx.Request); err == nil {
-			store.remove(key)
+			store.Remove(key)
 			session.User.UpdateCredential(cred)
 			return &session.User, cred, nil
 		} else {
@@ -123,7 +123,7 @@ func (store *SessionStore) FinishSignSession(paymentSign *PaymentSign, ctx *gin.
 		return nil, fmt.Errorf("%s: not found", paymentSign.Email)
 	} else {
 		if _, err := session.WebAuthn.FinishLogin(&session.User, session.Data, ctx.Request); err == nil {
-			store.remove(key)
+			store.Remove(key)
 			paymentSign.Amount = session.Data.Extensions["amount"].(string)
 			if paymentSign.Nonce != session.Data.Extensions["nonce"].(string) {
 				return nil, fmt.Errorf("nonce not match")
@@ -148,7 +148,7 @@ func (store *SessionStore) Get(id string) *sessionCache {
 	return nil
 }
 
-func (store *SessionStore) remove(id string) {
+func (store *SessionStore) Remove(id string) {
 	store.locker.Lock()
 	defer store.locker.Unlock()
 	delete(store.sessions, id)

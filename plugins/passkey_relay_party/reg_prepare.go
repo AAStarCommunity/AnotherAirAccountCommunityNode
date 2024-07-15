@@ -24,7 +24,7 @@ func (relay *RelayParty) regPrepare(ctx *gin.Context) {
 	}
 	err := relay.emailStartChallenge(reg.Email, ctx.GetHeader("Accept-Language"))
 	if err != nil {
-		response.BadRequest(ctx, "challenge failed")
+		response.BadRequest(ctx, "challenge failed", err.Error())
 		return
 	}
 	response.GetResponse().Success(ctx)

@@ -371,7 +371,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/plugin_passkey_relay_party.regVerifyResponse"
+                            "$ref": "#/definitions/plugin_passkey_relay_party.finishRegistrationResponse"
                         }
                     }
                 }
@@ -559,16 +559,13 @@ const docTemplate = `{
                 }
             }
         },
-        "plugin_passkey_relay_party.regVerifyResponse": {
+        "plugin_passkey_relay_party.finishRegistrationResponse": {
             "type": "object",
             "properties": {
-                "code": {
-                    "type": "integer"
-                },
-                "expire": {
+                "account_address": {
                     "type": "string"
                 },
-                "token": {
+                "account_init_code": {
                     "type": "string"
                 }
             }

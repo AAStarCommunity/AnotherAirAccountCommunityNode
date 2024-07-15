@@ -35,6 +35,13 @@ func AuthHandler() gin.HandlerFunc {
 			}
 			return jwt2.MapClaims{}
 		},
+		LoginResponse: func(c *gin.Context, code int, token string, expire time.Time) {
+			c.JSON(code, gin.H{
+				"code":   code,
+				"token":  token,
+				"expire": expire.Format(time.RFC3339),
+			})
+		},
 		Authenticator: func(c *gin.Context) (interface{}, error) {
 			if c.Query("email") == "" {
 				return nil, jwt2.ErrFailedAuthentication

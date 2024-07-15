@@ -15,7 +15,7 @@ func TestCreateAccount(t *testing.T) {
 		t.Errorf("Failed to create account: %v", err)
 	}
 
-	address, initCode, err := CreateSmartAccount(w, global_const.OptimismSepolia)
+	address, initCode, err := CreateSmartAccount(w, seedworks.OptimismSepolia)
 	if err != nil {
 		t.Errorf("Failed to create account: %v", err)
 	}

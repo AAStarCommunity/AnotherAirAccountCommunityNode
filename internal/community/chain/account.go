@@ -3,14 +3,15 @@ package chain
 import (
 	"another_node/conf"
 	"another_node/internal/community/account"
-	"another_node/internal/global_const"
+	"another_node/internal/seedworks"
 	"encoding/hex"
+	"math/big"
+	"strings"
+
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/pavankpdev/goaa"
 	"golang.org/x/xerrors"
-	"math/big"
-	"strings"
 )
 
 const salt int64 = 1
@@ -53,7 +54,7 @@ func init() {
 	creatAccountAbi = abiVar
 
 }
-func CreateSmartAccount(wallet *account.HdWallet, network global_const.Network) (accountAddress string, initCodeStr string, err error) {
+func CreateSmartAccount(wallet *account.HdWallet, network seedworks.Chain) (accountAddress string, initCodeStr string, err error) {
 	pk := "0x" + wallet.PrivateKey()
 	networkConfig := conf.GetNetworkConfigByNetwork(network)
 	if networkConfig == nil {

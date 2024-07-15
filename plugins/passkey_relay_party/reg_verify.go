@@ -12,10 +12,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type regVerifyResponse struct {
-	Code   int    `json:"code"`
-	Token  string `json:"token"`
-	Expire string `json:"expire"`
+type finishRegistrationResponse struct {
+	AccountInitCode string `json:"account_init_code"`
+	AccountAddress  string `json:"account_address"`
+}
+
+func replayLoginResponse(ctx *gin.Context, append func(c *gin.Context)) {
+	ctx.Writer.WriteString("{\"token\": ")
+	ginJwtMiddleware().LoginHandler(ctx)
+	ctx.Writer.WriteString(",\"append\": ")
+	append(ctx)
+	ctx.Writer.WriteString("}")
 }
 
 // finishRegistration
@@ -29,7 +36,7 @@ type regVerifyResponse struct {
 // @Param network query string false "network"
 // @Param registrationBody body protocol.CredentialCreationResponse true "Verify Registration"
 // @Router /api/passkey/v1/reg/verify [post]
-// @Success 200 {object} regVerifyResponse
+// @Success 200 {object} finishRegistrationResponse
 func (relay *RelayParty) finishRegistration(ctx *gin.Context) {
 
 	// TODO: for tokyo ONLY
@@ -59,28 +66,31 @@ func (relay *RelayParty) finishRegistration(ctx *gin.Context) {
 			response.GetResponse().WithDataSuccess(ctx, user)
 			return
 		}
-		if err := createAA(user, stubReg.Network); err != nil {
+		if initCode, address, err := createAA(user, stubReg.Network); err != nil { // TODO: persistent initCode and address
 			response.InternalServerError(ctx, err.Error())
 			return
 		} else {
 			relay.db.Save(user, false)
 
-			ginJwtMiddleware().LoginHandler(ctx)
+			response.GetResponse().WithDataSuccess(ctx, finishRegistrationResponse{
+				AccountInitCode: initCode,
+				AccountAddress:  address,
+			})
 			return
 		}
 	}
 }
 
 // createAA represents creating an Account Abstraction for the user
-func createAA(user *seedworks.User, network consts.Chain) error {
+func createAA(user *seedworks.User, network consts.Chain) (initCode string, address string, err error) {
 	if w, err := account.NewHdWallet(account.HierarchicalPath_ETH); err != nil {
-		return err
+		return "", "", err
 	} else {
-		address, err := chain.CreateSmartAccount(w, network)
+		address, initCode, err := chain.CreateSmartAccount(w, network)
 		if err != nil {
-			return err
+			return "", "", err
 		}
 		user.SetWallet(w, address, network)
-		return nil
+		return address, initCode, nil
 	}
 }

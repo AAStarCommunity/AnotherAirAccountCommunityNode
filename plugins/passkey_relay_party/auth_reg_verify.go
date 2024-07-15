@@ -9,16 +9,21 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-//var accountProvider account.Provider
+// var accountProvider account.Provider
 //
-//func init() {
-//	p, err := impl.NewAlchemyProvider(conf.GetProvider().Alchemy)
-//	if err != nil {
-//		panic(err)
+//	func init() {
+//		p, err := impl.NewAlchemyProvider(conf.GetProvider().Alchemy)
+//		if err != nil {
+//			panic(err)
+//		}
+//
+//		accountProvider = p
 //	}
-//
-//	accountProvider = p
-//}
+type finishRegistrationResponse struct {
+	AccountInitCode string          `json:"account_init_code"`
+	AccountAddress  string          `json:"account_address"`
+	User            *seedworks.User `json:"user"`
+}
 
 func (relay *RelayParty) finishRegistration(ctx *gin.Context) {
 
@@ -33,27 +38,32 @@ func (relay *RelayParty) finishRegistration(ctx *gin.Context) {
 		response.BadRequest(ctx, err)
 		return
 	} else {
-		if err := createAA(user, stubReg.Network); err != nil {
+		if initCodeStr, address, err := createAA(user, stubReg.Network); err != nil {
 			response.InternalServerError(ctx, err.Error())
 			return
 		} else {
 			relay.db.Save(user)
-			response.GetResponse().WithDataSuccess(ctx, user)
+
+			response.GetResponse().WithDataSuccess(ctx, finishRegistrationResponse{
+				AccountInitCode: initCodeStr,
+				AccountAddress:  address,
+				User:            user,
+			})
 			return
 		}
 	}
 }
 
 // createAA represents creating an Account Abstraction for the user
-func createAA(user *seedworks.User, network global_const.Network) error {
+func createAA(user *seedworks.User, network global_const.Network) (initCode string, address string, err error) {
 	if w, err := account.NewHdWallet(account.HierarchicalPath_Main_ETH_TestNet); err != nil {
-		return err
+		return "", "", err
 	} else {
-		address, err := chain.CreateSmartAccount(w, network)
+		address, initCode, err := chain.CreateSmartAccount(w, network)
 		if err != nil {
-			return err
+			return "", "", err
 		}
 		user.SetWallet(w, address, network)
-		return nil
+		return address, initCode, nil
 	}
 }

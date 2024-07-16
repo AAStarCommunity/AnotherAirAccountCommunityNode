@@ -102,3 +102,22 @@ func (db *PgsqlStorage) Challenge(email, captcha string) bool {
 
 	return err == nil && success
 }
+
+func (db *PgsqlStorage) SaveAccounts(user *seedworks.User, initCode, addr, eoaAddr, chain string) error {
+	return db.client.Model(&model.UserAccount{}).Create(&model.UserAccount{
+		Email:      user.GetEmail(),
+		InitCode:   initCode,
+		Address:    addr,
+		EoaAddress: eoaAddr,
+		Chain:      chain,
+	}).Error
+}
+
+func (db *PgsqlStorage) GetAccounts(email, chain string) (initCode, addr, eoaAddr string, err error) {
+	account := model.UserAccount{}
+	if err := db.client.Where("email = ? AND chain = ?", email, chain).First(&account).Error; err != nil {
+		return "", "", "", err
+	} else {
+		return account.InitCode, account.Address, account.EoaAddress, nil
+	}
+}

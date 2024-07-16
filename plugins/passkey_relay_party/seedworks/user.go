@@ -59,6 +59,9 @@ var _ webauthn.User = (*User)(nil)
 func (user *User) GetEmail() string {
 	return user.email
 }
+func (user *User) GetPrivateKey() string {
+	return user.wallet.PrivateKey()
+}
 
 func (user *User) Marshal() ([]byte, error) {
 	return json.Marshal(marshalUser{

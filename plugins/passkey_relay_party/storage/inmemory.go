@@ -14,6 +14,7 @@ type captcha struct {
 type InMemory struct {
 	users    map[string]*seedworks.User
 	captchas map[string]captcha
+	accounts map[string]interface{}
 }
 
 var _ Db = (*InMemory)(nil)
@@ -55,4 +56,35 @@ func (db *InMemory) Challenge(email, code string) bool {
 		}
 	}
 	return false
+}
+
+func (db *InMemory) SaveAccounts(user *seedworks.User, initCode, addr, eoaAddr, chain string) error {
+	if len(db.accounts) == 0 {
+		db.accounts = make(map[string]interface{})
+	}
+
+	db.accounts[user.GetEmail()+":"+chain] = &struct {
+		InitCode   string
+		Address    string
+		EoaAddress string
+		Chain      string
+	}{
+		InitCode:   initCode,
+		Address:    addr,
+		EoaAddress: eoaAddr,
+	}
+	return nil
+}
+
+func (db *InMemory) GetAccounts(email, chain string) (initCode, addr, eoaAddr string, err error) {
+	if v, ok := db.accounts[email+":"+chain]; ok {
+		if a, ok := v.(*struct {
+			InitCode   string
+			Address    string
+			EoaAddress string
+		}); ok {
+			return a.InitCode, a.Address, a.EoaAddress, nil
+		}
+	}
+	return "", "", "", errors.New("account not found")
 }

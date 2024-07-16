@@ -24,6 +24,12 @@ func (m *Migration20240711) Up(db *gorm.DB) error {
 			return err
 		}
 	}
+
+	if !db.Migrator().HasTable(&model.UserAccount{}) {
+		if err := db.AutoMigrate(&model.UserAccount{}); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -36,6 +42,12 @@ func (m *Migration20240711) Down(db *gorm.DB) error {
 
 	if err := db.Migrator().DropTable(
 		&model.CaptchaChallenge{},
+	); err != nil {
+		return err
+	}
+
+	if err := db.Migrator().DropTable(
+		&model.UserAccount{},
 	); err != nil {
 		return err
 	}

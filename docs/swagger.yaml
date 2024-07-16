@@ -20,13 +20,6 @@ definitions:
       token:
         type: string
     type: object
-  plugin_passkey_relay_party.finishRegistrationResponse:
-    properties:
-      account_address:
-        type: string
-      account_init_code:
-        type: string
-    type: object
   protocol.AuthenticationExtensions:
     additionalProperties: true
     type: object
@@ -395,22 +388,6 @@ definitions:
       message:
         type: string
     type: object
-  seedworks.PaymentSign:
-    properties:
-      amount:
-        type: string
-      email:
-        type: string
-      nonce:
-        type: string
-      origin:
-        type: string
-    required:
-    - amount
-    - email
-    - nonce
-    - origin
-    type: object
   seedworks.Registration:
     properties:
       captcha:
@@ -432,6 +409,26 @@ definitions:
       email:
         type: string
       origin:
+        type: string
+    type: object
+  seedworks.TxSignature:
+    properties:
+      nonce:
+        type: string
+      origin:
+        type: string
+      txdata:
+        type: string
+    required:
+    - nonce
+    - origin
+    - txdata
+    type: object
+  seedworks.TxSignatureResult:
+    properties:
+      sign:
+        type: string
+      txdata:
         type: string
     type: object
   webauthncose.COSEAlgorithmIdentifier:
@@ -567,66 +564,6 @@ paths:
       - JWT: []
       tags:
       - Demo
-  /api/passkey/v1/payment/sign:
-    post:
-      consumes:
-      - application/json
-      description: Begins the sign process for payment
-      parameters:
-      - description: send challenge to passkey for sign
-        in: body
-        name: paymentSign
-        required: true
-        schema:
-          $ref: '#/definitions/seedworks.PaymentSign'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/protocol.PublicKeyCredentialRequestOptions'
-      summary: begin sign payment request credential assertion
-      tags:
-      - Plugins Passkey
-  /api/passkey/v1/payment/sign/verify:
-    post:
-      consumes:
-      - application/json
-      description: Finish the sign process for payment
-      parameters:
-      - description: Verify SignIn
-        in: body
-        name: paymentSign
-        required: true
-        schema:
-          $ref: '#/definitions/protocol.CredentialAssertionResponse'
-      - description: user email
-        format: email
-        in: query
-        name: email
-        required: true
-        type: string
-      - description: origin
-        in: query
-        name: origin
-        required: true
-        type: string
-      - description: nonce
-        in: query
-        name: nonce
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.Response'
-      summary: finish sign payment request credential assertion
-      tags:
-      - Plugins Passkey
   /api/passkey/v1/reg:
     post:
       consumes:
@@ -696,7 +633,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/plugin_passkey_relay_party.finishRegistrationResponse'
+            $ref: '#/definitions/plugin_passkey_relay_party.SiginInResponse'
       summary: sign up step3. Finish Registration
       tags:
       - Plugins Passkey
@@ -769,6 +706,64 @@ paths:
           schema:
             type: object
       summary: sign in step 2. verify credentials
+      tags:
+      - Plugins Passkey
+  /api/passkey/v1/tx/sign:
+    post:
+      consumes:
+      - application/json
+      description: Begins the signature process
+      parameters:
+      - description: send challenge to passkey for tx sign
+        in: body
+        name: dataSignature
+        required: true
+        schema:
+          $ref: '#/definitions/seedworks.TxSignature'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/protocol.PublicKeyCredentialRequestOptions'
+      security:
+      - JWT: []
+      summary: request credential assertion for begin signature tx
+      tags:
+      - Plugins Passkey
+  /api/passkey/v1/tx/sign/verify:
+    post:
+      consumes:
+      - application/json
+      description: Finish the sign process for payment
+      parameters:
+      - description: Verify SignIn
+        in: body
+        name: paymentSign
+        required: true
+        schema:
+          $ref: '#/definitions/protocol.CredentialAssertionResponse'
+      - description: origin
+        in: query
+        name: origin
+        required: true
+        type: string
+      - description: nonce
+        in: query
+        name: nonce
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/seedworks.TxSignatureResult'
+      security:
+      - JWT: []
+      summary: finish sign payment request credential assertion
       tags:
       - Plugins Passkey
   /api/v1/airaccount_rpc/{network}:

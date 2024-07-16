@@ -176,96 +176,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/passkey/v1/payment/sign": {
-            "post": {
-                "description": "Begins the sign process for payment",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Plugins Passkey"
-                ],
-                "summary": "begin sign payment request credential assertion",
-                "parameters": [
-                    {
-                        "description": "send challenge to passkey for sign",
-                        "name": "paymentSign",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/seedworks.PaymentSign"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/protocol.PublicKeyCredentialRequestOptions"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/passkey/v1/payment/sign/verify": {
-            "post": {
-                "description": "Finish the sign process for payment",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Plugins Passkey"
-                ],
-                "summary": "finish sign payment request credential assertion",
-                "parameters": [
-                    {
-                        "description": "Verify SignIn",
-                        "name": "paymentSign",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/protocol.CredentialAssertionResponse"
-                        }
-                    },
-                    {
-                        "type": "string",
-                        "format": "email",
-                        "description": "user email",
-                        "name": "email",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "origin",
-                        "name": "origin",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "nonce",
-                        "name": "nonce",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/response.Response"
-                        }
-                    }
-                }
-            }
-        },
         "/api/passkey/v1/reg": {
             "post": {
                 "description": "Begin the registration process",
@@ -371,7 +281,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/plugin_passkey_relay_party.finishRegistrationResponse"
+                            "$ref": "#/definitions/plugin_passkey_relay_party.SiginInResponse"
                         }
                     }
                 }
@@ -484,6 +394,98 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/passkey/v1/tx/sign": {
+            "post": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "Begins the signature process",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Plugins Passkey"
+                ],
+                "summary": "request credential assertion for begin signature tx",
+                "parameters": [
+                    {
+                        "description": "send challenge to passkey for tx sign",
+                        "name": "dataSignature",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/seedworks.TxSignature"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/protocol.PublicKeyCredentialRequestOptions"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/passkey/v1/tx/sign/verify": {
+            "post": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "Finish the sign process for payment",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Plugins Passkey"
+                ],
+                "summary": "finish sign payment request credential assertion",
+                "parameters": [
+                    {
+                        "description": "Verify SignIn",
+                        "name": "paymentSign",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/protocol.CredentialAssertionResponse"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "origin",
+                        "name": "origin",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "nonce",
+                        "name": "nonce",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/seedworks.TxSignatureResult"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/airaccount_rpc/{network}": {
             "post": {
                 "description": "AirAccount JSON-RPC API",
@@ -555,17 +557,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "token": {
-                    "type": "string"
-                }
-            }
-        },
-        "plugin_passkey_relay_party.finishRegistrationResponse": {
-            "type": "object",
-            "properties": {
-                "account_address": {
-                    "type": "string"
-                },
-                "account_init_code": {
                     "type": "string"
                 }
             }
@@ -992,29 +983,6 @@ const docTemplate = `{
                 }
             }
         },
-        "seedworks.PaymentSign": {
-            "type": "object",
-            "required": [
-                "amount",
-                "email",
-                "nonce",
-                "origin"
-            ],
-            "properties": {
-                "amount": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "nonce": {
-                    "type": "string"
-                },
-                "origin": {
-                    "type": "string"
-                }
-            }
-        },
         "seedworks.Registration": {
             "type": "object",
             "properties": {
@@ -1047,6 +1015,36 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "origin": {
+                    "type": "string"
+                }
+            }
+        },
+        "seedworks.TxSignature": {
+            "type": "object",
+            "required": [
+                "nonce",
+                "origin",
+                "txdata"
+            ],
+            "properties": {
+                "nonce": {
+                    "type": "string"
+                },
+                "origin": {
+                    "type": "string"
+                },
+                "txdata": {
+                    "type": "string"
+                }
+            }
+        },
+        "seedworks.TxSignatureResult": {
+            "type": "object",
+            "properties": {
+                "sign": {
+                    "type": "string"
+                },
+                "txdata": {
                     "type": "string"
                 }
             }

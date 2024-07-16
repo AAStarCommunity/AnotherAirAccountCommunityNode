@@ -388,6 +388,15 @@ definitions:
       message:
         type: string
     type: object
+  seedworks.AccountInfo:
+    properties:
+      aa:
+        type: string
+      eoa:
+        type: string
+      init_code:
+        type: string
+    type: object
   seedworks.Registration:
     properties:
       captcha:
@@ -426,6 +435,8 @@ definitions:
     type: object
   seedworks.TxSignatureResult:
     properties:
+      code:
+        type: integer
       sign:
         type: string
       txdata:
@@ -548,6 +559,33 @@ paths:
           description: OK
       tags:
       - Healthz
+  /api/passkey/v1/account/info:
+    get:
+      consumes:
+      - application/json
+      description: 'get user account info: eoa address, aa address, init code'
+      parameters:
+      - description: network
+        in: query
+        name: network
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/seedworks.AccountInfo'
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+      security:
+      - JWT: []
+      summary: get user account info
+      tags:
+      - Plugins Passkey
   /api/passkey/v1/imauthz:
     get:
       description: a demo api to show api is authorized after signin

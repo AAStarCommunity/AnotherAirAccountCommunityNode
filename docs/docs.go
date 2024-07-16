@@ -149,6 +149,49 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/passkey/v1/account/info": {
+            "get": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "get user account info: eoa address, aa address, init code",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Plugins Passkey"
+                ],
+                "summary": "get user account info",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "network",
+                        "name": "network",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/seedworks.AccountInfo"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
         "/api/passkey/v1/imauthz": {
             "get": {
                 "security": [
@@ -983,6 +1026,20 @@ const docTemplate = `{
                 }
             }
         },
+        "seedworks.AccountInfo": {
+            "type": "object",
+            "properties": {
+                "aa": {
+                    "type": "string"
+                },
+                "eoa": {
+                    "type": "string"
+                },
+                "init_code": {
+                    "type": "string"
+                }
+            }
+        },
         "seedworks.Registration": {
             "type": "object",
             "properties": {
@@ -1041,6 +1098,9 @@ const docTemplate = `{
         "seedworks.TxSignatureResult": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "integer"
+                },
                 "sign": {
                     "type": "string"
                 },

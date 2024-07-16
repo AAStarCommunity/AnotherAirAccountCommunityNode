@@ -17,13 +17,13 @@ type finishRegistrationResponse struct {
 	AccountAddress  string `json:"account_address"`
 }
 
-func replayLoginResponse(ctx *gin.Context, append func(c *gin.Context)) {
-	ctx.Writer.WriteString("{\"token\": ")
-	ginJwtMiddleware().LoginHandler(ctx)
-	ctx.Writer.WriteString(",\"append\": ")
-	append(ctx)
-	ctx.Writer.WriteString("}")
-}
+// func replayLoginResponse(ctx *gin.Context, append func(c *gin.Context)) {
+// 	ctx.Writer.WriteString("{\"token\": ")
+// 	ginJwtMiddleware().LoginHandler(ctx)
+// 	ctx.Writer.WriteString(",\"append\": ")
+// 	append(ctx)
+// 	ctx.Writer.WriteString("}")
+// }
 
 // finishRegistration
 // @Summary sign up step3. Finish Registration

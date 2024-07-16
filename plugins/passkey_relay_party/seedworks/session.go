@@ -96,19 +96,20 @@ func (store *SessionStore) FinishAuthSession(signIn *SiginIn, ctx *gin.Context) 
 	}
 }
 
-func (store *SessionStore) NewSignSession(user *User, paymentSign *PaymentSign) (*protocol.CredentialAssertion, error) {
-	if user == nil || paymentSign == nil {
+func (store *SessionStore) NewTxSignSession(user *User, txSignature *TxSignature) (*protocol.CredentialAssertion, error) {
+	if user == nil || txSignature == nil {
 		return nil, fmt.Errorf("user or signIn is nil")
 	}
 
-	webAuthn, _ := newWebAuthn(paymentSign.Origin)
-	sessionKey := GetSessionKey(paymentSign.Origin, paymentSign.Email, paymentSign.Nonce)
+	webAuthn, _ := newWebAuthn(txSignature.Origin)
+	sessionKey := GetSessionKey(txSignature.Origin, txSignature.Email, txSignature.Nonce)
 	if opt, session, err := webAuthn.BeginLogin(user, func(opt *protocol.PublicKeyCredentialRequestOptions) {
+		opt.Challenge, _ = CreateChallenge(txSignature) // TODO: rewrite the challenge algorithm
 		if opt.Extensions == nil {
 			opt.Extensions = make(map[string]interface{})
 		}
-		opt.Extensions["amount"] = paymentSign.Amount
-		opt.Extensions["nonce"] = paymentSign.Nonce
+		opt.Extensions["txdata"] = txSignature.TxData
+		opt.Extensions["nonce"] = txSignature.Nonce
 	}); err != nil {
 		return nil, err
 	} else {
@@ -117,14 +118,14 @@ func (store *SessionStore) NewSignSession(user *User, paymentSign *PaymentSign) 
 	}
 }
 
-func (store *SessionStore) FinishSignSession(paymentSign *PaymentSign, ctx *gin.Context) (*User, error) {
+func (store *SessionStore) FinishSignSession(paymentSign *TxSignature, ctx *gin.Context) (*User, error) {
 	key := GetSessionKey(paymentSign.Origin, paymentSign.Email, paymentSign.Nonce)
 	if session := store.Get(key); session == nil {
 		return nil, fmt.Errorf("%s: not found", paymentSign.Email)
 	} else {
 		if _, err := session.WebAuthn.FinishLogin(&session.User, session.Data, ctx.Request); err == nil {
 			store.Remove(key)
-			paymentSign.Amount = session.Data.Extensions["amount"].(string)
+			paymentSign.TxData = session.Data.Extensions["txdata"].(string)
 			if paymentSign.Nonce != session.Data.Extensions["nonce"].(string) {
 				return nil, fmt.Errorf("nonce not match")
 			}

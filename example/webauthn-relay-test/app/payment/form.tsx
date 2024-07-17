@@ -10,7 +10,7 @@ export default function PaymentForm() {
         <PayForm action={PasskeyPayment}>
           <PaymentButton>Signature It</PaymentButton>
           <p className="text-center text-sm text-gray-600">
-            All your transfer will into my pocket
+            3 nodes signature tx data at least
           </p>
         </PayForm>
       ) : (

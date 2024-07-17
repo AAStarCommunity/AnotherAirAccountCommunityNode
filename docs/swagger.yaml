@@ -428,10 +428,6 @@ definitions:
         type: string
       txdata:
         type: string
-    required:
-    - nonce
-    - origin
-    - txdata
     type: object
   seedworks.TxSignatureResult:
     properties:

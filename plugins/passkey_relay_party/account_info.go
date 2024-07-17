@@ -16,7 +16,7 @@ import (
 // @Accept json
 // @Produce json
 // @Param network  query string true "network"
-// @Success 200 {object} seedworks.accountInfo "OK"
+// @Success 200 {object} seedworks.AccountInfo "OK"
 // @Failure 400 {object} any "Bad Request"
 // @Router /api/passkey/v1/account/info [get]
 // @Security JWT

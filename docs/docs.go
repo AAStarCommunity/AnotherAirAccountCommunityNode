@@ -1078,11 +1078,6 @@ const docTemplate = `{
         },
         "seedworks.TxSignature": {
             "type": "object",
-            "required": [
-                "nonce",
-                "origin",
-                "txdata"
-            ],
             "properties": {
                 "nonce": {
                     "type": "string"

@@ -9,18 +9,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// AccountInfo user account info
+// accountInfo user account info
 // @Summary get user account info
 // @Description get user account info: eoa address, aa address, init code
 // @Tags Plugins Passkey
 // @Accept json
 // @Produce json
 // @Param network  query string true "network"
-// @Success 200 {object} seedworks.AccountInfo "OK"
+// @Success 200 {object} seedworks.accountInfo "OK"
 // @Failure 400 {object} any "Bad Request"
 // @Router /api/passkey/v1/account/info [get]
 // @Security JWT
-func (relay *RelayParty) AccountInfo(ctx *gin.Context) {
+func (relay *RelayParty) accountInfo(ctx *gin.Context) {
 	if ok, email := CurrentUser(ctx); !ok {
 		response.GetResponse().FailCode(ctx, http.StatusUnauthorized)
 		return

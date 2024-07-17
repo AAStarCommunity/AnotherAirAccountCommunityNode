@@ -1,10 +1,10 @@
 package seedworks
 
 type TxSignature struct {
-	Nonce  string `json:"nonce" binding:"required"`
+	Nonce  string `json:"nonce"`
 	Email  string `json:"-"`
-	Origin string `json:"origin" binding:"required"`
-	TxData string `json:"txdata" binding:"required"`
+	Origin string `json:"origin"`
+	TxData string `json:"txdata"`
 }
 
 type TxSignatureResult struct {

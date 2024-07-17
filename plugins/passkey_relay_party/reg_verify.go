@@ -59,7 +59,7 @@ func (relay *RelayParty) finishRegistration(ctx *gin.Context) {
 	}
 
 	if user, err := relay.authSessionStore.FinishRegSession(&stubReg, ctx); err != nil {
-		response.BadRequest(ctx, err)
+		response.GetResponse().FailCode(ctx, 401, "SignUp failed: "+err.Error())
 		return
 	} else {
 		// TODO: special logic for align testing
@@ -93,6 +93,6 @@ func createAA(user *seedworks.User, network consts.Chain) (initCode, address, eo
 			return "", "", "", err
 		}
 		user.SetWallet(w, address, network)
-		return address, initCode, w.Address(), nil
+		return initCode, address, w.Address(), nil
 	}
 }

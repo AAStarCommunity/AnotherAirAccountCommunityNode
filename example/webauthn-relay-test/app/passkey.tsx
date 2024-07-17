@@ -24,9 +24,12 @@ export const PasskeyRegister = async (formData: FormData) => {
 
 const generateRegPasskeyPublicKey = async (email: string) => {
   const origin = window.location.origin;
-  const resp = await api.post(API.PASSKEY_REG, { email, origin, captcha: "111111" });
+  const resp = await api.post(API.PASSKEY_REG, {
+    email,
+    origin,
+    captcha: "111111",
+  });
   const json = resp.data.data as PublicKeyCredentialCreationOptionsJSON;
-  console.log(JSON.stringify(json, null, 2));
   if (json !== null) {
     const attest = await startRegistration(json);
     const verifyResp = await api.post(
@@ -34,11 +37,16 @@ const generateRegPasskeyPublicKey = async (email: string) => {
         "?origin=" +
         encodeURIComponent(origin) +
         "&email=" +
-        email + 
+        email +
         "&network=optimism-sepolia",
       attest
     );
-    console.log(verifyResp.data);
+    const signInRlt = verifyResp.status === 200 && verifyResp.data.code === 200;
+    if (signInRlt) {
+      if (verifyResp.data.token) {
+        localStorage.setItem("token", verifyResp.data.token!);
+      }
+    }
   }
 };
 
@@ -49,7 +57,7 @@ export const PasskeyLogin = async (formData: FormData) => {
   if (resp) {
     window.location.href = "/payment";
   } else {
-    alert("signin failed")
+    alert("signin failed");
   }
 };
 
@@ -68,6 +76,12 @@ const generateAuthPasskeyPublicKey = async (email: string) => {
       attest
     );
 
-    return verifyResp.status === 200;
+    const signInRlt = verifyResp.status === 200 && verifyResp.data.code === 200;
+    if (signInRlt) {
+      if (verifyResp.data.token) {
+        localStorage.setItem("token", verifyResp.data.token!);
+      }
+    }
+    return signInRlt;
   }
 };

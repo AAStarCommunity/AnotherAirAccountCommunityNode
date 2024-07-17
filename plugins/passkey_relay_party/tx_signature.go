@@ -43,7 +43,7 @@ func (relay *RelayParty) beginTxSignature(ctx *gin.Context) {
 		if err != nil {
 			response.NotFound(ctx, err.Error())
 		}
-		if options, err := relay.authSessionStore.NewTxSignSession(user, &tx); err != nil {
+		if options, err := relay.signSessionStore.NewTxSignSession(user, &tx); err != nil {
 			response.InternalServerError(ctx, err)
 		} else {
 			response.GetResponse().WithDataSuccess(ctx, options.Response)
@@ -75,9 +75,9 @@ func (relay *RelayParty) finishTxSignature(ctx *gin.Context) {
 		signPayment.Email = email
 	}
 
-	user, err := relay.authSessionStore.FinishSignSession(&signPayment, ctx)
+	user, err := relay.signSessionStore.FinishSignSession(&signPayment, ctx)
 	if err != nil {
-		response.BadRequest(ctx, "SignIn failed: "+err.Error())
+		response.GetResponse().FailCode(ctx, 403, "SignIn failed: "+err.Error())
 		return
 	}
 

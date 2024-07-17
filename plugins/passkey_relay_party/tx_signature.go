@@ -12,8 +12,8 @@ import (
 )
 
 // beginTxSignature
-// @Summary request credential assertion for begin signature tx
-// @Description Begins the signature process
+// @Summary Begin tx signature
+// @Description Send challenge for passkey
 // @Tags Plugins Passkey
 // @Accept json
 // @Produce json
@@ -55,8 +55,8 @@ func (relay *RelayParty) beginTxSignature(ctx *gin.Context) {
 }
 
 // finishTxSignature
-// @Summary finish sign payment request credential assertion
-// @Description Finish the sign process for payment
+// @Summary Finish Tx Signature
+// @Description Verify attestations and signature txdata
 // @Tags Plugins Passkey
 // @Accept json
 // @Produce json

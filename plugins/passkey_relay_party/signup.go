@@ -13,9 +13,9 @@ import (
 )
 
 // regPrepare
-// @Summary sign up step1. send code
+// @Summary Prepare SignUp
 // @Tags Plugins Passkey
-// @Description Send captcha to email for verifying belongs
+// @Description Send captcha to email for confirming ownership
 // @Accept json
 // @Product json
 // @Param registrationBody body seedworks.RegistrationPrepare true "Send Captcha to Email"
@@ -36,9 +36,9 @@ func (relay *RelayParty) regPrepare(ctx *gin.Context) {
 }
 
 // beginRegistration
-// @Summary sign up step2. begin registration
+// @Summary Begin SignUp
 // @Tags Plugins Passkey
-// @Description Begin the registration process
+// @Description Send challenge for passkey
 // @Accept json
 // @Product json
 // @Param registrationBody body seedworks.Registration true "Begin Registration"
@@ -95,9 +95,9 @@ type finishRegistrationResponse struct {
 // }
 
 // finishRegistration
-// @Summary sign up step3. Finish Registration
+// @Summary Finish SignUp
 // @Tags Plugins Passkey
-// @Description Verify Passkey Registration
+// @Description Verify attestations, register user and return JWT
 // @Accept json
 // @Product json
 // @Param email  query string true "user email" Format(email)

@@ -14,8 +14,8 @@ type SiginInResponse struct {
 }
 
 // beginSignIn
-// @Summary sign in step 1. request credential assertion
-// @Description Begins the sign in process
+// @Summary Begins SignIn
+// @Description Send challenge for passkey
 // @Tags Plugins Passkey
 // @Accept json
 // @Produce json
@@ -49,8 +49,8 @@ func (relay *RelayParty) beginSignIn(ctx *gin.Context) {
 }
 
 // finishSignIn
-// @Summary sign in step 2. verify credentials
-// @Description Finish the sign in process
+// @Summary Finish SingIn
+// @Description Verify attestations and return JWT
 // @Tags Plugins Passkey
 // @Accept json
 // @Produce json

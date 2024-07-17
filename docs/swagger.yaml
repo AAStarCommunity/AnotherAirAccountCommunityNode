@@ -602,7 +602,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Begin the registration process
+      description: Send challenge for passkey
       parameters:
       - description: Begin Registration
         in: body
@@ -615,14 +615,14 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/protocol.PublicKeyCredentialCreationOptions'
-      summary: sign up step2. begin registration
+      summary: Begin SignUp
       tags:
       - Plugins Passkey
   /api/passkey/v1/reg/prepare:
     post:
       consumes:
       - application/json
-      description: Send captcha to email for verifying belongs
+      description: Send captcha to email for confirming ownership
       parameters:
       - description: Send Captcha to Email
         in: body
@@ -633,14 +633,14 @@ paths:
       responses:
         "200":
           description: OK
-      summary: sign up step1. send code
+      summary: Prepare SignUp
       tags:
       - Plugins Passkey
   /api/passkey/v1/reg/verify:
     post:
       consumes:
       - application/json
-      description: Verify Passkey Registration
+      description: Verify attestations, register user and return JWT
       parameters:
       - description: user email
         format: email
@@ -668,14 +668,14 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/plugin_passkey_relay_party.SiginInResponse'
-      summary: sign up step3. Finish Registration
+      summary: Finish SignUp
       tags:
       - Plugins Passkey
   /api/passkey/v1/sign:
     post:
       consumes:
       - application/json
-      description: Begins the sign in process
+      description: Send challenge for passkey
       parameters:
       - description: Sign in details
         in: body
@@ -702,14 +702,14 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.Response'
-      summary: sign in step 1. request credential assertion
+      summary: Begins SignIn
       tags:
       - Plugins Passkey
   /api/passkey/v1/sign/verify:
     post:
       consumes:
       - application/json
-      description: Finish the sign in process
+      description: Verify attestations and return JWT
       parameters:
       - description: user email
         format: email
@@ -739,14 +739,14 @@ paths:
           description: Bad Request
           schema:
             type: object
-      summary: sign in step 2. verify credentials
+      summary: Finish SingIn
       tags:
       - Plugins Passkey
   /api/passkey/v1/tx/sign:
     post:
       consumes:
       - application/json
-      description: Begins the signature process
+      description: Send challenge for passkey
       parameters:
       - description: send challenge to passkey for tx sign
         in: body
@@ -763,14 +763,14 @@ paths:
             $ref: '#/definitions/protocol.PublicKeyCredentialRequestOptions'
       security:
       - JWT: []
-      summary: request credential assertion for begin signature tx
+      summary: Begin tx signature
       tags:
       - Plugins Passkey
   /api/passkey/v1/tx/sign/verify:
     post:
       consumes:
       - application/json
-      description: Finish the sign process for payment
+      description: Verify attestations and signature txdata
       parameters:
       - description: Verify SignIn
         in: body
@@ -797,7 +797,7 @@ paths:
             $ref: '#/definitions/seedworks.TxSignatureResult'
       security:
       - JWT: []
-      summary: finish sign payment request credential assertion
+      summary: Finish Tx Signature
       tags:
       - Plugins Passkey
   /api/v1/airaccount_rpc/{network}:

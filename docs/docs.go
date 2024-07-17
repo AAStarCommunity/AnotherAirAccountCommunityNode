@@ -221,14 +221,14 @@ const docTemplate = `{
         },
         "/api/passkey/v1/reg": {
             "post": {
-                "description": "Begin the registration process",
+                "description": "Send challenge for passkey",
                 "consumes": [
                     "application/json"
                 ],
                 "tags": [
                     "Plugins Passkey"
                 ],
-                "summary": "sign up step2. begin registration",
+                "summary": "Begin SignUp",
                 "parameters": [
                     {
                         "description": "Begin Registration",
@@ -252,14 +252,14 @@ const docTemplate = `{
         },
         "/api/passkey/v1/reg/prepare": {
             "post": {
-                "description": "Send captcha to email for verifying belongs",
+                "description": "Send captcha to email for confirming ownership",
                 "consumes": [
                     "application/json"
                 ],
                 "tags": [
                     "Plugins Passkey"
                 ],
-                "summary": "sign up step1. send code",
+                "summary": "Prepare SignUp",
                 "parameters": [
                     {
                         "description": "Send Captcha to Email",
@@ -280,14 +280,14 @@ const docTemplate = `{
         },
         "/api/passkey/v1/reg/verify": {
             "post": {
-                "description": "Verify Passkey Registration",
+                "description": "Verify attestations, register user and return JWT",
                 "consumes": [
                     "application/json"
                 ],
                 "tags": [
                     "Plugins Passkey"
                 ],
-                "summary": "sign up step3. Finish Registration",
+                "summary": "Finish SignUp",
                 "parameters": [
                     {
                         "type": "string",
@@ -332,7 +332,7 @@ const docTemplate = `{
         },
         "/api/passkey/v1/sign": {
             "post": {
-                "description": "Begins the sign in process",
+                "description": "Send challenge for passkey",
                 "consumes": [
                     "application/json"
                 ],
@@ -342,7 +342,7 @@ const docTemplate = `{
                 "tags": [
                     "Plugins Passkey"
                 ],
-                "summary": "sign in step 1. request credential assertion",
+                "summary": "Begins SignIn",
                 "parameters": [
                     {
                         "description": "Sign in details",
@@ -384,7 +384,7 @@ const docTemplate = `{
         },
         "/api/passkey/v1/sign/verify": {
             "post": {
-                "description": "Finish the sign in process",
+                "description": "Verify attestations and return JWT",
                 "consumes": [
                     "application/json"
                 ],
@@ -394,7 +394,7 @@ const docTemplate = `{
                 "tags": [
                     "Plugins Passkey"
                 ],
-                "summary": "sign in step 2. verify credentials",
+                "summary": "Finish SingIn",
                 "parameters": [
                     {
                         "type": "string",
@@ -444,7 +444,7 @@ const docTemplate = `{
                         "JWT": []
                     }
                 ],
-                "description": "Begins the signature process",
+                "description": "Send challenge for passkey",
                 "consumes": [
                     "application/json"
                 ],
@@ -454,7 +454,7 @@ const docTemplate = `{
                 "tags": [
                     "Plugins Passkey"
                 ],
-                "summary": "request credential assertion for begin signature tx",
+                "summary": "Begin tx signature",
                 "parameters": [
                     {
                         "description": "send challenge to passkey for tx sign",
@@ -483,7 +483,7 @@ const docTemplate = `{
                         "JWT": []
                     }
                 ],
-                "description": "Finish the sign process for payment",
+                "description": "Verify attestations and signature txdata",
                 "consumes": [
                     "application/json"
                 ],
@@ -493,7 +493,7 @@ const docTemplate = `{
                 "tags": [
                     "Plugins Passkey"
                 ],
-                "summary": "finish sign payment request credential assertion",
+                "summary": "Finish Tx Signature",
                 "parameters": [
                     {
                         "description": "Verify SignIn",

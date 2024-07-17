@@ -31,11 +31,14 @@ func (relay *RelayParty) beginTxSignature(ctx *gin.Context) {
 		if err := ctx.ShouldBindJSON(&tx); err != nil {
 			response.BadRequest(ctx, err)
 			return
+		} else if len(tx.TxData) == 0 {
+			response.BadRequest(ctx, "TxData is empty")
+			return
 		}
 		tx.Email = email
 	}
 
-	if session := relay.signSessionStore.Get(seedworks.GetSessionKey(tx.Origin, tx.Email, tx.Nonce)); session != nil {
+	if session := relay.txSessionStore.Get(seedworks.GetSessionKey(tx.Origin, tx.Email, tx.Nonce)); session != nil {
 		response.BadRequest(ctx, "Already in Signature Process")
 		return
 	} else {
@@ -43,7 +46,7 @@ func (relay *RelayParty) beginTxSignature(ctx *gin.Context) {
 		if err != nil {
 			response.NotFound(ctx, err.Error())
 		}
-		if options, err := relay.signSessionStore.NewTxSignSession(user, &tx); err != nil {
+		if options, err := relay.txSessionStore.NewTxSession(user, &tx); err != nil {
 			response.InternalServerError(ctx, err)
 		} else {
 			response.GetResponse().WithDataSuccess(ctx, options.Response)
@@ -75,7 +78,7 @@ func (relay *RelayParty) finishTxSignature(ctx *gin.Context) {
 		signPayment.Email = email
 	}
 
-	user, err := relay.signSessionStore.FinishSignSession(&signPayment, ctx)
+	user, err := relay.txSessionStore.FinishSignSession(&signPayment, ctx)
 	if err != nil {
 		response.GetResponse().FailCode(ctx, 403, "SignIn failed: "+err.Error())
 		return

@@ -7,11 +7,7 @@ import { PublicKeyCredentialRequestOptionsJSON } from "@simplewebauthn/types";
 
 export const PasskeyPayment = async (formData: FormData) => {
   let amount = formData.get("amount") as string;
-  let resp = await generateAuthPasskeyPublicKey("ab@de.com", amount);
-
-  if (resp) {
-    alert("Payment successful");
-  }
+  await generateAuthPasskeyPublicKey("ab@de.com", amount);
 };
 
 const generateAuthPasskeyPublicKey = async (email: string, amount: string) => {
@@ -23,6 +19,7 @@ const generateAuthPasskeyPublicKey = async (email: string, amount: string) => {
       origin,
       amount,
       nonce,
+      txdata: "this_is_a_fake_tx_data",
     },
     {
       headers: {
@@ -48,6 +45,10 @@ const generateAuthPasskeyPublicKey = async (email: string, amount: string) => {
         },
       }
     );
-    return verifyResp.status === 200;
+    if (verifyResp.status === 200) {
+      alert("Signature:\n" + verifyResp.data.data.sign);
+    } else {
+      alert("Signature FAILED!");
+    }
   }
 };

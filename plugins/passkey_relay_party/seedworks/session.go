@@ -96,21 +96,23 @@ func (store *SessionStore) FinishAuthSession(signIn *SiginIn, ctx *gin.Context) 
 	}
 }
 
-func (store *SessionStore) NewTxSignSession(user *User, txSignature *TxSignature) (*protocol.CredentialAssertion, error) {
+func (store *SessionStore) NewTxSession(user *User, txSignature *TxSignature) (*protocol.CredentialAssertion, error) {
 	if user == nil || txSignature == nil {
 		return nil, fmt.Errorf("user or signIn is nil")
 	}
 
 	webAuthn, _ := newWebAuthn(txSignature.Origin)
 	sessionKey := GetSessionKey(txSignature.Origin, txSignature.Email, txSignature.Nonce)
-	if opt, session, err := webAuthn.BeginLogin(user, func(opt *protocol.PublicKeyCredentialRequestOptions) {
-		opt.Challenge, _ = CreateChallenge(txSignature) // TODO: rewrite the challenge algorithm
-		if opt.Extensions == nil {
-			opt.Extensions = make(map[string]interface{})
-		}
-		opt.Extensions["txdata"] = txSignature.TxData
-		opt.Extensions["nonce"] = txSignature.Nonce
-	}); err != nil {
+	if opt, session, err := webAuthn.BeginLogin(user,
+		func(opt *protocol.PublicKeyCredentialRequestOptions) {
+			// opt.Challenge, _ = CreateChallenge(txSignature) // TODO: rewrite the challenge algorithm
+			if opt.Extensions == nil {
+				opt.Extensions = make(map[string]interface{})
+			}
+			opt.Extensions["txdata"] = txSignature.TxData
+			opt.Extensions["nonce"] = txSignature.Nonce
+		},
+	); err != nil {
 		return nil, err
 	} else {
 		store.set(sessionKey, webAuthn, session, user)

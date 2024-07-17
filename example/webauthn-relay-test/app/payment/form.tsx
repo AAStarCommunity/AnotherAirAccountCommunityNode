@@ -8,7 +8,7 @@ export default function PaymentForm() {
     <div>
       {browserSupportsWebAuthn() ? (
         <PayForm action={PasskeyPayment}>
-          <PaymentButton>Payment</PaymentButton>
+          <PaymentButton>Signature It</PaymentButton>
           <p className="text-center text-sm text-gray-600">
             All your transfer will into my pocket
           </p>

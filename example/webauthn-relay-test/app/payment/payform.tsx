@@ -12,16 +12,16 @@ export function PayForm({
       >
         <div>
           <label
-            htmlFor="amount"
+            htmlFor="txdata"
             className="block text-xs text-gray-600 uppercase"
           >
             Transfer Amount
           </label>
           <input
-            id="amount"
-            name="amount"
-            type="amount"
-            placeholder="$1.00"
+            id="txdata"
+            name="txdata"
+            type="txdata"
+            placeholder="Hashed TxData"
             required
             className="mt-1 block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-black focus:outline-none focus:ring-black sm:text-sm"
           />

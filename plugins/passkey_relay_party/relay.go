@@ -17,7 +17,7 @@ import (
 type RelayParty struct {
 	db               storage.Db
 	authSessionStore *seedworks.SessionStore
-	signSessionStore *seedworks.SessionStore
+	txSessionStore   *seedworks.SessionStore
 	node             *node.Community
 	accountProvider  *account.Provider
 }
@@ -48,7 +48,7 @@ func NewRelay() *RelayParty {
 	return &RelayParty{
 		db:               storage.NewPgsqlStorage(),
 		authSessionStore: seedworks.NewInMemorySessionStore(),
-		signSessionStore: seedworks.NewInMemorySessionStore(),
+		txSessionStore:   seedworks.NewInMemorySessionStore(),
 		accountProvider: func() *account.Provider {
 			p, err := impl.NewAlchemyProvider(conf.GetProvider().Alchemy)
 			if err != nil {

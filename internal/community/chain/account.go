@@ -95,6 +95,6 @@ func getAccountInitCode(accountAddress common.Address, factoryAddress common.Add
 		return "", xerrors.Errorf("error encoding function data: %v", err)
 	}
 	data = append(factoryAddress.Bytes(), data...)
-	initCodeStr := "Ox" + hex.EncodeToString(data)
+	initCodeStr := "0x" + hex.EncodeToString(data)
 	return initCodeStr, nil
 }

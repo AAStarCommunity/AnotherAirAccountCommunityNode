@@ -1032,6 +1032,9 @@ const docTemplate = `{
                 "aa": {
                     "type": "string"
                 },
+                "email": {
+                    "type": "string"
+                },
                 "eoa": {
                     "type": "string"
                 },

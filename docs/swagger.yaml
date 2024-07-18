@@ -392,6 +392,8 @@ definitions:
     properties:
       aa:
         type: string
+      email:
+        type: string
       eoa:
         type: string
       init_code:

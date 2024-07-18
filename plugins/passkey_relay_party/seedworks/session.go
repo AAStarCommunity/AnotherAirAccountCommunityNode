@@ -43,7 +43,9 @@ func (store *SessionStore) NewRegSession(reg *Registration) (*protocol.Credentia
 		UserVerification:        protocol.VerificationRequired,
 	}
 
-	if opt, session, err := wan.BeginRegistration(user, webauthn.WithAuthenticatorSelection(authSelect)); err != nil {
+	if opt, session, err := wan.BeginRegistration(user,
+		webauthn.WithAuthenticatorSelection(authSelect),
+	); err != nil {
 		return nil, err
 	} else {
 		store.set(sessionKey, wan, session, user)

@@ -41,6 +41,7 @@ func (relay *RelayParty) accountInfo(ctx *gin.Context) {
 				InitCode: initCode,
 				AA:       addr,
 				EOA:      eoaAddr,
+				Email:    email,
 			})
 		}
 	}

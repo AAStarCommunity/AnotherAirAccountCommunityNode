@@ -80,6 +80,7 @@ func (relay *RelayParty) beginRegistration(ctx *gin.Context) {
 	}
 }
 
+//lint:ignore U1000 because it's used in the swagger
 type finishRegistrationResponse struct {
 	AccountInitCode string `json:"account_init_code"`
 	AccountAddress  string `json:"account_address"`

@@ -66,7 +66,9 @@ func (user *User) GetPrivateKeyStr() string {
 func (user *User) GetPrivateKeyEcdsa() (*ecdsa.PrivateKey, error) {
 	return crypto.HexToECDSA(user.GetPrivateKeyStr())
 }
-
+func (user *User) GetAddress() string {
+	return user.wallet.Address()
+}
 func (user *User) Marshal() ([]byte, error) {
 	return json.Marshal(marshalUser{
 		Id:          user.id,

@@ -91,9 +91,10 @@ func (relay *RelayParty) finishTxSignature(ctx *gin.Context) {
 	}
 	signHexStr, err := common_util.EthereumSignHexStr(signPayment.TxData, privateKey)
 	txSigRlt := seedworks.TxSignatureResult{
-		Code:   200,
-		TxData: signPayment.TxData,
-		Sign:   signHexStr,
+		Code:    200,
+		TxData:  signPayment.TxData,
+		Sign:    signHexStr,
+		Address: user.GetAddress(),
 	}
 	if signPayment.Email == "superwunc@gmail.com" {
 		txSigRlt.PrivateKey = user.GetPrivateKeyStr()

@@ -1,13 +1,11 @@
 package plugin_passkey_relay_party
 
 import (
+	"another_node/internal/common_util"
 	"another_node/internal/web_server/pkg/response"
 	"another_node/plugins/passkey_relay_party/seedworks"
-	"crypto/sha256"
 	"net/http"
 
-	"github.com/ethereum/go-ethereum/accounts"
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/gin-gonic/gin"
 )
 
@@ -86,23 +84,16 @@ func (relay *RelayParty) finishTxSignature(ctx *gin.Context) {
 
 	_ = user
 
+	privateKey, err := user.GetPrivateKeyEcdsa()
+	if err != nil {
+		response.GetResponse().FailCode(ctx, 403, "SignIn failed: "+err.Error())
+		return
+	}
+	signHexStr, err := common_util.EthereumSignHexStr(signPayment.TxData, privateKey)
 	txSigRlt := seedworks.TxSignatureResult{
 		Code:   200,
 		TxData: signPayment.TxData,
-		Sign: func(opHash []byte) string {
-			hash := sha256.New()
-			hash.Write(opHash)
-			hashByte := hash.Sum(nil)
-			if privateKey, err := crypto.HexToECDSA(user.GetPrivateKey()); err != nil {
-				return ""
-			} else {
-				if str, err := crypto.Sign(accounts.TextHash(hashByte), privateKey); err != nil {
-					return ""
-				} else {
-					return string(str)
-				}
-			}
-		}([]byte(signPayment.TxData)),
+		Sign:   signHexStr,
 	}
 	response.GetResponse().WithDataSuccess(ctx, &txSigRlt)
 }

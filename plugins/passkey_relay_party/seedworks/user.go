@@ -3,8 +3,9 @@ package seedworks
 import (
 	"another_node/internal/community/account"
 	consts "another_node/internal/seedworks"
+	"crypto/ecdsa"
 	"encoding/json"
-
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/go-webauthn/webauthn/webauthn"
 )
 
@@ -59,8 +60,11 @@ var _ webauthn.User = (*User)(nil)
 func (user *User) GetEmail() string {
 	return user.email
 }
-func (user *User) GetPrivateKey() string {
+func (user *User) GetPrivateKeyStr() string {
 	return user.wallet.PrivateKey()
+}
+func (user *User) GetPrivateKeyEcdsa() (*ecdsa.PrivateKey, error) {
+	return crypto.HexToECDSA(user.GetPrivateKeyStr())
 }
 
 func (user *User) Marshal() ([]byte, error) {

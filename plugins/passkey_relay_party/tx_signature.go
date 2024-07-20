@@ -89,7 +89,7 @@ func (relay *RelayParty) finishTxSignature(ctx *gin.Context) {
 		response.GetResponse().FailCode(ctx, 403, "SignIn failed: "+err.Error())
 		return
 	}
-	signHexStr, err := common_util.EthereumSignHexStr(signPayment.TxData, privateKey)
+	signHexStr, err := common_util.SignMessage(signPayment.TxData, privateKey)
 	txSigRlt := seedworks.TxSignatureResult{
 		Code:    200,
 		TxData:  signPayment.TxData,

@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 func EthereumSignHexStr(msg string, privateKey *ecdsa.PrivateKey) (string, error) {
@@ -18,6 +19,20 @@ func EthereumSignHexStr(msg string, privateKey *ecdsa.PrivateKey) (string, error
 		return EncodeToHexStringWithPrefix(hash), nil
 	}
 }
+
+func SignMessage(message string, privateKey *ecdsa.PrivateKey) (string, error) {
+	messageHash := accounts.TextHash([]byte(message))
+
+	signature, err := crypto.Sign(messageHash, privateKey)
+	if err != nil {
+		return "", err
+	}
+
+	signature[crypto.RecoveryIDOffset] += 27
+
+	return hexutil.Encode(signature), nil
+}
+
 func DecodeStringWithPrefix(data string) ([]byte, error) {
 	if data[:2] == "0x" {
 		data = data[2:]

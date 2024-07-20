@@ -21,7 +21,11 @@ func EthereumSignHexStr(msg string, privateKey *ecdsa.PrivateKey) (string, error
 }
 
 func SignMessage(message string, privateKey *ecdsa.PrivateKey) (string, error) {
-	messageHash := accounts.TextHash([]byte(message))
+	msgByte, err := DecodeStringWithPrefix(message)
+	if err != nil {
+		return "", err
+	}
+	messageHash := accounts.TextHash(msgByte)
 
 	signature, err := crypto.Sign(messageHash, privateKey)
 	if err != nil {

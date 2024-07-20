@@ -81,16 +81,17 @@ func CreateSmartAccount(wallet *account.HdWallet, network seedworks.Chain) (acco
 	if err != nil {
 		return "", "", err
 	}
+	eoaAddress := common.HexToAddress(wallet.Address())
 	factoryAddress := common.HexToAddress(factoryAddressStr)
-	initCodeStr, err = getAccountInitCode(address, factoryAddress, salt)
+	initCodeStr, err = getAccountInitCode(eoaAddress, factoryAddress, salt)
 	if err != nil {
 		return "", "", err
 	}
 	return address.Hex(), initCodeStr, nil
 }
 
-func getAccountInitCode(accountAddress common.Address, factoryAddress common.Address, salt int64) (string, error) {
-	data, err := creatAccountAbi.Pack("createAccount", accountAddress, big.NewInt(salt))
+func getAccountInitCode(eoaAddress common.Address, factoryAddress common.Address, salt int64) (string, error) {
+	data, err := creatAccountAbi.Pack("createAccount", eoaAddress, big.NewInt(salt))
 	if err != nil {
 		return "", xerrors.Errorf("error encoding function data: %v", err)
 	}

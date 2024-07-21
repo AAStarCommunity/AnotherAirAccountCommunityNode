@@ -27,3 +27,11 @@ func TestEthereumSignHexStr(t *testing.T) {
 	t.Logf("addressAno: %s", addressAno)
 	//sign, err := EthereumSignHexStr(private
 }
+
+func TestSignMessage(t *testing.T) {
+	hash := "0x3c49667bcbfe10315d3656f50523b2685d584610398ac0ef230046cbcea70e8a"
+	pk := "f0f5aec309e1fc3c26f828bb9eabc407457284bae8d012e26558038a85003eff"
+	pke, _ := crypto.HexToECDSA(pk)
+	sign, _ := EthereumSignHexStr(hash, pke)
+	t.Logf("sign: %s", sign)
+}

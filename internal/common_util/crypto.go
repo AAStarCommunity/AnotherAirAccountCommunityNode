@@ -4,8 +4,8 @@ import (
 	"crypto/ecdsa"
 	"encoding/hex"
 	"github.com/ethereum/go-ethereum/accounts"
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/crypto"
 )
 
 func EthereumSignHexStr(msg string, privateKey *ecdsa.PrivateKey) (string, error) {
@@ -16,6 +16,8 @@ func EthereumSignHexStr(msg string, privateKey *ecdsa.PrivateKey) (string, error
 	if hash, err := crypto.Sign(accounts.TextHash(msgByte), privateKey); err != nil {
 		return "", err
 	} else {
+		//In Ethereum, the last byte of the signature result represents the recovery ID of the signature, and by adding 27 to ensure it conforms to Ethereum's specification.
+		hash[crypto.RecoveryIDOffset] += 27
 		return EncodeToHexStringWithPrefix(hash), nil
 	}
 }

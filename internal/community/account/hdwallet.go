@@ -8,7 +8,7 @@ import (
 type HierarchicalPath string
 
 // HierarchicalPath_ETH is the default path for Mainet / Eth / TestNet
-const HierarchicalPath_Main_ETH_TestNet HierarchicalPath = "m/44'/60'/0'/0/0"
+const HierarchicalPath_ETH HierarchicalPath = "m/44'/60'/0'/0/0"
 
 type HdWallet struct {
 	mnemonic   string
@@ -16,12 +16,24 @@ type HdWallet struct {
 	privateKey string
 }
 
+func (w *HdWallet) Mnemonic() string {
+	return w.mnemonic
+}
+
 func (w *HdWallet) PrivateKey() string {
-	return string(w.privateKey)
+	return w.privateKey
 }
 
 func (w *HdWallet) Address() string {
 	return w.address
+}
+
+func RecoverHdWallet(mnemonic, addr, prv *string) *HdWallet {
+	return &HdWallet{
+		mnemonic:   *mnemonic,
+		address:    *addr,
+		privateKey: *prv,
+	}
 }
 
 func NewHdWallet(hierarchicalPath HierarchicalPath) (*HdWallet, error) {

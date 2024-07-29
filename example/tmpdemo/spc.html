@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SPC Demo</title>
+  </head>
+  <body>
+    <button id="payButton">Pay with SPC</button>
+
+    <script>
+      document
+        .getElementById("payButton")
+        .addEventListener("click", async () => {
+          const request = new PaymentRequest(
+            [
+              {
+                supportedMethods: "secure-payment-confirmation",
+                data: {
+                  rpId: "rp.example",
+
+                  // List of credential IDs obtained from the Account Provider.
+                  credentialIds: [
+                    // Base64Url encoded credential IDs
+                    new TextEncoder().encode("AQpzZWNyZXQtY3JlZA").buffer,
+                  ],
+                  // The challenge is also obtained from the Account Provider.
+                  challenge: new Uint8Array([
+                    0x8c, 0x8e, 0x1e, 0x87, 0xa9, 0x8a, 0x9d, 0x3e, 0x9b, 0x9f,
+                    0x91, 0xa7, 0x9b, 0x8f, 0x91, 0xa3,
+                  ]).buffer,
+
+                  instrument: {
+                    displayName: "Fancy Card ****1234",
+                    icon: "https://fancybank.com/card-art.png",
+                  },
+                  payeeOrigin: "https://merchant.com",
+                  timeout: 60000, // 1 minute
+                },
+              },
+            ],
+            {
+              total: {
+                label: "Total",
+                amount: {
+                  currency: "USD",
+                  value: "5.00",
+                },
+              },
+            }
+          );
+          // NOTE: canMakePayment() checks only public information for whether the SPC
+          // call is valid. To preserve user privacy, it does not check whether any
+          // passed credentials match the current device.
+          const canMakePayment = await request.canMakePayment();
+          if (!canMakePayment) {
+            throw new Error("Cannot make payment");
+          }
+          const response = await request.show();
+          await response.complete("success");
+          // response.details is a PublicKeyCredential, with a clientDataJSON that
+          // contains the transaction data for verification by the issuing bank.
+          // send response.details to the issuing bank for verification
+        });
+    </script>
+  </body>
+</html>

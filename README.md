@@ -30,7 +30,7 @@ go install github.com/swaggo/swag/cmd/swag@latest
 #### 1.2 init swag
 
 ```shell
-swag init -g ./main.go
+swag init --pd -g ./main.go
 ```
 
 > FAQ: [Unknown LeftDelim and RightDelim in swag.Spec](https://github.com/swaggo/swag/issues/1568)
@@ -40,4 +40,10 @@ swag init -g ./main.go
 ```shell
 go mod tidy
 go run ./cmd/server/main.go
+```
+
+### Docker启动
+
+```shell
+docker-compose -f ./example/one-click-deploy/docker-compose.yaml up -d
 ```

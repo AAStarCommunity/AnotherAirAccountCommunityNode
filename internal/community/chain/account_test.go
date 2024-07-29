@@ -1,9 +1,8 @@
 package chain
 
 import (
-	"another_node/conf"
 	"another_node/internal/community/account"
-	"another_node/internal/global_const"
+	"another_node/internal/seedworks"
 	"testing"
 )
 
@@ -11,14 +10,12 @@ func TestCreateAccount(t *testing.T) {
 	if testing.Short() {
 		return
 	}
-	configPath := "../../../conf/network_config.json"
-	conf.InitNetworkConfig(configPath)
-	w, err := account.NewHdWallet(account.HierarchicalPath(account.HierarchicalPath_Main_ETH_TestNet))
+	w, err := account.NewHdWallet(account.HierarchicalPath(account.HierarchicalPath_ETH))
 	if err != nil {
 		t.Errorf("Failed to create account: %v", err)
 	}
 
-	address, initCode, err := CreateSmartAccount(w, global_const.OptimismSepolia)
+	address, initCode, err := CreateSmartAccount(w, seedworks.OptimismSepolia)
 	if err != nil {
 		t.Errorf("Failed to create account: %v", err)
 	}

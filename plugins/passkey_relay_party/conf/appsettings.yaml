@@ -1,0 +1,13 @@
+mail:
+  host: #
+  tls: true
+  port: #
+  user: #
+  password: #
+  replier: "NO-REPLY"
+db_connection: #
+vault_secret: #
+jwt:
+  security: #
+  realm: #
+  id_key: #

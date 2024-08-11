@@ -111,9 +111,11 @@ func (relay *RelayParty) finishRegistration(ctx *gin.Context) {
 
 	// TODO: for tokyo ONLY
 	network := consts.Chain(ctx.Query("network"))
-	if len(network) > 0 && network != consts.OptimismSepolia {
-		response.BadRequest(ctx, "network not supported")
-		return
+	if len(network) > 0 {
+		if network != consts.OptimismSepolia && network != consts.BaseSepolia {
+			response.BadRequest(ctx, "network not supported")
+			return
+		}
 	} else {
 		network = consts.OptimismSepolia
 	}

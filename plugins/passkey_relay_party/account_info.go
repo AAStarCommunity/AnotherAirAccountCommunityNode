@@ -27,9 +27,11 @@ func (relay *RelayParty) accountInfo(ctx *gin.Context) {
 	} else {
 		// TODO: for tokyo ONLY
 		chain := consts.Chain(ctx.Query("network"))
-		if len(chain) > 0 && chain != consts.OptimismSepolia {
-			response.BadRequest(ctx, "network not supported")
-			return
+		if len(chain) > 0 {
+			if chain != consts.OptimismSepolia && chain != consts.BaseSepolia {
+				response.BadRequest(ctx, "network not supported")
+				return
+			}
 		} else {
 			chain = consts.OptimismSepolia
 		}

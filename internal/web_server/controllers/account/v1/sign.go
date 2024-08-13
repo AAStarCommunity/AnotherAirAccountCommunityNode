@@ -5,9 +5,17 @@ import (
 	"another_node/internal/web_server/pkg"
 	"another_node/internal/web_server/pkg/request"
 	"another_node/internal/web_server/pkg/response"
+	"encoding/hex"
 	"errors"
 	"github.com/gin-gonic/gin"
 )
+
+func DecodeStringWithPrefix(data string) ([]byte, error) {
+	if data[:2] == "0x" {
+		data = data[2:]
+	}
+	return hex.DecodeString(data)
+}
 
 // Sign a account to community node
 // @Tags Account

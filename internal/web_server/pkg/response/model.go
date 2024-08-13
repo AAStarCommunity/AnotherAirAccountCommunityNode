@@ -72,6 +72,7 @@ func (r *Response) Fail(ctx *gin.Context) *Response {
 
 // FailCode response with custom error code
 func (r *Response) FailCode(ctx *gin.Context, code int, msg ...string) *Response {
+	r.SetHttpCode(code)
 	r.SetCode(code)
 	if msg != nil {
 		r.WithMessage(msg[0])

@@ -1,4 +1,3 @@
-basePath: /api
 definitions:
   pkg.JsonRpcRequest:
     properties:
@@ -12,6 +11,359 @@ definitions:
         items: {}
         type: array
     type: object
+  plugin_passkey_relay_party.SiginInResponse:
+    properties:
+      code:
+        type: integer
+      expire:
+        type: string
+      token:
+        type: string
+    type: object
+  protocol.AuthenticationExtensions:
+    additionalProperties: true
+    type: object
+  protocol.AuthenticationExtensionsClientOutputs:
+    additionalProperties: true
+    type: object
+  protocol.AuthenticatorAssertionResponse:
+    properties:
+      authenticatorData:
+        items:
+          type: integer
+        type: array
+      clientDataJSON:
+        description: |-
+          From the spec https://www.w3.org/TR/webauthn/#dom-authenticatorresponse-clientdatajson
+          This attribute contains a JSON serialization of the client data passed to the authenticator
+          by the client in its call to either create() or get().
+        items:
+          type: integer
+        type: array
+      signature:
+        items:
+          type: integer
+        type: array
+      userHandle:
+        items:
+          type: integer
+        type: array
+    type: object
+  protocol.AuthenticatorAttachment:
+    enum:
+    - platform
+    - cross-platform
+    type: string
+    x-enum-varnames:
+    - Platform
+    - CrossPlatform
+  protocol.AuthenticatorAttestationResponse:
+    properties:
+      attestationObject:
+        description: |-
+          AttestationObject is the byte slice version of attestationObject.
+          This attribute contains an attestation object, which is opaque to, and
+          cryptographically protected against tampering by, the client. The
+          attestation object contains both authenticator data and an attestation
+          statement. The former contains the AAGUID, a unique credential ID, and
+          the credential public key. The contents of the attestation statement are
+          determined by the attestation statement format used by the authenticator.
+          It also contains any additional information that the Relying Party's server
+          requires to validate the attestation statement, as well as to decode and
+          validate the authenticator data along with the JSON-serialized client data.
+        items:
+          type: integer
+        type: array
+      clientDataJSON:
+        description: |-
+          From the spec https://www.w3.org/TR/webauthn/#dom-authenticatorresponse-clientdatajson
+          This attribute contains a JSON serialization of the client data passed to the authenticator
+          by the client in its call to either create() or get().
+        items:
+          type: integer
+        type: array
+      transports:
+        items:
+          type: string
+        type: array
+    type: object
+  protocol.AuthenticatorSelection:
+    properties:
+      authenticatorAttachment:
+        allOf:
+        - $ref: '#/definitions/protocol.AuthenticatorAttachment'
+        description: |-
+          AuthenticatorAttachment If this member is present, eligible authenticators are filtered to only
+          authenticators attached with the specified AuthenticatorAttachment enum.
+      requireResidentKey:
+        description: |-
+          RequireResidentKey this member describes the Relying Party's requirements regarding resident
+          credentials. If the parameter is set to true, the authenticator MUST create a client-side-resident
+          public key credential source when creating a public key credential.
+        type: boolean
+      residentKey:
+        allOf:
+        - $ref: '#/definitions/protocol.ResidentKeyRequirement'
+        description: |-
+          ResidentKey this member describes the Relying Party's requirements regarding resident
+          credentials per Webauthn Level 2.
+      userVerification:
+        allOf:
+        - $ref: '#/definitions/protocol.UserVerificationRequirement'
+        description: |-
+          UserVerification This member describes the Relying Party's requirements regarding user verification for
+          the create() operation. Eligible authenticators are filtered to only those capable of satisfying this
+          requirement.
+    type: object
+  protocol.AuthenticatorTransport:
+    enum:
+    - usb
+    - nfc
+    - ble
+    - hybrid
+    - internal
+    type: string
+    x-enum-varnames:
+    - USB
+    - NFC
+    - BLE
+    - Hybrid
+    - Internal
+  protocol.ConveyancePreference:
+    enum:
+    - none
+    - indirect
+    - direct
+    - enterprise
+    type: string
+    x-enum-varnames:
+    - PreferNoAttestation
+    - PreferIndirectAttestation
+    - PreferDirectAttestation
+    - PreferEnterpriseAttestation
+  protocol.CredentialAssertionResponse:
+    properties:
+      authenticatorAttachment:
+        type: string
+      clientExtensionResults:
+        $ref: '#/definitions/protocol.AuthenticationExtensionsClientOutputs'
+      id:
+        description: |-
+          ID is The credential’s identifier. The requirements for the
+          identifier are distinct for each type of credential. It might
+          represent a username for username/password tuples, for example.
+        type: string
+      rawId:
+        items:
+          type: integer
+        type: array
+      response:
+        $ref: '#/definitions/protocol.AuthenticatorAssertionResponse'
+      type:
+        description: |-
+          Type is the value of the object’s interface object's [[type]] slot,
+          which specifies the credential type represented by this object.
+          This should be type "public-key" for Webauthn credentials.
+        type: string
+    type: object
+  protocol.CredentialCreationResponse:
+    properties:
+      authenticatorAttachment:
+        type: string
+      clientExtensionResults:
+        $ref: '#/definitions/protocol.AuthenticationExtensionsClientOutputs'
+      id:
+        description: |-
+          ID is The credential’s identifier. The requirements for the
+          identifier are distinct for each type of credential. It might
+          represent a username for username/password tuples, for example.
+        type: string
+      rawId:
+        items:
+          type: integer
+        type: array
+      response:
+        $ref: '#/definitions/protocol.AuthenticatorAttestationResponse'
+      transports:
+        description: |-
+          Deprecated: Transports is deprecated due to upstream changes to the API.
+          Use the Transports field of AuthenticatorAttestationResponse
+          instead. Transports is kept for backward compatibility, and should not
+          be used by new clients.
+        items:
+          type: string
+        type: array
+      type:
+        description: |-
+          Type is the value of the object’s interface object's [[type]] slot,
+          which specifies the credential type represented by this object.
+          This should be type "public-key" for Webauthn credentials.
+        type: string
+    type: object
+  protocol.CredentialDescriptor:
+    properties:
+      id:
+        description: CredentialID The ID of a credential to allow/disallow.
+        items:
+          type: integer
+        type: array
+      transports:
+        description: The authenticator transports that can be used.
+        items:
+          $ref: '#/definitions/protocol.AuthenticatorTransport'
+        type: array
+      type:
+        allOf:
+        - $ref: '#/definitions/protocol.CredentialType'
+        description: The valid credential types.
+    type: object
+  protocol.CredentialParameter:
+    properties:
+      alg:
+        $ref: '#/definitions/webauthncose.COSEAlgorithmIdentifier'
+      type:
+        $ref: '#/definitions/protocol.CredentialType'
+    type: object
+  protocol.CredentialType:
+    enum:
+    - public-key
+    type: string
+    x-enum-varnames:
+    - PublicKeyCredentialType
+  protocol.PublicKeyCredentialCreationOptions:
+    properties:
+      attestation:
+        $ref: '#/definitions/protocol.ConveyancePreference'
+      authenticatorSelection:
+        $ref: '#/definitions/protocol.AuthenticatorSelection'
+      challenge:
+        items:
+          type: integer
+        type: array
+      excludeCredentials:
+        items:
+          $ref: '#/definitions/protocol.CredentialDescriptor'
+        type: array
+      extensions:
+        $ref: '#/definitions/protocol.AuthenticationExtensions'
+      pubKeyCredParams:
+        items:
+          $ref: '#/definitions/protocol.CredentialParameter'
+        type: array
+      rp:
+        $ref: '#/definitions/protocol.RelyingPartyEntity'
+      timeout:
+        type: integer
+      user:
+        $ref: '#/definitions/protocol.UserEntity'
+    type: object
+  protocol.PublicKeyCredentialRequestOptions:
+    properties:
+      allowCredentials:
+        items:
+          $ref: '#/definitions/protocol.CredentialDescriptor'
+        type: array
+      challenge:
+        items:
+          type: integer
+        type: array
+      extensions:
+        $ref: '#/definitions/protocol.AuthenticationExtensions'
+      rpId:
+        type: string
+      timeout:
+        type: integer
+      userVerification:
+        $ref: '#/definitions/protocol.UserVerificationRequirement'
+    type: object
+  protocol.RelyingPartyEntity:
+    properties:
+      icon:
+        description: |-
+          A serialized URL which resolves to an image associated with the entity. For example,
+          this could be a user’s avatar or a Relying Party's logo. This URL MUST be an a priori
+          authenticated URL. Authenticators MUST accept and store a 128-byte minimum length for
+          an icon member’s value. Authenticators MAY ignore an icon member’s value if its length
+          is greater than 128 bytes. The URL’s scheme MAY be "data" to avoid fetches of the URL,
+          at the cost of needing more storage.
+
+          Deprecated: this has been removed from the specification recommendations.
+        type: string
+      id:
+        description: A unique identifier for the Relying Party entity, which sets
+          the RP ID.
+        type: string
+      name:
+        description: |-
+          A human-palatable name for the entity. Its function depends on what the PublicKeyCredentialEntity represents:
+
+          When inherited by PublicKeyCredentialRpEntity it is a human-palatable identifier for the Relying Party,
+          intended only for display. For example, "ACME Corporation", "Wonderful Widgets, Inc." or "ОАО Примертех".
+
+          When inherited by PublicKeyCredentialUserEntity, it is a human-palatable identifier for a user account. It is
+          intended only for display, i.e., aiding the user in determining the difference between user accounts with similar
+          displayNames. For example, "alexm", "alex.p.mueller@example.com" or "+14255551234".
+        type: string
+    type: object
+  protocol.ResidentKeyRequirement:
+    enum:
+    - discouraged
+    - preferred
+    - required
+    type: string
+    x-enum-varnames:
+    - ResidentKeyRequirementDiscouraged
+    - ResidentKeyRequirementPreferred
+    - ResidentKeyRequirementRequired
+  protocol.UserEntity:
+    properties:
+      displayName:
+        description: |-
+          A human-palatable name for the user account, intended only for display.
+          For example, "Alex P. Müller" or "田中 倫". The Relying Party SHOULD let
+          the user choose this, and SHOULD NOT restrict the choice more than necessary.
+        type: string
+      icon:
+        description: |-
+          A serialized URL which resolves to an image associated with the entity. For example,
+          this could be a user’s avatar or a Relying Party's logo. This URL MUST be an a priori
+          authenticated URL. Authenticators MUST accept and store a 128-byte minimum length for
+          an icon member’s value. Authenticators MAY ignore an icon member’s value if its length
+          is greater than 128 bytes. The URL’s scheme MAY be "data" to avoid fetches of the URL,
+          at the cost of needing more storage.
+
+          Deprecated: this has been removed from the specification recommendations.
+        type: string
+      id:
+        description: |-
+          ID is the user handle of the user account entity. To ensure secure operation,
+          authentication and authorization decisions MUST be made on the basis of this id
+          member, not the displayName nor name members. See Section 6.1 of
+          [RFC8266](https://www.w3.org/TR/webauthn/#biblio-rfc8266).
+      name:
+        description: |-
+          A human-palatable name for the entity. Its function depends on what the PublicKeyCredentialEntity represents:
+
+          When inherited by PublicKeyCredentialRpEntity it is a human-palatable identifier for the Relying Party,
+          intended only for display. For example, "ACME Corporation", "Wonderful Widgets, Inc." or "ОАО Примертех".
+
+          When inherited by PublicKeyCredentialUserEntity, it is a human-palatable identifier for a user account. It is
+          intended only for display, i.e., aiding the user in determining the difference between user accounts with similar
+          displayNames. For example, "alexm", "alex.p.mueller@example.com" or "+14255551234".
+        type: string
+    type: object
+  protocol.UserVerificationRequirement:
+    enum:
+    - required
+    - preferred
+    - discouraged
+    type: string
+    x-enum-comments:
+      VerificationPreferred: This is the default
+    x-enum-varnames:
+    - VerificationRequired
+    - VerificationPreferred
+    - VerificationDiscouraged
   request.Bind:
     properties:
       account:
@@ -21,10 +373,103 @@ definitions:
     type: object
   request.Transfer:
     type: object
+  response.Response:
+    properties:
+      result:
+        $ref: '#/definitions/response.Result'
+    type: object
+  response.Result:
+    properties:
+      code:
+        type: integer
+      cost:
+        type: string
+      data: {}
+      message:
+        type: string
+    type: object
+  seedworks.AccountInfo:
+    properties:
+      aa:
+        type: string
+      email:
+        type: string
+      eoa:
+        type: string
+      init_code:
+        type: string
+    type: object
+  seedworks.Registration:
+    properties:
+      captcha:
+        type: string
+      email:
+        type: string
+      origin:
+        type: string
+    type: object
+  seedworks.RegistrationPrepare:
+    properties:
+      email:
+        type: string
+    type: object
+  seedworks.SiginIn:
+    properties:
+      captcha:
+        type: string
+      email:
+        type: string
+      origin:
+        type: string
+    type: object
+  seedworks.TxSignature:
+    properties:
+      nonce:
+        type: string
+      origin:
+        type: string
+      txdata:
+        type: string
+    type: object
+  seedworks.TxSignatureResult:
+    properties:
+      code:
+        type: integer
+      sign:
+        type: string
+      txdata:
+        type: string
+    type: object
+  webauthncose.COSEAlgorithmIdentifier:
+    enum:
+    - -7
+    - -35
+    - -36
+    - -65535
+    - -257
+    - -258
+    - -259
+    - -37
+    - -38
+    - -39
+    - -8
+    - -47
+    type: integer
+    x-enum-varnames:
+    - AlgES256
+    - AlgES384
+    - AlgES512
+    - AlgRS1
+    - AlgRS256
+    - AlgRS384
+    - AlgRS512
+    - AlgPS256
+    - AlgPS384
+    - AlgPS512
+    - AlgEdDSA
+    - AlgES256K
 info:
-  contact:
-    name: AAStar Support
-    url: https://aastar.xyz
+  contact: {}
 paths:
   /api/account/v1/bind:
     post:
@@ -112,11 +557,256 @@ paths:
           description: OK
       tags:
       - Healthz
+  /api/passkey/v1/account/info:
+    get:
+      consumes:
+      - application/json
+      description: 'get user account info: eoa address, aa address, init code'
+      parameters:
+      - description: network
+        in: query
+        name: network
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/seedworks.AccountInfo'
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+      security:
+      - JWT: []
+      summary: get user account info
+      tags:
+      - Plugins Passkey
+  /api/passkey/v1/imauthz:
+    get:
+      description: a demo api to show api is authorized after signin
+      responses:
+        "200":
+          description: user is authorized
+          schema:
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            type: object
+      security:
+      - JWT: []
+      tags:
+      - Demo
+  /api/passkey/v1/reg:
+    post:
+      consumes:
+      - application/json
+      description: Send challenge for passkey
+      parameters:
+      - description: Begin Registration
+        in: body
+        name: registrationBody
+        required: true
+        schema:
+          $ref: '#/definitions/seedworks.Registration'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/protocol.PublicKeyCredentialCreationOptions'
+      summary: Begin SignUp
+      tags:
+      - Plugins Passkey
+  /api/passkey/v1/reg/prepare:
+    post:
+      consumes:
+      - application/json
+      description: Send captcha to email for confirming ownership
+      parameters:
+      - description: Send Captcha to Email
+        in: body
+        name: registrationBody
+        required: true
+        schema:
+          $ref: '#/definitions/seedworks.RegistrationPrepare'
+      responses:
+        "200":
+          description: OK
+      summary: Prepare SignUp
+      tags:
+      - Plugins Passkey
+  /api/passkey/v1/reg/verify:
+    post:
+      consumes:
+      - application/json
+      description: Verify attestations, register user and return JWT
+      parameters:
+      - description: user email
+        format: email
+        in: query
+        name: email
+        required: true
+        type: string
+      - description: origin
+        in: query
+        name: origin
+        required: true
+        type: string
+      - description: network
+        in: query
+        name: network
+        type: string
+      - description: Verify Registration
+        in: body
+        name: registrationBody
+        required: true
+        schema:
+          $ref: '#/definitions/protocol.CredentialCreationResponse'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/plugin_passkey_relay_party.SiginInResponse'
+      summary: Finish SignUp
+      tags:
+      - Plugins Passkey
+  /api/passkey/v1/sign:
+    post:
+      consumes:
+      - application/json
+      description: Send challenge for passkey
+      parameters:
+      - description: Sign in details
+        in: body
+        name: signIn
+        required: true
+        schema:
+          $ref: '#/definitions/seedworks.SiginIn'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/protocol.PublicKeyCredentialRequestOptions'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Begins SignIn
+      tags:
+      - Plugins Passkey
+  /api/passkey/v1/sign/verify:
+    post:
+      consumes:
+      - application/json
+      description: Verify attestations and return JWT
+      parameters:
+      - description: user email
+        format: email
+        in: query
+        name: email
+        required: true
+        type: string
+      - description: origin
+        in: query
+        name: origin
+        required: true
+        type: string
+      - description: Verify SignIn
+        in: body
+        name: signinBody
+        required: true
+        schema:
+          $ref: '#/definitions/protocol.CredentialAssertionResponse'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/plugin_passkey_relay_party.SiginInResponse'
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+      summary: Finish SingIn
+      tags:
+      - Plugins Passkey
+  /api/passkey/v1/tx/sign:
+    post:
+      consumes:
+      - application/json
+      description: Send challenge for passkey
+      parameters:
+      - description: send challenge to passkey for tx sign
+        in: body
+        name: dataSignature
+        required: true
+        schema:
+          $ref: '#/definitions/seedworks.TxSignature'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/protocol.PublicKeyCredentialRequestOptions'
+      security:
+      - JWT: []
+      summary: Begin tx signature
+      tags:
+      - Plugins Passkey
+  /api/passkey/v1/tx/sign/verify:
+    post:
+      consumes:
+      - application/json
+      description: Verify attestations and signature txdata
+      parameters:
+      - description: Verify SignIn
+        in: body
+        name: paymentSign
+        required: true
+        schema:
+          $ref: '#/definitions/protocol.CredentialAssertionResponse'
+      - description: origin
+        in: query
+        name: origin
+        required: true
+        type: string
+      - description: nonce
+        in: query
+        name: nonce
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/seedworks.TxSignatureResult'
+      security:
+      - JWT: []
+      summary: Finish Tx Signature
+      tags:
+      - Plugins Passkey
   /api/v1/airaccount_rpc/{network}:
     post:
       consumes:
       - application/json
-      description: Airaccount JSON-RPC API
+      description: AirAccount JSON-RPC API
       parameters:
       - description: Network
         in: path
@@ -139,4 +829,9 @@ paths:
           description: OK
       tags:
       - JsonRpcHandle
+securityDefinitions:
+  JWT:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

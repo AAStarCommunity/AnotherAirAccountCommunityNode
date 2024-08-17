@@ -6,7 +6,7 @@ require (
 	github.com/deckarep/golang-set/v2 v2.6.0
 	github.com/ethereum/go-ethereum v1.14.5
 	github.com/gin-gonic/gin v1.10.0
-	github.com/go-webauthn/webauthn v0.10.2
+	github.com/go-webauthn/webauthn v0.11.1
 	github.com/hashicorp/memberlist v0.5.1
 	github.com/swaggo/swag v1.16.3
 	github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
@@ -40,19 +40,19 @@ require (
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.0.1 // indirect
 	github.com/ethereum/c-kzg-4844 v1.0.0 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
-	github.com/fxamacker/cbor/v2 v2.6.0 // indirect
+	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/go-openapi/jsonpointer v0.21.0 // indirect
 	github.com/go-openapi/jsonreference v0.21.0 // indirect
 	github.com/go-openapi/spec v0.21.0 // indirect
 	github.com/go-openapi/swag v0.23.0 // indirect
 	github.com/go-sql-driver/mysql v1.8.1 // indirect
-	github.com/go-webauthn/x v0.1.9 // indirect
+	github.com/go-webauthn/x v0.1.12 // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.0 // indirect
 	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect
 	github.com/golang/snappy v0.0.5-0.20220116011046-fa5810519dcb // indirect
 	github.com/google/btree v1.1.2 // indirect
-	github.com/google/go-tpm v0.9.0 // indirect
+	github.com/google/go-tpm v0.9.1 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-immutable-radix v1.3.1 // indirect
@@ -81,7 +81,7 @@ require (
 	github.com/x448/float16 v0.8.4 // indirect
 	golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa // indirect
 	golang.org/x/mod v0.18.0 // indirect
-	golang.org/x/sync v0.7.0 // indirect
+	golang.org/x/sync v0.8.0 // indirect
 	golang.org/x/tools v0.22.0 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gorm.io/driver/mysql v1.5.6 // indirect
@@ -114,10 +114,10 @@ require (
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.12 // indirect
 	golang.org/x/arch v0.8.0 // indirect
-	golang.org/x/crypto v0.24.0 // indirect
+	golang.org/x/crypto v0.26.0 // indirect
 	golang.org/x/net v0.26.0 // indirect
-	golang.org/x/sys v0.21.0 // indirect
-	golang.org/x/text v0.16.0 // indirect
+	golang.org/x/sys v0.23.0 // indirect
+	golang.org/x/text v0.17.0 // indirect
 	google.golang.org/protobuf v1.34.1 // indirect
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 	gopkg.in/yaml.v3 v3.0.1 // indirect

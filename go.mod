@@ -4,7 +4,7 @@ go 1.22.2
 
 require (
 	github.com/deckarep/golang-set/v2 v2.6.0
-	github.com/ethereum/go-ethereum v1.14.5
+	github.com/ethereum/go-ethereum v1.14.8
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-webauthn/webauthn v0.11.1
 	github.com/hashicorp/memberlist v0.5.1
@@ -28,7 +28,7 @@ require (
 	github.com/armon/go-metrics v0.4.1 // indirect
 	github.com/bits-and-blooms/bitset v1.10.0 // indirect
 	github.com/btcsuite/btcd v0.22.1 // indirect
-	github.com/btcsuite/btcd/btcec/v2 v2.2.0 // indirect
+	github.com/btcsuite/btcd/btcec/v2 v2.3.4 // indirect
 	github.com/btcsuite/btcd/chaincfg/chainhash v1.0.1 // indirect
 	github.com/btcsuite/btcutil v1.0.3-0.20201208143702-a53e38424cce // indirect
 	github.com/bytedance/sonic/loader v0.1.1 // indirect
@@ -60,7 +60,7 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-sockaddr v1.0.6 // indirect
 	github.com/hashicorp/golang-lru v1.0.2 // indirect
-	github.com/holiman/uint256 v1.2.4 // indirect
+	github.com/holiman/uint256 v1.3.1 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20231201235250-de7065d80cb9 // indirect
 	github.com/jackc/pgx/v5 v5.5.5 // indirect
@@ -118,7 +118,7 @@ require (
 	golang.org/x/net v0.26.0 // indirect
 	golang.org/x/sys v0.23.0 // indirect
 	golang.org/x/text v0.17.0 // indirect
-	google.golang.org/protobuf v1.34.1 // indirect
+	google.golang.org/protobuf v1.34.2 // indirect
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

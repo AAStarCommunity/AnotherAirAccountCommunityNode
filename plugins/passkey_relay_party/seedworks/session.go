@@ -2,6 +2,7 @@ package seedworks
 
 import (
 	"fmt"
+	"math/rand"
 	"strings"
 	"sync"
 	"time"
@@ -43,7 +44,12 @@ func (store *SessionStore) NewRegSession(reg *Registration) (*protocol.Credentia
 		UserVerification:        protocol.VerificationRequired,
 	}
 
+	challenge := make([]byte, 36)
 	if opt, session, err := wan.BeginRegistration(user,
+		func() protocol.URLEncodedBase64 {
+			rand.Read(challenge)
+			return protocol.URLEncodedBase64(challenge)
+		}(),
 		webauthn.WithAuthenticatorSelection(authSelect),
 	); err != nil {
 		return nil, err

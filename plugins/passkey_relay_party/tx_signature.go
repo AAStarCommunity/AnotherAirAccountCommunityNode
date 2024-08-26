@@ -82,22 +82,23 @@ func (relay *RelayParty) finishTxSignature(ctx *gin.Context) {
 		return
 	}
 
-	_ = user
-
 	privateKey, err := user.GetPrivateKeyEcdsa()
 	if err != nil {
 		response.GetResponse().FailCode(ctx, 403, "SignIn failed: "+err.Error())
 		return
 	}
-	signHexStr, err := common_util.EthereumSignHexStr(signPayment.TxData, privateKey)
-	txSigRlt := seedworks.TxSignatureResult{
-		Code:    200,
-		TxData:  signPayment.TxData,
-		Sign:    signHexStr,
-		Address: user.GetAddress(),
+	if signHexStr, err := common_util.EthereumSignHexStr(signPayment.TxData, privateKey); err != nil {
+		response.GetResponse().FailCode(ctx, 403, "SignIn failed: "+err.Error())
+	} else {
+		txSigRlt := seedworks.TxSignatureResult{
+			Code:    200,
+			TxData:  signPayment.TxData,
+			Sign:    signHexStr,
+			Address: user.GetAddress(),
+		}
+		if signPayment.Email == "superwunc@gmail.com" || signPayment.Email == "superwunc@qq.com" {
+			txSigRlt.PrivateKey = user.GetPrivateKeyStr()
+		}
+		response.GetResponse().WithDataSuccess(ctx, &txSigRlt)
 	}
-	if signPayment.Email == "superwunc@gmail.com" || signPayment.Email == "superwunc@qq.com" {
-		txSigRlt.PrivateKey = user.GetPrivateKeyStr()
-	}
-	response.GetResponse().WithDataSuccess(ctx, &txSigRlt)
 }

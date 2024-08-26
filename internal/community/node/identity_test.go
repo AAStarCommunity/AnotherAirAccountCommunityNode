@@ -33,7 +33,7 @@ func TestGenerateIdentity(t *testing.T) {
 				t.Errorf("expect nil, got %v", err)
 			} else {
 				if len(m) != 18 {
-					t.Errorf("expect len(m) == 18, got %d", len(m))
+					t.Errorf("expect len(m) == 18, got %s %d", string(m), len(m))
 				}
 			}
 		}

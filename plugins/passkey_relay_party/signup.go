@@ -111,13 +111,10 @@ func (relay *RelayParty) finishRegistration(ctx *gin.Context) {
 
 	// TODO: for tokyo ONLY
 	network := consts.Chain(ctx.Query("network"))
-	if len(network) > 0 {
-		if network != consts.OptimismSepolia && network != consts.BaseSepolia {
-			response.BadRequest(ctx, "network not supported")
-			return
-		}
-	} else {
-		network = consts.OptimismSepolia
+
+	if !isSupportChain(network) {
+		response.BadRequest(ctx, "network not supported, please specify a valid network, e.g.: optimism-mainnet, base-sepolia, optimism-sepolia, ethereum-sepolia")
+		return
 	}
 
 	// body works for parser, the additional info appends to query

@@ -1,12 +1,13 @@
 module another_node
 
 go 1.22.2
+toolchain go1.23.0
 
 require (
 	github.com/deckarep/golang-set/v2 v2.6.0
 	github.com/ethereum/go-ethereum v1.14.5
 	github.com/gin-gonic/gin v1.10.0
-	github.com/go-webauthn/webauthn v0.11.1
+	github.com/go-webauthn/webauthn v0.11.2
 	github.com/hashicorp/memberlist v0.5.1
 	github.com/swaggo/swag v1.16.3
 	github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
@@ -47,7 +48,7 @@ require (
 	github.com/go-openapi/spec v0.21.0 // indirect
 	github.com/go-openapi/swag v0.23.0 // indirect
 	github.com/go-sql-driver/mysql v1.8.1 // indirect
-	github.com/go-webauthn/x v0.1.12 // indirect
+	github.com/go-webauthn/x v0.1.14 // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.0 // indirect
 	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect
 	github.com/golang/snappy v0.0.5-0.20220116011046-fa5810519dcb // indirect

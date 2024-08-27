@@ -110,7 +110,7 @@ func (store *SessionStore) NewTxSession(user *User, txSignature *TxSignature) (*
 	}
 
 	webAuthn, _ := newWebAuthn(txSignature.Origin)
-	sessionKey := GetSessionKey(txSignature.Origin, txSignature.Email, txSignature.Nonce)
+	sessionKey := GetSessionKey(txSignature.Origin, txSignature.Email, txSignature.Ticket)
 	if opt, session, err := webAuthn.BeginLogin(user,
 		func(opt *protocol.PublicKeyCredentialRequestOptions) {
 			// opt.Challenge, _ = CreateChallenge(txSignature) // TODO: rewrite the challenge algorithm
@@ -118,7 +118,7 @@ func (store *SessionStore) NewTxSession(user *User, txSignature *TxSignature) (*
 				opt.Extensions = make(map[string]interface{})
 			}
 			opt.Extensions["txdata"] = txSignature.TxData
-			opt.Extensions["nonce"] = txSignature.Nonce
+			opt.Extensions["ticket"] = txSignature.Ticket
 		},
 	); err != nil {
 		return nil, err
@@ -129,15 +129,15 @@ func (store *SessionStore) NewTxSession(user *User, txSignature *TxSignature) (*
 }
 
 func (store *SessionStore) FinishSignSession(paymentSign *TxSignature, ctx *gin.Context) (*User, error) {
-	key := GetSessionKey(paymentSign.Origin, paymentSign.Email, paymentSign.Nonce)
+	key := GetSessionKey(paymentSign.Origin, paymentSign.Email, paymentSign.Ticket)
 	if session := store.Get(key); session == nil {
 		return nil, fmt.Errorf("%s: not found", paymentSign.Email)
 	} else {
 		if _, err := session.WebAuthn.FinishLogin(&session.User, session.Data, ctx.Request); err == nil {
 			store.Remove(key)
 			paymentSign.TxData = session.Data.Extensions["txdata"].(string)
-			if paymentSign.Nonce != session.Data.Extensions["nonce"].(string) {
-				return nil, fmt.Errorf("nonce not match")
+			if paymentSign.Ticket != session.Data.Extensions["ticket"].(string) {
+				return nil, fmt.Errorf("ticket not match")
 			}
 			return &session.User, nil
 		} else {

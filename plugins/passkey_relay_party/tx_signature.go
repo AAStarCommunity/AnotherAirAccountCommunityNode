@@ -36,7 +36,7 @@ func (relay *RelayParty) beginTxSignature(ctx *gin.Context) {
 		tx.Email = email
 	}
 
-	if session := relay.txSessionStore.Get(seedworks.GetSessionKey(tx.Origin, tx.Email, tx.Nonce)); session != nil {
+	if session := relay.txSessionStore.Get(seedworks.GetSessionKey(tx.Origin, tx.Email, tx.Ticket)); session != nil {
 		response.BadRequest(ctx, "Already in Signature Process")
 		return
 	} else {
@@ -60,14 +60,14 @@ func (relay *RelayParty) beginTxSignature(ctx *gin.Context) {
 // @Produce json
 // @Param paymentSign body protocol.CredentialAssertionResponse true "Verify SignIn"
 // @Param origin query string true "origin"
-// @Param nonce query string true "nonce"
+// @Param ticket query string true "ticket"
 // @Success 200 {object} seedworks.TxSignatureResult
 // @Router /api/passkey/v1/tx/sign/verify [post]
 // @Security JWT
 func (relay *RelayParty) finishTxSignature(ctx *gin.Context) {
 	signPayment := seedworks.TxSignature{
 		Origin: ctx.Query("origin"),
-		Nonce:  ctx.Query("nonce"),
+		Ticket: ctx.Query("ticket"),
 	}
 	if ok, email := CurrentUser(ctx); !ok {
 		response.GetResponse().FailCode(ctx, http.StatusUnauthorized)

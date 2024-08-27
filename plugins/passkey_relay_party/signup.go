@@ -142,7 +142,6 @@ func (relay *RelayParty) finishRegistration(ctx *gin.Context) {
 			response.InternalServerError(ctx, err.Error())
 			return
 		} else {
-
 			// TODO: special logic for tokyo
 			relay.db.Save(user, false)
 			relay.db.SaveAccounts(user, initCode, address, eoaAddress, string(network))

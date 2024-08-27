@@ -44,3 +44,18 @@ chain_networks: # not supported in env, only in appsettings.yaml
       "v07_factory_address" : "0x9406Cc6185a346906296840746125a0E44976454",
       "rpc_url": "https://base-sepolia.g.alchemy.com/v2/<API_KEY>"
     }
+  "optimism-mainnet": |
+    {
+      "chain_id": "10",
+      "is_test": false,
+      "v06_entrypoint_address" : "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789",
+      "v07_entrypoint_address" : "0x0000000071727De22E5E9d8BAf0edAc6f37da032",
+      "v06_paymaster_address" : "0xF2147CA7f18e8014b76e1A98BaffC96ebB90a29f",
+      "v07_paymaster_address": "0xF2147CA7f18e8014b76e1A98BaffC96ebB90a29f",
+      "gas_token": "ETH",
+      "token_config": {
+        "USDT": "0x94b008aa00579c1307b0ef2c499ad98a8ce58e58",
+        "USDC": "0x0b2c639c533813f4aa9d7837caf62653d097ff85"
+      },
+      "rpc_url": "https://opt-mainnet.g.alchemy.com/v2/<API_KEY>"
+    }

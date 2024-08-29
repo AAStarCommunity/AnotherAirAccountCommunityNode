@@ -13,8 +13,9 @@ func (rp *RelayParty) emailStartChallenge(mail, acceptLanguage string) error {
 		return err
 	}
 
-	var subject, body string
+	var title, subject, body string
 	if strings.EqualFold(acceptLanguage, "zh") || strings.EqualFold(acceptLanguage, "zh-cn") {
+		title = "请验证您的AirAccount注册邮箱"
 		subject = "验证您的邮箱"
 		body = `
 验证您的邮箱
@@ -23,6 +24,7 @@ func (rp *RelayParty) emailStartChallenge(mail, acceptLanguage string) error {
 此验证码将在 <b>10</b> 分钟后失效，非本人操作请忽略。<br />
 `
 	} else {
+		title = "Verification Code for your AirAccount"
 		subject = "Verify Your Email"
 		body = `
 Verify
@@ -33,6 +35,7 @@ Invalidate in <b>10</b> minutes, ignore it if you were confused about this mail<
 	}
 
 	if err := sendMail(
+		title,
 		mail,
 		subject,
 		body,

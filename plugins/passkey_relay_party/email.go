@@ -6,9 +6,10 @@ import (
 	"gopkg.in/gomail.v2"
 )
 
-func ReplyEmail(replyTo, subject, htmlBody string) error {
+func ReplyEmail(title, replyTo, subject, htmlBody string) error {
 
 	err := sendMail(
+		title,
 		replyTo,
 		subject,
 		htmlBody,
@@ -17,12 +18,12 @@ func ReplyEmail(replyTo, subject, htmlBody string) error {
 	return err
 }
 
-func sendMail(to, subject, body, mailtype string) error {
+func sendMail(title, to, subject, body, mailtype string) error {
 	mailCfg := conf.Get().Mail
 
 	m := gomail.NewMessage()
 
-	m.SetHeader("From", mailCfg.User)
+	m.SetHeader("From", m.FormatAddress(mailCfg.User, title))
 	m.SetHeader("To", to)
 	m.SetHeader("Subject", subject)
 	m.SetBody(mailtype, body)

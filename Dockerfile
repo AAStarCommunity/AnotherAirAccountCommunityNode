@@ -1,5 +1,5 @@
 ## build
-FROM golang:1.23-alpine3.20 AS build-env
+FROM golang:1.23.0-alpine3.20 AS build-env
 
 RUN apk add build-base
 
@@ -12,7 +12,7 @@ RUN go env -w GO111MODULE=on \
     && go build -o cnode
 
 ## run
-FROM alpine3.20
+FROM alpine:3.20.2
 
 RUN mkdir -p /aa && mkdir -p /aa/log
 

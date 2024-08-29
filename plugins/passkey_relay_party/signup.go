@@ -128,25 +128,27 @@ func (relay *RelayParty) finishRegistration(ctx *gin.Context) {
 
 	if user, err := relay.authSessionStore.FinishRegSession(&stubReg, ctx); err != nil {
 		response.GetResponse().FailCode(ctx, 401, "SignUp failed: "+err.Error())
-		return
 	} else {
 		// TODO: special logic for align testing
 		if strings.HasSuffix(stubReg.Email, "@aastar.org") {
 			response.GetResponse().WithDataSuccess(ctx, user)
 			return
 		}
-		if initCode, address, eoaAddress, err := createAA(user, stubReg.Network); err != nil { // TODO: persistent initCode and address
-			response.InternalServerError(ctx, err.Error())
-			return
-		} else {
-			// TODO: special logic for tokyo
-			relay.db.Save(user, false)
-			relay.db.SaveAccounts(user, initCode, address, eoaAddress, string(network))
+		signup(relay, ctx, &stubReg, user)
+	}
+}
 
-			ginJwtMiddleware().LoginHandler(ctx)
+func signup(relay *RelayParty, ctx *gin.Context, reg *seedworks.FinishRegistration, user *seedworks.User) {
+	if initCode, address, eoaAddress, err := createAA(user, reg.Network); err != nil {
+		response.InternalServerError(ctx, err.Error())
+		return
+	} else {
+		relay.db.Save(user, false)
+		relay.db.SaveAccounts(user, initCode, address, eoaAddress, string(reg.Network))
 
-			return
-		}
+		ginJwtMiddleware().LoginHandler(ctx)
+
+		return
 	}
 }
 

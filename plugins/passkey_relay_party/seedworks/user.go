@@ -4,9 +4,9 @@ import (
 	"another_node/internal/community/account"
 	consts "another_node/internal/seedworks"
 	"another_node/plugins/passkey_relay_party/storage/model"
+	"bytes"
 	"crypto/ecdsa"
 	"encoding/json"
-	"strconv"
 
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/go-webauthn/webauthn/webauthn"
@@ -34,9 +34,9 @@ func newUser(email string) *User {
 	}
 }
 
-func NewUser(airaccount *model.AirAccount, getFromVault func() (string, error)) (*User, error) {
+func MappingUser(airaccount *model.AirAccount, getFromVault func() (string, error)) (*User, error) {
 	user := &User{
-		id:             []byte(strconv.Itoa(int(airaccount.ID))),
+		id:             []byte(airaccount.Email),
 		email:          airaccount.Email,
 		credentials:    make([]webauthn.Credential, 0),
 		chainAddresses: make(map[consts.Chain]userChain),
@@ -138,7 +138,7 @@ func (user *User) AddCredential(cred *webauthn.Credential) {
 
 func (user *User) UpdateCredential(cred *webauthn.Credential) {
 	for i, c := range user.credentials {
-		if string(c.ID) == string(cred.ID) {
+		if bytes.Equal(c.ID, cred.ID) {
 			user.credentials[i] = *cred
 		}
 	}

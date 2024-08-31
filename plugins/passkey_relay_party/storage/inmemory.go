@@ -80,16 +80,3 @@ func (db *InMemory) SaveAccounts(user *seedworks.User, chain consts.Chain) error
 	}
 	return nil
 }
-
-func (db *InMemory) GetAccountsByEmail(email, chain string) (initCode, addr, eoaAddr string, err error) {
-	if v, ok := db.accounts[email+":"+chain]; ok {
-		if a, ok := v.(*struct {
-			InitCode   string
-			Address    string
-			EoaAddress string
-		}); ok {
-			return a.InitCode, a.Address, a.EoaAddress, nil
-		}
-	}
-	return "", "", "", errors.New("account not found")
-}

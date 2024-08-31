@@ -25,7 +25,6 @@ func (relay *RelayParty) accountInfo(ctx *gin.Context) {
 		response.GetResponse().FailCode(ctx, http.StatusUnauthorized)
 		return
 	} else {
-		// TODO: for tokyo ONLY
 		chain := consts.Chain(ctx.Query("network"))
 		if len(chain) > 0 {
 			if chain != consts.OptimismSepolia && chain != consts.BaseSepolia {
@@ -48,13 +47,19 @@ func (relay *RelayParty) accountInfo(ctx *gin.Context) {
 			})
 		}
 
-		if initCode, addr, eoaAddr, err := relay.db.GetAccountsByEmail(email, string(chain)); err != nil {
+		if user, err := relay.db.FindUser(email); err != nil {
 			response.NotFound(ctx, err.Error())
 		} else {
+			initCode, aaAddr, eoaAddr := user.GetChainAddresses(chain)
+			if aaAddr == nil || eoaAddr == nil || initCode == nil {
+				response.NotFound(ctx, seedworks.ErrChainNotFound{})
+				return
+			}
+
 			response.GetResponse().WithDataSuccess(ctx, seedworks.AccountInfo{
-				InitCode: initCode,
-				AA:       addr,
-				EOA:      eoaAddr,
+				InitCode: *initCode,
+				AA:       *aaAddr,
+				EOA:      *eoaAddr,
 				Email:    email,
 			})
 		}

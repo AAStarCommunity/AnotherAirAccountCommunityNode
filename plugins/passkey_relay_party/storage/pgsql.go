@@ -96,7 +96,7 @@ func (db *PgsqlStorage) FindUser(email string) (*seedworks.User, error) {
 	if err := db.client.Preload(clause.Associations).Where("email = ?", email).First(&airaccount).Error; err != nil {
 		return nil, err
 	} else {
-		return seedworks.NewUser(&airaccount, func() (string, error) {
+		return seedworks.MappingUser(&airaccount, func() (string, error) {
 			return seedworks.Decrypt(db.vaultSecret, &airaccount.HdWallet.WalletVault)
 		})
 	}
@@ -129,13 +129,4 @@ func (db *PgsqlStorage) Challenge(captchaType model.ChallengeType, email, captch
 	})
 
 	return err == nil && success
-}
-
-func (db *PgsqlStorage) GetAccountsByEmail(email, chain string) (initCode, addr, eoaAddr string, err error) {
-	account := model.UserAccount{}
-	if err := db.client.Where("email = ? AND chain = ?", email, chain).First(&account).Error; err != nil {
-		return "", "", "", err
-	} else {
-		return account.InitCode, account.Address, account.EoaAddress, nil
-	}
 }

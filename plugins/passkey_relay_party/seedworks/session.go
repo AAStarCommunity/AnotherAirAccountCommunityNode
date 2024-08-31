@@ -83,17 +83,16 @@ func (store *SessionStore) NewAuthSession(user *User, signIn *SiginIn) (*protoco
 	}
 }
 
-func (store *SessionStore) FinishAuthSession(signIn *SiginIn, ctx *gin.Context) (*User, *webauthn.Credential, error) {
+func (store *SessionStore) FinishAuthSession(signIn *SiginIn, ctx *gin.Context) (*User, error) {
 	key := GetSessionKey(signIn.Origin, signIn.Email)
 	if session := store.Get(key); session == nil {
-		return nil, nil, fmt.Errorf("%s: not found", signIn.Email)
+		return nil, fmt.Errorf("%s: not found", signIn.Email)
 	} else {
-		if cred, err := session.WebAuthn.FinishLogin(&session.User, session.Data, ctx.Request); err == nil {
-			store.Remove(key)
-			session.User.UpdateCredential(cred)
-			return &session.User, cred, nil
+		defer store.Remove(key)
+		if _, err := session.WebAuthn.FinishLogin(&session.User, session.Data, ctx.Request); err == nil {
+			return &session.User, nil
 		} else {
-			return nil, nil, err
+			return nil, err
 		}
 	}
 }

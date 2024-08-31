@@ -11,5 +11,4 @@ type Db interface {
 	SaveChallenge(captchaType model.ChallengeType, challenger, captcha string) error
 	Challenge(captchaType model.ChallengeType, challenger, captcha string) bool
 	SaveAccounts(user *seedworks.User, network consts.Chain) error
-	GetAccountsByEmail(email, network string) (initCode, addr, eoaAddr string, err error)
 }

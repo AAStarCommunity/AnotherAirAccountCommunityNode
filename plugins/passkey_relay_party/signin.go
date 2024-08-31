@@ -71,7 +71,7 @@ func (relay *RelayParty) finishSignIn(ctx *gin.Context) {
 		},
 	}
 
-	_, _, err := relay.authSessionStore.FinishAuthSession(&stubSignIn, ctx)
+	_, err := relay.authSessionStore.FinishAuthSession(&stubSignIn, ctx)
 	if err != nil {
 		response.GetResponse().FailCode(ctx, 401, "SignIn failed: "+err.Error())
 		return

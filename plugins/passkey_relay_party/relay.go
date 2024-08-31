@@ -24,9 +24,9 @@ type RelayParty struct {
 
 func (r *RelayParty) RegisterRoutes(router *gin.Engine, community *node.Community) {
 
-	router.POST("/api/passkey/v1/reg/prepare", r.regPrepare)
-	router.POST("/api/passkey/v1/reg", r.beginRegistration)
-	router.POST("/api/passkey/v1/reg/verify", r.finishRegistration)
+	router.POST("/api/passkey/v1/reg/prepare", r.regPrepareByEmail)
+	router.POST("/api/passkey/v1/reg", r.beginRegistrationByEmail)
+	router.POST("/api/passkey/v1/reg/verify", r.finishRegistrationByEmail)
 	router.POST("/api/passkey/v1/sign", r.beginSignIn)
 	router.POST("/api/passkey/v1/sign/verify", r.finishSignIn)
 

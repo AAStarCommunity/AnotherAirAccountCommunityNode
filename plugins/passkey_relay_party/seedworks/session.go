@@ -32,7 +32,7 @@ func NewInMemorySessionStore() *SessionStore {
 	return store
 }
 
-func (store *SessionStore) NewRegSession(reg *Registration) (*protocol.CredentialCreation, error) {
+func (store *SessionStore) NewRegSession(reg *RegistrationByEmail) (*protocol.CredentialCreation, error) {
 	user := newUser(reg.Email)
 	wan, _ := newWebAuthn(reg.Origin)
 	sessionKey := GetSessionKey(reg.Origin, reg.Email)
@@ -53,7 +53,7 @@ func (store *SessionStore) NewRegSession(reg *Registration) (*protocol.Credentia
 	}
 }
 
-func (store *SessionStore) FinishRegSession(reg *FinishRegistration, ctx *gin.Context) (*User, error) {
+func (store *SessionStore) FinishRegSession(reg *FinishRegistrationByEmail, ctx *gin.Context) (*User, error) {
 	key := GetSessionKey(reg.Origin, reg.Email)
 	if session := store.Get(key); session == nil {
 		return nil, fmt.Errorf("%s: not found", reg.Email)

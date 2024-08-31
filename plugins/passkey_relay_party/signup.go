@@ -12,7 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// regPrepare
+// regPrepareByEmail
 // @Summary Prepare SignUp
 // @Tags Plugins Passkey
 // @Description Send captcha to email for confirming ownership
@@ -21,8 +21,8 @@ import (
 // @Param registrationBody body seedworks.RegistrationPrepare true "Send Captcha to Email"
 // @Router /api/passkey/v1/reg/prepare [post]
 // @Success 200
-func (relay *RelayParty) regPrepare(ctx *gin.Context) {
-	var reg seedworks.Registration
+func (relay *RelayParty) regPrepareByEmail(ctx *gin.Context) {
+	var reg seedworks.RegistrationByEmail
 	if err := ctx.ShouldBindJSON(&reg); err != nil {
 		response.BadRequest(ctx, err.Error())
 		return
@@ -35,7 +35,7 @@ func (relay *RelayParty) regPrepare(ctx *gin.Context) {
 	response.GetResponse().Success(ctx)
 }
 
-// beginRegistration
+// beginRegistrationByEmail
 // @Summary Begin SignUp
 // @Tags Plugins Passkey
 // @Description Send challenge for passkey
@@ -44,18 +44,16 @@ func (relay *RelayParty) regPrepare(ctx *gin.Context) {
 // @Param registrationBody body seedworks.Registration true "Begin Registration"
 // @Router /api/passkey/v1/reg [post]
 // @Success 200 {object} protocol.PublicKeyCredentialCreationOptions
-func (relay *RelayParty) beginRegistration(ctx *gin.Context) {
-	var reg seedworks.Registration
+func (relay *RelayParty) beginRegistrationByEmail(ctx *gin.Context) {
+	var reg seedworks.RegistrationByEmail
 	if err := ctx.ShouldBindJSON(&reg); err != nil {
 		response.BadRequest(ctx, err.Error())
 		return
 	}
-	// TODO: special logic for align testing
-	if !strings.HasSuffix(reg.Email, "@aastar.org") && reg.Captcha != "111111" {
-		if err := relay.emailChallenge(reg.Email, reg.Captcha); err != nil {
-			response.BadRequest(ctx, err.Error())
-			return
-		}
+
+	if err := relay.emailChallenge(reg.Email, reg.Captcha); err != nil {
+		response.BadRequest(ctx, err.Error())
+		return
 	}
 
 	if u, err := relay.findUserByEmail(reg.Email); err != nil && !errors.Is(err, seedworks.ErrUserNotFound{}) {
@@ -95,8 +93,8 @@ type finishRegistrationResponse struct {
 // 	ctx.Writer.WriteString("}")
 // }
 
-// finishRegistration
-// @Summary Finish SignUp
+// finishRegistrationByEmail
+// @Summary Finish SignUp By Email
 // @Tags Plugins Passkey
 // @Description Verify attestations, register user and return JWT
 // @Accept json
@@ -107,7 +105,7 @@ type finishRegistrationResponse struct {
 // @Param registrationBody body protocol.CredentialCreationResponse true "Verify Registration"
 // @Router /api/passkey/v1/reg/verify [post]
 // @Success 200 {object} SiginInResponse "OK"
-func (relay *RelayParty) finishRegistration(ctx *gin.Context) {
+func (relay *RelayParty) finishRegistrationByEmail(ctx *gin.Context) {
 
 	// TODO: for tokyo ONLY
 	network := consts.Chain(ctx.Query("network"))
@@ -118,8 +116,8 @@ func (relay *RelayParty) finishRegistration(ctx *gin.Context) {
 	}
 
 	// body works for parser, the additional info appends to query
-	stubReg := seedworks.FinishRegistration{
-		RegistrationPrepare: seedworks.RegistrationPrepare{
+	stubReg := seedworks.FinishRegistrationByEmail{
+		RegistrationByEmailPrepare: seedworks.RegistrationByEmailPrepare{
 			Email: ctx.Query("email"),
 		},
 		Origin:  ctx.Query("origin"),
@@ -138,7 +136,7 @@ func (relay *RelayParty) finishRegistration(ctx *gin.Context) {
 	}
 }
 
-func signup(relay *RelayParty, ctx *gin.Context, reg *seedworks.FinishRegistration, user *seedworks.User) {
+func signup(relay *RelayParty, ctx *gin.Context, reg *seedworks.FinishRegistrationByEmail, user *seedworks.User) {
 	if initCode, address, eoaAddress, err := createAA(user, reg.Network); err != nil {
 		response.InternalServerError(ctx, err.Error())
 		return

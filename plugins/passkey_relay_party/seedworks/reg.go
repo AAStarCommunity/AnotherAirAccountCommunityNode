@@ -2,18 +2,18 @@ package seedworks
 
 import consts "another_node/internal/seedworks"
 
-type RegistrationPrepare struct {
+type RegistrationByEmailPrepare struct {
 	Email string `json:"email"`
 }
 
-type Registration struct {
-	RegistrationPrepare
+type RegistrationByEmail struct {
+	RegistrationByEmailPrepare
 	Origin  string `json:"origin"`
 	Captcha string `json:"captcha"`
 }
 
-type FinishRegistration struct {
-	RegistrationPrepare
+type FinishRegistrationByEmail struct {
+	RegistrationByEmailPrepare
 	Origin  string       `json:"origin"`
 	Network consts.Chain `json:"network"`
 }

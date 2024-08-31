@@ -11,29 +11,9 @@ type HierarchicalPath string
 const HierarchicalPath_ETH HierarchicalPath = "m/44'/60'/0'/0/0"
 
 type HdWallet struct {
-	mnemonic   string
-	address    string
-	privateKey string
-}
-
-func (w *HdWallet) Mnemonic() string {
-	return w.mnemonic
-}
-
-func (w *HdWallet) PrivateKey() string {
-	return w.privateKey
-}
-
-func (w *HdWallet) Address() string {
-	return w.address
-}
-
-func RecoverHdWallet(mnemonic, addr, prv *string) *HdWallet {
-	return &HdWallet{
-		mnemonic:   *mnemonic,
-		address:    *addr,
-		privateKey: *prv,
-	}
+	Mnemonic   string `json:"mnemonic"`
+	Address    string `json:"address"`
+	PrivateKey string `json:"privateKey"`
 }
 
 func NewHdWallet(hierarchicalPath HierarchicalPath) (*HdWallet, error) {
@@ -62,8 +42,8 @@ func NewHdWallet(hierarchicalPath HierarchicalPath) (*HdWallet, error) {
 	}
 
 	return &HdWallet{
-		mnemonic:   mnemonic,
-		address:    account.Address.Hex(),
-		privateKey: privateKey,
+		Mnemonic:   mnemonic,
+		Address:    account.Address.Hex(),
+		PrivateKey: privateKey,
 	}, nil
 }

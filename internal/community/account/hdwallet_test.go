@@ -18,15 +18,15 @@ func TestNewHdWallet(t *testing.T) {
 		return
 	}
 
-	if wallet.mnemonic == "" {
+	if wallet.Mnemonic == "" {
 		t.Error("expected mnemonic to be set, but got empty string")
 	}
 
-	if wallet.address == "" {
+	if wallet.Address == "" {
 		t.Error("expected address to be set, but got empty string")
 	}
 
-	if len(wallet.privateKey) == 0 {
+	if len(wallet.PrivateKey) == 0 {
 		t.Error("expected privateKey to be set, but got empty slice")
 	}
 }

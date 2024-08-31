@@ -9,7 +9,7 @@ import (
 
 var (
 	dbClient *gorm.DB
-	dbOnce = sync.Once{}
+	dbOnce   = sync.Once{}
 )
 
 func GetDbClient() *gorm.DB {
@@ -20,6 +20,10 @@ func GetDbClient() *gorm.DB {
 			panic(err)
 		}
 		dbClient = configDBVar
+
+		if Environment.IsDevelopment() {
+			dbClient = dbClient.Debug()
+		}
 	})
 	return dbClient
 }

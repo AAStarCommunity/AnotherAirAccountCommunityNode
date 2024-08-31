@@ -40,7 +40,7 @@ func (relay *RelayParty) beginTxSignature(ctx *gin.Context) {
 		response.BadRequest(ctx, "Already in Signature Process")
 		return
 	} else {
-		user, err := relay.db.Find(tx.Email)
+		user, err := relay.db.FindUser(tx.Email)
 		if err != nil {
 			response.NotFound(ctx, err.Error())
 		}
@@ -91,10 +91,13 @@ func (relay *RelayParty) finishTxSignature(ctx *gin.Context) {
 		response.GetResponse().FailCode(ctx, 403, "SignIn failed: "+err.Error())
 	} else {
 		txSigRlt := seedworks.TxSignatureResult{
-			Code:    200,
-			TxData:  signPayment.TxData,
-			Sign:    signHexStr,
-			Address: user.GetAddress(),
+			Code:   200,
+			TxData: signPayment.TxData,
+			Sign:   signHexStr,
+			Address: func() string {
+				_, eoaAddr, _ := user.GetChainAddresses("")
+				return *eoaAddr
+			}(),
 		}
 		if signPayment.Email == "superwunc@gmail.com" || signPayment.Email == "superwunc@qq.com" {
 			txSigRlt.PrivateKey = user.GetPrivateKeyStr()

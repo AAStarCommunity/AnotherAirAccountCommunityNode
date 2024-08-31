@@ -85,14 +85,6 @@ type finishRegistrationResponse struct {
 	EoaAddress      string `json:"eoa_address"`
 }
 
-// func replayLoginResponse(ctx *gin.Context, append func(c *gin.Context)) {
-// 	ctx.Writer.WriteString("{\"token\": ")
-// 	ginJwtMiddleware().LoginHandler(ctx)
-// 	ctx.Writer.WriteString(",\"append\": ")
-// 	append(ctx)
-// 	ctx.Writer.WriteString("}")
-// }
-
 // finishRegistrationByEmail
 // @Summary Finish SignUp By Email
 // @Tags Plugins Passkey
@@ -107,15 +99,14 @@ type finishRegistrationResponse struct {
 // @Success 200 {object} SiginInResponse "OK"
 func (relay *RelayParty) finishRegistrationByEmail(ctx *gin.Context) {
 
-	// TODO: for tokyo ONLY
 	network := consts.Chain(ctx.Query("network"))
 
 	if !isSupportChain(network) {
-		response.BadRequest(ctx, "network not supported, please specify a valid network, e.g.: optimism-mainnet, base-sepolia, optimism-sepolia, ethereum-sepolia")
+		response.BadRequest(ctx, "network not supported, please specify a valid network, e.g.: optimism-mainnet, base-sepolia, optimism-sepolia")
 		return
 	}
 
-	// body works for parser, the additional info appends to query
+	// body-stream works for parser, the additional info appends to query
 	stubReg := seedworks.FinishRegistrationByEmail{
 		RegistrationByEmailPrepare: seedworks.RegistrationByEmailPrepare{
 			Email: ctx.Query("email"),
@@ -127,22 +118,22 @@ func (relay *RelayParty) finishRegistrationByEmail(ctx *gin.Context) {
 	if user, err := relay.authSessionStore.FinishRegSession(&stubReg, ctx); err != nil {
 		response.GetResponse().FailCode(ctx, 401, "SignUp failed: "+err.Error())
 	} else {
-		// TODO: special logic for align testing
-		if strings.HasSuffix(stubReg.Email, "@aastar.org") {
-			response.GetResponse().WithDataSuccess(ctx, user)
-			return
-		}
 		signup(relay, ctx, &stubReg, user)
 	}
 }
 
 func signup(relay *RelayParty, ctx *gin.Context, reg *seedworks.FinishRegistrationByEmail, user *seedworks.User) {
-	if initCode, address, eoaAddress, err := createAA(user, reg.Network); err != nil {
+	// TODO: special logic for align testing
+	if strings.HasSuffix(reg.Email, "@aastar.org") {
+		response.GetResponse().WithDataSuccess(ctx, user)
+		return
+	}
+
+	if err := initAA(user, reg.Network); err != nil {
 		response.InternalServerError(ctx, err.Error())
 		return
 	} else {
-		relay.db.Save(user, false)
-		relay.db.SaveAccounts(user, initCode, address, eoaAddress, string(reg.Network))
+		relay.db.SaveAccounts(user, reg.Network)
 
 		ginJwtMiddleware().LoginHandler(ctx)
 
@@ -150,16 +141,16 @@ func signup(relay *RelayParty, ctx *gin.Context, reg *seedworks.FinishRegistrati
 	}
 }
 
-// createAA represents creating an Account Abstraction for the user
-func createAA(user *seedworks.User, network consts.Chain) (initCode, address, eoaAddress string, err error) {
+// initAA represents creating an Account Abstraction for the user
+func initAA(user *seedworks.User, network consts.Chain) (err error) {
 	if w, err := account.NewHdWallet(account.HierarchicalPath_ETH); err != nil {
-		return "", "", "", err
+		return err
 	} else {
-		address, initCode, err := chain.CreateSmartAccount(w, network)
+		aa_address, initCode, err := chain.CreateSmartAccount(w, network)
 		if err != nil {
-			return "", "", "", err
+			return err
 		}
-		user.SetWallet(w, address, network)
-		return initCode, address, w.Address(), nil
+		user.SetWallet(w, &initCode, &aa_address, &w.Address, network)
+		return nil
 	}
 }

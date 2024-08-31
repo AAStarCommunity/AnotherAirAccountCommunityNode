@@ -36,7 +36,19 @@ func (relay *RelayParty) accountInfo(ctx *gin.Context) {
 			chain = consts.OptimismSepolia
 		}
 
-		if initCode, addr, eoaAddr, err := relay.db.GetAccounts(email, string(chain)); err != nil {
+		if user, err := relay.db.FindUser(email); err != nil {
+			response.NotFound(ctx, err.Error())
+		} else {
+			initCode, aaAddr, eoaAddr := user.GetChainAddresses(chain)
+			response.GetResponse().WithDataSuccess(ctx, seedworks.AccountInfo{
+				InitCode: *initCode,
+				AA:       *aaAddr,
+				EOA:      *eoaAddr,
+				Email:    email,
+			})
+		}
+
+		if initCode, addr, eoaAddr, err := relay.db.GetAccountsByEmail(email, string(chain)); err != nil {
 			response.NotFound(ctx, err.Error())
 		} else {
 			response.GetResponse().WithDataSuccess(ctx, seedworks.AccountInfo{

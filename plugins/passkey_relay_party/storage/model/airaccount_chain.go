@@ -4,12 +4,12 @@ import "another_node/internal/community/storage"
 
 type AirAccountChain struct {
 	storage.BaseData
-	AirAccountId int64  `json:"airaccount_id" gorm:"column:airaccount_id"`
-	InitCode     string `json:"init_code" gorm:"type:text"`
-	AA_Address   string `json:"aa_address" gorm:"type:varchar(255)"`
-	EOA_Address  string `json:"eoa_address" gorm:"type:varchar(255)"`
-	ChainId      string `json:"chain_id" gorm:"type:varchar(10);column:chain_id"`
-	WalletVault  string `json:"wallet_vault" gorm:"type:text"`
+	AirAccountID uint       `json:"-" gorm:"column:airaccount_id"`
+	AirAccount   AirAccount `json:"-" gorm:"foreignKey:AirAccountID;references:ID"`
+	InitCode     string     `json:"init_code" gorm:"type:text"`
+	AA_Address   string     `json:"aa_address" gorm:"type:varchar(255)"`
+	EOA_Address  string     `json:"eoa_address" gorm:"type:varchar(255)"`
+	ChainName    string     `json:"chain_name" gorm:"type:varchar(50);column:chain_name"`
 }
 
 func (AirAccountChain) TableName() string {

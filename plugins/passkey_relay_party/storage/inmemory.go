@@ -1,7 +1,9 @@
 package storage
 
 import (
+	consts "another_node/internal/seedworks"
 	"another_node/plugins/passkey_relay_party/seedworks"
+	"another_node/plugins/passkey_relay_party/storage/model"
 	"errors"
 	"time"
 )
@@ -25,7 +27,7 @@ func NewInMemory() *InMemory {
 	}
 }
 
-func (db *InMemory) Save(user *seedworks.User, allowUpdate bool) error {
+func save(db *InMemory, user *seedworks.User) error {
 	if user == nil {
 		return errors.New("user is nil")
 	}
@@ -34,7 +36,7 @@ func (db *InMemory) Save(user *seedworks.User, allowUpdate bool) error {
 	return nil
 }
 
-func (db *InMemory) Find(email string) (*seedworks.User, error) {
+func (db *InMemory) FindUser(email string) (*seedworks.User, error) {
 	if user, ok := db.users[email]; ok {
 		return user, nil
 	}
@@ -42,14 +44,14 @@ func (db *InMemory) Find(email string) (*seedworks.User, error) {
 	return nil, seedworks.ErrUserNotFound{}
 }
 
-func (db *InMemory) SaveChallenge(email, code string) error {
+func (db *InMemory) SaveChallenge(_ model.ChallengeType, email, code string) error {
 	db.captchas[email] = captcha{
 		code: code,
 		time: time.Now(),
 	}
 	return nil
 }
-func (db *InMemory) Challenge(email, code string) bool {
+func (db *InMemory) Challenge(_ model.ChallengeType, email, code string) bool {
 	if v, ok := db.captchas[email]; ok {
 		if v.code == code && time.Since(v.time) < 10*time.Minute {
 			return true
@@ -58,25 +60,28 @@ func (db *InMemory) Challenge(email, code string) bool {
 	return false
 }
 
-func (db *InMemory) SaveAccounts(user *seedworks.User, initCode, addr, eoaAddr, chain string) error {
+func (db *InMemory) SaveAccounts(user *seedworks.User, chain consts.Chain) error {
+	save(db, user)
 	if len(db.accounts) == 0 {
 		db.accounts = make(map[string]interface{})
 	}
 
-	db.accounts[user.GetEmail()+":"+chain] = &struct {
+	initCode, addr, eoaAddr := user.GetChainAddresses(chain)
+
+	db.accounts[user.GetEmail()+":"+string(chain)] = &struct {
 		InitCode   string
 		Address    string
 		EoaAddress string
 		Chain      string
 	}{
-		InitCode:   initCode,
-		Address:    addr,
-		EoaAddress: eoaAddr,
+		InitCode:   *initCode,
+		Address:    *addr,
+		EoaAddress: *eoaAddr,
 	}
 	return nil
 }
 
-func (db *InMemory) GetAccounts(email, chain string) (initCode, addr, eoaAddr string, err error) {
+func (db *InMemory) GetAccountsByEmail(email, chain string) (initCode, addr, eoaAddr string, err error) {
 	if v, ok := db.accounts[email+":"+chain]; ok {
 		if a, ok := v.(*struct {
 			InitCode   string

@@ -2,6 +2,7 @@ package plugin_passkey_relay_party
 
 import (
 	"another_node/plugins/passkey_relay_party/seedworks"
+	"another_node/plugins/passkey_relay_party/storage/model"
 	"strings"
 )
 
@@ -9,7 +10,7 @@ func (rp *RelayParty) emailStartChallenge(mail, acceptLanguage string) error {
 
 	captcha := seedworks.GenCaptcha(6)
 
-	if err := rp.db.SaveChallenge(mail, captcha); err != nil {
+	if err := rp.db.SaveChallenge(model.Email, mail, captcha); err != nil {
 		return err
 	}
 
@@ -49,7 +50,7 @@ Invalidate in <b>10</b> minutes, ignore it if you were confused about this mail<
 
 func (rp *RelayParty) emailChallenge(mail, code string) error {
 	if !strings.HasSuffix(mail, "@aastar.org") && code != "111111" {
-		if !rp.db.Challenge(mail, code) {
+		if !rp.db.Challenge(model.Email, mail, code) {
 			return seedworks.ErrInvalidCaptcha{}
 		}
 	}

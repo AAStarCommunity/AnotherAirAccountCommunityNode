@@ -65,7 +65,7 @@ func (r *RelayParty) findUserByEmail(email string) (*seedworks.User, error) {
 		return nil, seedworks.ErrEmailEmpty{}
 	}
 
-	u, err := r.db.Find(email)
+	u, err := r.db.FindUser(email)
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {

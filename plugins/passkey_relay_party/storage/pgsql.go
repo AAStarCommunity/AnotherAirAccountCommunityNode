@@ -2,13 +2,18 @@ package storage
 
 import (
 	"another_node/conf"
+	consts "another_node/internal/seedworks"
 	passkey_conf "another_node/plugins/passkey_relay_party/conf"
 	"another_node/plugins/passkey_relay_party/seedworks"
 	"another_node/plugins/passkey_relay_party/storage/model"
+	"encoding/base64"
+	"encoding/json"
 	"errors"
+	"strconv"
 	"time"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type PgsqlStorage struct {
@@ -25,69 +30,92 @@ func NewPgsqlStorage() *PgsqlStorage {
 	}
 }
 
-func (db *PgsqlStorage) Save(user *seedworks.User, allowUpdate bool) error {
-	if data, err := user.Marshal(); err != nil {
+func (db *PgsqlStorage) SaveAccounts(user *seedworks.User, chain consts.Chain) error {
+	if walletMarshal, err := user.WalletMarshal(); err != nil {
 		return err
 	} else {
-		if encrypted, err := seedworks.Encrypt(db.vaultSecret, data); err != nil {
+		if walletVault, err := seedworks.Encrypt(db.vaultSecret, walletMarshal); err != nil {
 			return err
 		} else {
-			exists, err := db.Find(user.GetEmail())
-			if allowUpdate {
-				if exists == nil || err != nil {
-					return seedworks.ErrUserNotFound{}
-				} else {
-					lastLogin := time.Now()
-					return db.client.Model(&model.User{}).
-						Where("email = ?", user.GetEmail()).
-						Updates(model.User{
-							Rawdata:     encrypted,
-							LastLoginAt: &lastLogin,
-						}).Error
-				}
-			} else {
-				if exists != nil {
-					return seedworks.ErrUserAlreadyExists{}
-				} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-					return err
-				}
+			initCode, aaAddr, eoaAddr := user.GetChainAddresses(chain)
 
-				return db.client.Model(&model.User{}).Create(&model.User{
-					Email:   user.GetEmail(),
-					Rawdata: encrypted,
-				}).Error
-			}
+			// so far, support email only
+			return db.client.Transaction(func(tx *gorm.DB) error {
+				email, _, _ := user.GetAccounts()
+				if exists, err := db.FindUser(email); err != nil {
+					if !errors.Is(err, gorm.ErrRecordNotFound) {
+						return err
+					}
+
+					if exists != nil {
+						return seedworks.ErrUserAlreadyExists{}
+					}
+
+					newAirAccount := model.AirAccount{
+						Email:            email,
+						Passkeys:         make([]model.Passkey, 0),
+						AirAccountChains: make([]model.AirAccountChain, 0),
+					}
+
+					newAirAccount.HdWallet = model.HdWallet{
+						WalletVault: walletVault,
+					}
+
+					for i := range user.WebAuthnCredentials() {
+						cred := user.WebAuthnCredentials()[i]
+						rawdata, _ := json.Marshal(cred)
+						passkey := model.Passkey{
+							CredentialId: base64.URLEncoding.EncodeToString(cred.ID),
+							PublicKey:    base64.URLEncoding.EncodeToString(cred.PublicKey),
+							Algorithm:    strconv.Itoa(int(cred.Attestation.PublicKeyAlgorithm)),
+							Origin:       "-",
+							Rawdata:      string(rawdata),
+						}
+						newAirAccount.Passkeys = append(newAirAccount.Passkeys, passkey)
+					}
+
+					newAirAccount.AirAccountChains = append(newAirAccount.AirAccountChains, model.AirAccountChain{
+						InitCode:    *initCode,
+						AA_Address:  *aaAddr,
+						EOA_Address: *eoaAddr,
+						ChainName:   string(chain),
+					})
+
+					if err := tx.Model(&model.AirAccount{}).Create(&newAirAccount).Error; err != nil {
+						return err
+					}
+				}
+				return nil
+			})
 		}
 	}
 }
 
-func (db *PgsqlStorage) Find(email string) (*seedworks.User, error) {
-	user := model.User{}
-	if err := db.client.Where("email = ?", email).First(&user).Error; err != nil {
+func (db *PgsqlStorage) FindUser(email string) (*seedworks.User, error) {
+	airaccount := model.AirAccount{}
+	if err := db.client.Preload(clause.Associations).Where("email = ?", email).First(&airaccount).Error; err != nil {
 		return nil, err
 	} else {
-		if data, err := seedworks.Decrypt(db.vaultSecret, &user.Rawdata); err != nil {
-			return nil, err
-		} else {
-			return seedworks.UnmarshalUser(&data)
-		}
+		return seedworks.NewUser(&airaccount, func() (string, error) {
+			return seedworks.Decrypt(db.vaultSecret, &airaccount.HdWallet.WalletVault)
+		})
 	}
 }
 
-func (db *PgsqlStorage) SaveChallenge(email, captcha string) error {
+func (db *PgsqlStorage) SaveChallenge(captchaType model.ChallengeType, email, captcha string) error {
 	return db.client.Model(&model.CaptchaChallenge{}).Create(&model.CaptchaChallenge{
-		Type:   model.Email,
+		Type:   captchaType,
 		Object: email,
 		Code:   captcha,
 	}).Error
 }
 
-func (db *PgsqlStorage) Challenge(email, captcha string) bool {
+func (db *PgsqlStorage) Challenge(captchaType model.ChallengeType, email, captcha string) bool {
 	success := false
 	err := db.client.Transaction(func(tx *gorm.DB) error {
 		challenge := model.CaptchaChallenge{}
 		if err := tx.
-			Where("object = ? AND code = ? AND type = ?", email, captcha, model.Email).
+			Where("object = ? AND code = ? AND type = ?", email, captcha, captchaType).
 			Order("created_at DESC").
 			First(&challenge).Error; err != nil {
 			return err
@@ -103,17 +131,7 @@ func (db *PgsqlStorage) Challenge(email, captcha string) bool {
 	return err == nil && success
 }
 
-func (db *PgsqlStorage) SaveAccounts(user *seedworks.User, initCode, addr, eoaAddr, chain string) error {
-	return db.client.Model(&model.UserAccount{}).Create(&model.UserAccount{
-		Email:      user.GetEmail(),
-		InitCode:   initCode,
-		Address:    addr,
-		EoaAddress: eoaAddr,
-		Chain:      chain,
-	}).Error
-}
-
-func (db *PgsqlStorage) GetAccounts(email, chain string) (initCode, addr, eoaAddr string, err error) {
+func (db *PgsqlStorage) GetAccountsByEmail(email, chain string) (initCode, addr, eoaAddr string, err error) {
 	account := model.UserAccount{}
 	if err := db.client.Where("email = ? AND chain = ?", email, chain).First(&account).Error; err != nil {
 		return "", "", "", err

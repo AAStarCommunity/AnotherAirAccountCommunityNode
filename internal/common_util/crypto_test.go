@@ -3,8 +3,9 @@ package common_util
 import (
 	"another_node/internal/community/account"
 	"crypto/ecdsa"
-	"github.com/ethereum/go-ethereum/crypto"
 	"testing"
+
+	"github.com/ethereum/go-ethereum/crypto"
 )
 
 func TestEthereumSignHexStr(t *testing.T) {
@@ -13,8 +14,8 @@ func TestEthereumSignHexStr(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	privateKeyStr := hdWallet.PrivateKey()
-	address := hdWallet.Address()
+	privateKeyStr := hdWallet.PrivateKey
+	address := hdWallet.Address
 	t.Logf("address: %s", address)
 	t.Logf("privateKeyStr: %s", privateKeyStr)
 	privateKeyECDSA, err := crypto.HexToECDSA(privateKeyStr)

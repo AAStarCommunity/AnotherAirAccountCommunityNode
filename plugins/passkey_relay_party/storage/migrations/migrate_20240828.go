@@ -31,10 +31,22 @@ func (m *Migration20240828) Up(db *gorm.DB) error {
 		}
 	}
 
+	if !db.Migrator().HasTable(&model.HdWallet{}) {
+		if err := db.AutoMigrate(&model.HdWallet{}); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
 func (m *Migration20240828) Down(db *gorm.DB) error {
+	if err := db.Migrator().DropTable(
+		&model.HdWallet{},
+	); err != nil {
+		return err
+	}
+
 	if err := db.Migrator().DropTable(
 		&model.Passkey{},
 	); err != nil {

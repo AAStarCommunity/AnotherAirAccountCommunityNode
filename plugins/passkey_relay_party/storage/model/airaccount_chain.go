@@ -8,7 +8,7 @@ type AirAccountChain struct {
 	InitCode     string `json:"init_code" gorm:"type:text"`
 	AA_Address   string `json:"aa_address" gorm:"type:varchar(255)"`
 	EOA_Address  string `json:"eoa_address" gorm:"type:varchar(255)"`
-	Chain        string `json:"chain" gorm:"type:varchar(64)"`
+	ChainId      string `json:"chain_id" gorm:"type:varchar(10);column:chain_id"`
 	WalletVault  string `json:"wallet_vault" gorm:"type:text"`
 }
 

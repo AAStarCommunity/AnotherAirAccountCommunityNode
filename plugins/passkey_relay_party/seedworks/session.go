@@ -1,6 +1,7 @@
 package seedworks
 
 import (
+	"encoding/base64"
 	"fmt"
 	"strings"
 	"sync"
@@ -129,6 +130,11 @@ func (store *SessionStore) FinishSignSession(paymentSign *TxSignature, ctx *gin.
 			store.Remove(key)
 			if paymentSign.Ticket != session.Data.Extensions["ticket"].(string) {
 				return nil, fmt.Errorf("ticket not match")
+			}
+			if txData, err := base64.RawURLEncoding.DecodeString(session.Data.Challenge); err != nil {
+				return nil, err
+			} else {
+				paymentSign.TxData = string(txData)
 			}
 			return &session.User, nil
 		} else {

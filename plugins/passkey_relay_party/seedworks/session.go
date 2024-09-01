@@ -106,11 +106,10 @@ func (store *SessionStore) NewTxSession(user *User, txSignature *TxSignature) (*
 	sessionKey := GetSessionKey(txSignature.Origin, txSignature.Email, txSignature.Ticket)
 	if opt, session, err := webAuthn.BeginLogin(user,
 		func(opt *protocol.PublicKeyCredentialRequestOptions) {
-			// opt.Challenge, _ = CreateChallenge(txSignature) // TODO: rewrite the challenge algorithm
+			opt.Challenge = protocol.URLEncodedBase64(txSignature.TxData)
 			if opt.Extensions == nil {
 				opt.Extensions = make(map[string]interface{})
 			}
-			opt.Extensions["txdata"] = txSignature.TxData
 			opt.Extensions["ticket"] = txSignature.Ticket
 		},
 	); err != nil {
@@ -128,7 +127,6 @@ func (store *SessionStore) FinishSignSession(paymentSign *TxSignature, ctx *gin.
 	} else {
 		if _, err := session.WebAuthn.FinishLogin(&session.User, session.Data, ctx.Request); err == nil {
 			store.Remove(key)
-			paymentSign.TxData = session.Data.Extensions["txdata"].(string)
 			if paymentSign.Ticket != session.Data.Extensions["ticket"].(string) {
 				return nil, fmt.Errorf("ticket not match")
 			}

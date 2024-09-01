@@ -4,6 +4,8 @@ go 1.23
 
 toolchain go1.23.0
 
+replace github.com/go-webauthn/webauthn => github.com/fanhousanbu/webauthn v0.0.0-20240901031842-b459556413a4
+
 require (
 	github.com/deckarep/golang-set/v2 v2.6.0
 	github.com/ethereum/go-ethereum v1.14.5

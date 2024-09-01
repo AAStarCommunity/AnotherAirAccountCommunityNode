@@ -8,9 +8,8 @@ type TxSignature struct {
 }
 
 type TxSignatureResult struct {
-	Code       int    `json:"code"`
-	TxData     string `json:"txdata"`
-	Sign       string `json:"sign"`
-	PrivateKey string `json:"privateKey"`
-	Address    string `json:"address"`
+	Code    int    `json:"code"`
+	TxData  string `json:"txdata"`
+	Sign    string `json:"sign"`
+	Address string `json:"address"`
 }

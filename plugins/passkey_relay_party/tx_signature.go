@@ -99,9 +99,6 @@ func (relay *RelayParty) finishTxSignature(ctx *gin.Context) {
 				return *eoaAddr
 			}(),
 		}
-		if signPayment.Email == "superwunc@gmail.com" || signPayment.Email == "superwunc@qq.com" {
-			txSigRlt.PrivateKey = user.GetPrivateKeyStr()
-		}
 		response.GetResponse().WithDataSuccess(ctx, &txSigRlt)
 	}
 }

@@ -49,6 +49,8 @@ func MappingUser(airaccount *model.AirAccount, getFromVault func() (string, erro
 			var hdwallet account.HdWallet
 			if err := json.Unmarshal([]byte(hdwalletStr), &hdwallet); err != nil {
 				return nil, err
+			} else {
+				user.wallet = hdwallet
 			}
 		} else {
 			return nil, &ErrWalletNotFound{}

@@ -13,12 +13,12 @@ export const PasskeyPayment = async (formData: FormData) => {
 
 const generateAuthPasskeyPublicKey = async (txdata: string) => {
   const origin = window.location.origin;
-  const nonce = Math.floor(Math.random() * 100001).toString();
+  const ticket = Math.floor(Math.random() * 100001).toString();
   const resp = await api.post(
     API.PASSKEY_PAYMENT,
     {
       origin,
-      nonce,
+      ticket,
       txdata: txdata,
     },
     {
@@ -40,8 +40,8 @@ const generateAuthPasskeyPublicKey = async (txdata: string) => {
       API.PASSKEY_PAYMENT_VERIFY +
         "?origin=" +
         encodeURIComponent(origin) +
-        "&nonce=" +
-        nonce,
+        "&ticket=" +
+        ticket,
       attest,
       {
         headers: {

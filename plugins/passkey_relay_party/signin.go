@@ -40,7 +40,8 @@ func (relay *RelayParty) beginSignIn(ctx *gin.Context) {
 		if err != nil {
 			response.NotFound(ctx, err.Error())
 		}
-		if options, err := relay.authSessionStore.NewAuthSession(user, &signIn); err != nil {
+		// if options, err := relay.authSessionStore.NewAuthSession(user, &signIn); err != nil {
+		if options, err := relay.authSessionStore.NewDiscoverableAuthSession(user, &signIn); err != nil {
 			response.InternalServerError(ctx, err)
 		} else {
 			response.GetResponse().WithDataSuccess(ctx, options.Response)

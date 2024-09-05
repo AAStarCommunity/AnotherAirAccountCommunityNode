@@ -69,6 +69,37 @@ func (store *SessionStore) FinishRegSession(reg *FinishRegistrationByEmail, ctx 
 	}
 }
 
+const session_key_discoverlogin string = "DiscoverLogin"
+
+func (store *SessionStore) NewDiscoverableAuthSession(user *User, signIn *SiginIn) (*protocol.CredentialAssertion, error) {
+	webauthn, _ := newWebAuthn(signIn.Origin)
+	sessionKey := GetSessionKey(signIn.Origin, session_key_discoverlogin)
+	if opt, session, err := webauthn.BeginDiscoverableLogin(); err != nil {
+		return nil, err
+	} else {
+		store.set(sessionKey, webauthn, session, user)
+		return opt, nil
+	}
+}
+
+func (store *SessionStore) FinishDiscoverableAuthSession(signIn *SiginIn, ctx *gin.Context) (*User, error) {
+	key := GetSessionKey(signIn.Origin, session_key_discoverlogin)
+	if session := store.Get(key); session == nil {
+		return nil, fmt.Errorf("not found")
+	} else {
+		defer store.Remove(key)
+		if _, err := session.WebAuthn.FinishDiscoverableLogin(func(rawID, userHandle []byte) (user webauthn.User, err error) {
+			rawIDStr := base64.URLEncoding.EncodeToString(rawID)
+			_ = rawIDStr
+			return &session.User, nil
+		}, session.Data, ctx.Request); err == nil {
+			return &session.User, nil
+		} else {
+			return nil, err
+		}
+	}
+}
+
 func (store *SessionStore) NewAuthSession(user *User, signIn *SiginIn) (*protocol.CredentialAssertion, error) {
 	if user == nil || signIn == nil {
 		return nil, fmt.Errorf("user or signIn is nil")

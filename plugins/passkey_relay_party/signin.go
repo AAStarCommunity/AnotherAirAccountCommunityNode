@@ -36,11 +36,7 @@ func (relay *RelayParty) beginSignIn(ctx *gin.Context) {
 		response.BadRequest(ctx, "Already in SignIn")
 		return
 	} else {
-		user, err := relay.db.FindUser(signIn.Email)
-		if err != nil {
-			response.NotFound(ctx, err.Error())
-		}
-		// if options, err := relay.authSessionStore.NewAuthSession(user, &signIn); err != nil {
+		var user *seedworks.User
 		if options, err := relay.authSessionStore.NewDiscoverableAuthSession(user, &signIn); err != nil {
 			response.InternalServerError(ctx, err)
 		} else {
@@ -72,7 +68,7 @@ func (relay *RelayParty) finishSignIn(ctx *gin.Context) {
 		},
 	}
 
-	_, err := relay.authSessionStore.FinishAuthSession(&stubSignIn, ctx)
+	_, err := relay.authSessionStore.FinishDiscoverableAuthSession(&stubSignIn, ctx)
 	if err != nil {
 		response.GetResponse().FailCode(ctx, 401, "SignIn failed: "+err.Error())
 		return

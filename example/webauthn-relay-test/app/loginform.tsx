@@ -9,7 +9,10 @@ export default function LoginForm() {
     <div>
       {browserSupportsWebAuthn() ? (
         <Form
-          action={browserSupportsWebAuthn() ? PasskeyLogin : <div>abc</div>}
+          isDiscoverable={true}
+          action={
+            browserSupportsWebAuthn() ? PasskeyLogin : <div>not support</div>
+          }
         >
           <SubmitButton>Sign in</SubmitButton>
           <p className="text-center text-sm text-gray-600">

@@ -200,8 +200,14 @@ func (store *SessionStore) set(key string, webauthn *webauthn.WebAuthn, session 
 	cache := &sessionCache{
 		Data:     *session,
 		WebAuthn: *webauthn,
-		User:     *user,
-		expires:  120,
+		User: func() User {
+			if user == nil {
+				return User{}
+			} else {
+				return *user
+			}
+		}(),
+		expires: 120,
 	}
 	cache.countdown()
 	store.sessions[key] = cache

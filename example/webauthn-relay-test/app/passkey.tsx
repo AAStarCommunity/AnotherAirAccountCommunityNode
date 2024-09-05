@@ -51,8 +51,7 @@ const generateRegPasskeyPublicKey = async (email: string) => {
 };
 
 export const PasskeyLogin = async (formData: FormData) => {
-  let email = formData.get("email") as string;
-  let resp = await generateAuthPasskeyPublicKey(email);
+  let resp = await generateAuthPasskeyPublicKey();
 
   if (resp) {
     window.location.href = "/payment";
@@ -61,18 +60,14 @@ export const PasskeyLogin = async (formData: FormData) => {
   }
 };
 
-const generateAuthPasskeyPublicKey = async (email: string) => {
+const generateAuthPasskeyPublicKey = async () => {
   const origin = window.location.origin;
-  const resp = await api.post(API.PASSKEY_AUTH, { email, origin });
+  const resp = await api.post(API.PASSKEY_AUTH, { origin });
   const json = resp.data.data as PublicKeyCredentialRequestOptionsJSON;
   if (json !== null) {
     const attest = await startAuthentication(json);
     const verifyResp = await api.post(
-      API.PASSKEY_AUTH_VERIFY +
-        "?origin=" +
-        encodeURIComponent(origin) +
-        "&email=" +
-        email,
+      API.PASSKEY_AUTH_VERIFY + "?origin=" + encodeURIComponent(origin),
       attest
     );
 

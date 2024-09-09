@@ -73,10 +73,10 @@ const session_key_discoverlogin string = "DiscoverLogin"
 
 func (store *SessionStore) BeginDiscoverableAuthSession(signIn *SiginIn) (*protocol.CredentialAssertion, error) {
 	webauthn, _ := newWebAuthn(signIn.Origin)
-	sessionKey := GetSessionKey(signIn.Origin, session_key_discoverlogin)
 	if opt, session, err := webauthn.BeginDiscoverableLogin(); err != nil {
 		return nil, err
 	} else {
+		sessionKey := GetSessionKey(signIn.Origin, session_key_discoverlogin)
 		store.set(sessionKey, webauthn, session, nil)
 		return opt, nil
 	}

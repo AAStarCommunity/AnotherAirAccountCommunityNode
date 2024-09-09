@@ -431,10 +431,6 @@ definitions:
     type: object
   seedworks.SiginIn:
     properties:
-      captcha:
-        type: string
-      email:
-        type: string
       origin:
         type: string
     type: object

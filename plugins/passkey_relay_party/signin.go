@@ -33,15 +33,10 @@ func (relay *RelayParty) beginSignIn(ctx *gin.Context) {
 		return
 	}
 
-	if session := relay.authSessionStore.Get(seedworks.GetSessionKey(signIn.Origin, signIn.Email)); session != nil {
-		response.BadRequest(ctx, "Already in SignIn")
-		return
+	if options, err := relay.authSessionStore.BeginDiscoverableAuthSession(&signIn); err != nil {
+		response.InternalServerError(ctx, err)
 	} else {
-		if options, err := relay.authSessionStore.BeginDiscoverableAuthSession(&signIn); err != nil {
-			response.InternalServerError(ctx, err)
-		} else {
-			response.GetResponse().WithDataSuccess(ctx, options.Response)
-		}
+		response.GetResponse().WithDataSuccess(ctx, options.Response)
 	}
 }
 
@@ -59,9 +54,7 @@ func (relay *RelayParty) beginSignIn(ctx *gin.Context) {
 func (relay *RelayParty) finishSignIn(ctx *gin.Context) {
 	// body works for SDK, the additional info appends to query
 	stubSignIn := seedworks.SiginIn{
-		RegistrationByEmail: seedworks.RegistrationByEmail{
-			Origin: ctx.Query("origin"),
-		},
+		Origin: ctx.Query("origin"),
 	}
 
 	var user *seedworks.User

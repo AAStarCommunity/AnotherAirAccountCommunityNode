@@ -1106,12 +1106,6 @@ const docTemplate = `{
         "seedworks.SiginIn": {
             "type": "object",
             "properties": {
-                "captcha": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
                 "origin": {
                     "type": "string"
                 }

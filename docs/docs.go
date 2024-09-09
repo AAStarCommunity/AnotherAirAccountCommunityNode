@@ -236,7 +236,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/seedworks.Registration"
+                            "$ref": "#/definitions/seedworks.RegistrationByEmail"
                         }
                     }
                 ],
@@ -267,7 +267,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/seedworks.RegistrationPrepare"
+                            "$ref": "#/definitions/seedworks.RegistrationByEmail"
                         }
                     }
                 ],
@@ -287,7 +287,7 @@ const docTemplate = `{
                 "tags": [
                     "Plugins Passkey"
                 ],
-                "summary": "Finish SignUp",
+                "summary": "Finish SignUp By Email",
                 "parameters": [
                     {
                         "type": "string",
@@ -398,14 +398,6 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "format": "email",
-                        "description": "user email",
-                        "name": "email",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
                         "description": "origin",
                         "name": "origin",
                         "in": "query",
@@ -513,8 +505,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "nonce",
-                        "name": "nonce",
+                        "description": "ticket",
+                        "name": "ticket",
                         "in": "query",
                         "required": true
                     }
@@ -604,13 +596,34 @@ const docTemplate = `{
                 }
             }
         },
+        "protocol.AttestationFormat": {
+            "type": "string",
+            "enum": [
+                "packed",
+                "tpm",
+                "android-key",
+                "android-safetynet",
+                "fido-u2f",
+                "apple",
+                "none"
+            ],
+            "x-enum-varnames": [
+                "AttestationFormatPacked",
+                "AttestationFormatTPM",
+                "AttestationFormatAndroidKey",
+                "AttestationFormatAndroidSafetyNet",
+                "AttestationFormatFIDOUniversalSecondFactor",
+                "AttestationFormatApple",
+                "AttestationFormatNone"
+            ]
+        },
         "protocol.AuthenticationExtensions": {
             "type": "object",
-            "additionalProperties": true
+            "additionalProperties": {}
         },
         "protocol.AuthenticationExtensionsClientOutputs": {
             "type": "object",
-            "additionalProperties": true
+            "additionalProperties": {}
         },
         "protocol.AuthenticatorAssertionResponse": {
             "type": "object",
@@ -663,12 +676,27 @@ const docTemplate = `{
                         "type": "integer"
                     }
                 },
+                "authenticatorData": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
                 "clientDataJSON": {
                     "description": "From the spec https://www.w3.org/TR/webauthn/#dom-authenticatorresponse-clientdatajson\nThis attribute contains a JSON serialization of the client data passed to the authenticator\nby the client in its call to either create() or get().",
                     "type": "array",
                     "items": {
                         "type": "integer"
                     }
+                },
+                "publicKey": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "publicKeyAlgorithm": {
+                    "type": "integer"
                 },
                 "transports": {
                     "type": "array",
@@ -717,6 +745,7 @@ const docTemplate = `{
                 "usb",
                 "nfc",
                 "ble",
+                "smart-card",
                 "hybrid",
                 "internal"
             ],
@@ -724,6 +753,7 @@ const docTemplate = `{
                 "USB",
                 "NFC",
                 "BLE",
+                "SmartCard",
                 "Hybrid",
                 "Internal"
             ]
@@ -793,13 +823,6 @@ const docTemplate = `{
                 "response": {
                     "$ref": "#/definitions/protocol.AuthenticatorAttestationResponse"
                 },
-                "transports": {
-                    "description": "Deprecated: Transports is deprecated due to upstream changes to the API.\nUse the Transports field of AuthenticatorAttestationResponse\ninstead. Transports is kept for backward compatibility, and should not\nbe used by new clients.",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
                 "type": {
                     "description": "Type is the value of the object’s interface object's [[type]] slot,\nwhich specifies the credential type represented by this object.\nThis should be type \"public-key\" for Webauthn credentials.",
                     "type": "string"
@@ -859,6 +882,12 @@ const docTemplate = `{
                 "attestation": {
                     "$ref": "#/definitions/protocol.ConveyancePreference"
                 },
+                "attestationFormats": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/protocol.AttestationFormat"
+                    }
+                },
                 "authenticatorSelection": {
                     "$ref": "#/definitions/protocol.AuthenticatorSelection"
                 },
@@ -877,6 +906,12 @@ const docTemplate = `{
                 "extensions": {
                     "$ref": "#/definitions/protocol.AuthenticationExtensions"
                 },
+                "hints": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/protocol.PublicKeyCredentialHints"
+                    }
+                },
                 "pubKeyCredParams": {
                     "type": "array",
                     "items": {
@@ -893,6 +928,19 @@ const docTemplate = `{
                     "$ref": "#/definitions/protocol.UserEntity"
                 }
             }
+        },
+        "protocol.PublicKeyCredentialHints": {
+            "type": "string",
+            "enum": [
+                "security-key",
+                "client-device",
+                "hybrid"
+            ],
+            "x-enum-varnames": [
+                "PublicKeyCredentialHintSecurityKey",
+                "PublicKeyCredentialHintClientDevice",
+                "PublicKeyCredentialHintHybrid"
+            ]
         },
         "protocol.PublicKeyCredentialRequestOptions": {
             "type": "object",
@@ -912,6 +960,12 @@ const docTemplate = `{
                 "extensions": {
                     "$ref": "#/definitions/protocol.AuthenticationExtensions"
                 },
+                "hints": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/protocol.PublicKeyCredentialHints"
+                    }
+                },
                 "rpId": {
                     "type": "string"
                 },
@@ -926,10 +980,6 @@ const docTemplate = `{
         "protocol.RelyingPartyEntity": {
             "type": "object",
             "properties": {
-                "icon": {
-                    "description": "A serialized URL which resolves to an image associated with the entity. For example,\nthis could be a user’s avatar or a Relying Party's logo. This URL MUST be an a priori\nauthenticated URL. Authenticators MUST accept and store a 128-byte minimum length for\nan icon member’s value. Authenticators MAY ignore an icon member’s value if its length\nis greater than 128 bytes. The URL’s scheme MAY be \"data\" to avoid fetches of the URL,\nat the cost of needing more storage.\n\nDeprecated: this has been removed from the specification recommendations.",
-                    "type": "string"
-                },
                 "id": {
                     "description": "A unique identifier for the Relying Party entity, which sets the RP ID.",
                     "type": "string"
@@ -958,10 +1008,6 @@ const docTemplate = `{
             "properties": {
                 "displayName": {
                     "description": "A human-palatable name for the user account, intended only for display.\nFor example, \"Alex P. Müller\" or \"田中 倫\". The Relying Party SHOULD let\nthe user choose this, and SHOULD NOT restrict the choice more than necessary.",
-                    "type": "string"
-                },
-                "icon": {
-                    "description": "A serialized URL which resolves to an image associated with the entity. For example,\nthis could be a user’s avatar or a Relying Party's logo. This URL MUST be an a priori\nauthenticated URL. Authenticators MUST accept and store a 128-byte minimum length for\nan icon member’s value. Authenticators MAY ignore an icon member’s value if its length\nis greater than 128 bytes. The URL’s scheme MAY be \"data\" to avoid fetches of the URL,\nat the cost of needing more storage.\n\nDeprecated: this has been removed from the specification recommendations.",
                     "type": "string"
                 },
                 "id": {
@@ -1043,7 +1089,7 @@ const docTemplate = `{
                 }
             }
         },
-        "seedworks.Registration": {
+        "seedworks.RegistrationByEmail": {
             "type": "object",
             "properties": {
                 "captcha": {
@@ -1053,14 +1099,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "origin": {
-                    "type": "string"
-                }
-            }
-        },
-        "seedworks.RegistrationPrepare": {
-            "type": "object",
-            "properties": {
-                "email": {
                     "type": "string"
                 }
             }
@@ -1082,10 +1120,10 @@ const docTemplate = `{
         "seedworks.TxSignature": {
             "type": "object",
             "properties": {
-                "nonce": {
+                "origin": {
                     "type": "string"
                 },
-                "origin": {
+                "ticket": {
                     "type": "string"
                 },
                 "txdata": {
@@ -1096,6 +1134,9 @@ const docTemplate = `{
         "seedworks.TxSignatureResult": {
             "type": "object",
             "properties": {
+                "address": {
+                    "type": "string"
+                },
                 "code": {
                     "type": "integer"
                 },

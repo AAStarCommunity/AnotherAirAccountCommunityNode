@@ -2,6 +2,7 @@ package plugin_passkey_relay_party
 
 import (
 	"another_node/plugins/passkey_relay_party/conf"
+	"another_node/plugins/passkey_relay_party/seedworks"
 	"time"
 
 	jwt2 "github.com/appleboy/gin-jwt/v2"
@@ -43,12 +44,18 @@ func AuthHandler() gin.HandlerFunc {
 			})
 		},
 		Authenticator: func(c *gin.Context) (interface{}, error) {
-			if c.Query("email") == "" {
+
+			if user, ok := c.Get("user"); !ok {
 				return nil, jwt2.ErrFailedAuthentication
+			} else {
+				if u, ok := user.(*seedworks.User); ok {
+					return &login{
+						Email: u.GetEmail(),
+					}, nil
+				} else {
+					return nil, jwt2.ErrFailedAuthentication
+				}
 			}
-			return &login{
-				Email: c.Query("email"),
-			}, nil
 		},
 		Authorizator: func(data interface{}, c *gin.Context) bool {
 			return true

@@ -33,7 +33,7 @@ func NewInMemorySessionStore() *SessionStore {
 	return store
 }
 
-func (store *SessionStore) NewRegSession(reg *RegistrationByEmail) (*protocol.CredentialCreation, error) {
+func (store *SessionStore) BeginRegSession(reg *RegistrationByEmail) (*protocol.CredentialCreation, error) {
 	user := newUser(reg.Email)
 	wan, _ := newWebAuthn(reg.Origin)
 	sessionKey := GetSessionKey(reg.Origin, reg.Email)
@@ -71,65 +71,32 @@ func (store *SessionStore) FinishRegSession(reg *FinishRegistrationByEmail, ctx 
 
 const session_key_discoverlogin string = "DiscoverLogin"
 
-func (store *SessionStore) NewDiscoverableAuthSession(user *User, signIn *SiginIn) (*protocol.CredentialAssertion, error) {
+func (store *SessionStore) BeginDiscoverableAuthSession(signIn *SiginIn) (*protocol.CredentialAssertion, error) {
 	webauthn, _ := newWebAuthn(signIn.Origin)
 	sessionKey := GetSessionKey(signIn.Origin, session_key_discoverlogin)
 	if opt, session, err := webauthn.BeginDiscoverableLogin(); err != nil {
 		return nil, err
 	} else {
-		store.set(sessionKey, webauthn, session, user)
+		store.set(sessionKey, webauthn, session, nil)
 		return opt, nil
 	}
 }
 
-func (store *SessionStore) FinishDiscoverableAuthSession(signIn *SiginIn, ctx *gin.Context) (*User, error) {
+func (store *SessionStore) FinishDiscoverableAuthSession(signIn *SiginIn, ctx *gin.Context, find func(rawID, userHandle []byte) (user webauthn.User, err error)) (*webauthn.Credential, error) {
 	key := GetSessionKey(signIn.Origin, session_key_discoverlogin)
 	if session := store.Get(key); session == nil {
 		return nil, fmt.Errorf("not found")
 	} else {
 		defer store.Remove(key)
-		if _, err := session.WebAuthn.FinishDiscoverableLogin(func(rawID, userHandle []byte) (user webauthn.User, err error) {
-			rawIDStr := base64.URLEncoding.EncodeToString(rawID)
-			_ = rawIDStr
-			return &session.User, nil
-		}, session.Data, ctx.Request); err == nil {
-			return &session.User, nil
+		if u, err := session.WebAuthn.FinishDiscoverableLogin(find, session.Data, ctx.Request); err == nil {
+			return u, nil
 		} else {
 			return nil, err
 		}
 	}
 }
 
-func (store *SessionStore) NewAuthSession(user *User, signIn *SiginIn) (*protocol.CredentialAssertion, error) {
-	if user == nil || signIn == nil {
-		return nil, fmt.Errorf("user or signIn is nil")
-	}
-
-	webauthn, _ := newWebAuthn(signIn.Origin)
-	sessionKey := GetSessionKey(signIn.Origin, signIn.Email)
-	if opt, session, err := webauthn.BeginLogin(user); err != nil {
-		return nil, err
-	} else {
-		store.set(sessionKey, webauthn, session, user)
-		return opt, nil
-	}
-}
-
-func (store *SessionStore) FinishAuthSession(signIn *SiginIn, ctx *gin.Context) (*User, error) {
-	key := GetSessionKey(signIn.Origin, signIn.Email)
-	if session := store.Get(key); session == nil {
-		return nil, fmt.Errorf("%s: not found", signIn.Email)
-	} else {
-		defer store.Remove(key)
-		if _, err := session.WebAuthn.FinishLogin(&session.User, session.Data, ctx.Request); err == nil {
-			return &session.User, nil
-		} else {
-			return nil, err
-		}
-	}
-}
-
-func (store *SessionStore) NewTxSession(user *User, txSignature *TxSignature) (*protocol.CredentialAssertion, error) {
+func (store *SessionStore) BeginTxSession(user *User, txSignature *TxSignature) (*protocol.CredentialAssertion, error) {
 	if user == nil || txSignature == nil {
 		return nil, fmt.Errorf("user or signIn is nil")
 	}
@@ -152,7 +119,7 @@ func (store *SessionStore) NewTxSession(user *User, txSignature *TxSignature) (*
 	}
 }
 
-func (store *SessionStore) FinishSignSession(paymentSign *TxSignature, ctx *gin.Context) (*User, error) {
+func (store *SessionStore) FinishTxSession(paymentSign *TxSignature, ctx *gin.Context) (*User, error) {
 	key := GetSessionKey(paymentSign.Origin, paymentSign.Email, paymentSign.Ticket)
 	if session := store.Get(key); session == nil {
 		return nil, fmt.Errorf("%s: not found", paymentSign.Email)

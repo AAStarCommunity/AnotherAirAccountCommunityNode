@@ -5,6 +5,7 @@ import (
 	"another_node/plugins/passkey_relay_party/seedworks"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-webauthn/webauthn/webauthn"
 )
 
 type SiginInResponse struct {
@@ -36,8 +37,7 @@ func (relay *RelayParty) beginSignIn(ctx *gin.Context) {
 		response.BadRequest(ctx, "Already in SignIn")
 		return
 	} else {
-		var user *seedworks.User
-		if options, err := relay.authSessionStore.NewDiscoverableAuthSession(user, &signIn); err != nil {
+		if options, err := relay.authSessionStore.BeginDiscoverableAuthSession(&signIn); err != nil {
 			response.InternalServerError(ctx, err)
 		} else {
 			response.GetResponse().WithDataSuccess(ctx, options.Response)
@@ -51,7 +51,6 @@ func (relay *RelayParty) beginSignIn(ctx *gin.Context) {
 // @Tags Plugins Passkey
 // @Accept json
 // @Produce json
-// @Param email  query string true "user email" Format(email)
 // @Param origin query string true "origin"
 // @Param signinBody body protocol.CredentialAssertionResponse true "Verify SignIn"
 // @Success 200 {object} SiginInResponse "OK"
@@ -61,18 +60,21 @@ func (relay *RelayParty) finishSignIn(ctx *gin.Context) {
 	// body works for SDK, the additional info appends to query
 	stubSignIn := seedworks.SiginIn{
 		RegistrationByEmail: seedworks.RegistrationByEmail{
-			RegistrationByEmailPrepare: seedworks.RegistrationByEmailPrepare{
-				Email: ctx.Query("email"),
-			},
 			Origin: ctx.Query("origin"),
 		},
 	}
 
-	_, err := relay.authSessionStore.FinishDiscoverableAuthSession(&stubSignIn, ctx)
+	var user *seedworks.User
+	_, err := relay.authSessionStore.FinishDiscoverableAuthSession(&stubSignIn, ctx, func(rawID, userHandle []byte) (webauthn.User, error) {
+		var err error
+		user, err = relay.db.FindUser(string(userHandle))
+		return user, err
+	})
 	if err != nil {
 		response.GetResponse().FailCode(ctx, 401, "SignIn failed: "+err.Error())
 		return
 	}
 
+	ctx.Set("user", user)
 	ginJwtMiddleware().LoginHandler(ctx)
 }

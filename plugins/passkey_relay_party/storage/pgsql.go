@@ -91,9 +91,9 @@ func (db *PgsqlStorage) SaveAccounts(user *seedworks.User, chain consts.Chain) e
 	}
 }
 
-func (db *PgsqlStorage) FindUser(email string) (*seedworks.User, error) {
+func (db *PgsqlStorage) FindUser(userHandler string) (*seedworks.User, error) {
 	airaccount := model.AirAccount{}
-	if err := db.client.Preload(clause.Associations).Where("email = ?", email).First(&airaccount).Error; err != nil {
+	if err := db.client.Preload(clause.Associations).Where("email = ?", userHandler).First(&airaccount).Error; err != nil {
 		return nil, err
 	} else {
 		return seedworks.MappingUser(&airaccount, func() (string, error) {

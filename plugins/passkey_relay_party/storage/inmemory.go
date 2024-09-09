@@ -36,8 +36,8 @@ func save(db *InMemory, user *seedworks.User) error {
 	return nil
 }
 
-func (db *InMemory) FindUser(email string) (*seedworks.User, error) {
-	if user, ok := db.users[email]; ok {
+func (db *InMemory) FindUser(userHandler string) (*seedworks.User, error) {
+	if user, ok := db.users[userHandler]; ok {
 		return user, nil
 	}
 

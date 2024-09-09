@@ -18,7 +18,7 @@ import (
 // @Description Send captcha to email for confirming ownership
 // @Accept json
 // @Product json
-// @Param registrationBody body seedworks.RegistrationPrepare true "Send Captcha to Email"
+// @Param registrationBody body seedworks.RegistrationByEmail true "Send Captcha to Email"
 // @Router /api/passkey/v1/reg/prepare [post]
 // @Success 200
 func (relay *RelayParty) regPrepareByEmail(ctx *gin.Context) {
@@ -41,7 +41,7 @@ func (relay *RelayParty) regPrepareByEmail(ctx *gin.Context) {
 // @Description Send challenge for passkey
 // @Accept json
 // @Product json
-// @Param registrationBody body seedworks.Registration true "Begin Registration"
+// @Param registrationBody body seedworks.RegistrationByEmail true "Begin Registration"
 // @Router /api/passkey/v1/reg [post]
 // @Success 200 {object} protocol.PublicKeyCredentialCreationOptions
 func (relay *RelayParty) beginRegistrationByEmail(ctx *gin.Context) {
@@ -71,7 +71,7 @@ func (relay *RelayParty) beginRegistrationByEmail(ctx *gin.Context) {
 		relay.authSessionStore.Remove(sessionKey)
 	}
 
-	if options, err := relay.authSessionStore.NewRegSession(&reg); err != nil {
+	if options, err := relay.authSessionStore.BeginRegSession(&reg); err != nil {
 		response.InternalServerError(ctx, err.Error())
 	} else {
 		response.GetResponse().WithDataSuccess(ctx, options.Response)

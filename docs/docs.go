@@ -166,7 +166,7 @@ const docTemplate = `{
                 "tags": [
                     "Plugins Passkey"
                 ],
-                "summary": "get user account info",
+                "summary": "Get User Account Info",
                 "parameters": [
                     {
                         "type": "string",

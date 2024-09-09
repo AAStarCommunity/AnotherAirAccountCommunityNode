@@ -595,7 +595,7 @@ paths:
             type: object
       security:
       - JWT: []
-      summary: get user account info
+      summary: Get User Account Info
       tags:
       - Plugins Passkey
   /api/passkey/v1/imauthz:

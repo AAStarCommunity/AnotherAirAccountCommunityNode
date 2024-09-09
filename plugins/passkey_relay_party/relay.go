@@ -34,7 +34,7 @@ func (r *RelayParty) RegisterRoutes(router *gin.Engine, community *node.Communit
 	{
 		// APIs needs signin here
 		router.GET("/api/passkey/v1/imauthz", r.imauthz)
-		router.GET("/api/passkey/v1/account/info", r.accountInfo)
+		router.GET("/api/passkey/v1/account/info", r.getAccountInfo)
 		router.POST("/api/passkey/v1/tx/sign", r.beginTxSignature)
 		router.POST("/api/passkey/v1/tx/sign/verify", r.finishTxSignature)
 	}

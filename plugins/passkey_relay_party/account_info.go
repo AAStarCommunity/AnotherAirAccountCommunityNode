@@ -38,8 +38,8 @@ func (relay *RelayParty) getAccountInfo(ctx *gin.Context) {
 		if user, err := relay.db.FindUser(email); err != nil {
 			response.NotFound(ctx, err.Error())
 		} else {
-			initCode, aaAddr, eoaAddr := user.GetChainAddresses(chain)
-			if aaAddr == nil || eoaAddr == nil || initCode == nil {
+			initCode, aaAddr := user.GetChainAddresses(chain)
+			if aaAddr == nil || initCode == nil {
 				response.NotFound(ctx, seedworks.ErrChainNotFound{})
 				return
 			}
@@ -47,7 +47,7 @@ func (relay *RelayParty) getAccountInfo(ctx *gin.Context) {
 			response.GetResponse().WithDataSuccess(ctx, seedworks.AccountInfo{
 				InitCode: *initCode,
 				AA:       *aaAddr,
-				EOA:      *eoaAddr,
+				EOA:      user.GetEOA(),
 				Email:    email,
 			})
 		}

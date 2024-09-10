@@ -2,6 +2,7 @@ package seedworks
 
 import (
 	"another_node/internal/community/account"
+	"another_node/internal/community/chain"
 	consts "another_node/internal/seedworks"
 	"another_node/plugins/passkey_relay_party/storage/model"
 	"bytes"
@@ -15,15 +16,40 @@ import (
 type userChain struct {
 	InitCode string
 	AA_Addr  string
-	EOA_Addr string
 }
 
 type User struct {
 	id             []byte
 	credentials    []webauthn.Credential
 	email          string
-	wallet         account.HdWallet
+	wallet         *account.HdWallet
 	chainAddresses map[consts.Chain]userChain
+}
+
+func (user *User) GetEOA() string {
+	return user.wallet.Address
+}
+
+func (user *User) TryCreateAA(network consts.Chain) (err error) {
+	var w *account.HdWallet
+	if len(user.wallet.PrivateKey) == 0 {
+		if w, err = account.NewHdWallet(account.HierarchicalPath_ETH); err != nil {
+			return
+		} else {
+			user.wallet = w
+		}
+	}
+
+	if _, aaAddr := user.GetChainAddresses(network); len(*aaAddr) > 0 {
+		return nil
+	}
+
+	aa_address, initCode, err := chain.CreateSmartAccount(w, network)
+	if err != nil {
+		return err
+	}
+	user.SetAAWallet(&initCode, &aa_address, network)
+	return nil
 }
 
 func newUser(email string) *User {
@@ -50,7 +76,7 @@ func MappingUser(airaccount *model.AirAccount, getFromVault func() (string, erro
 			if err := json.Unmarshal([]byte(hdwalletStr), &hdwallet); err != nil {
 				return nil, err
 			} else {
-				user.wallet = hdwallet
+				user.wallet = &hdwallet
 			}
 		} else {
 			return nil, &ErrWalletNotFound{}
@@ -69,7 +95,6 @@ func MappingUser(airaccount *model.AirAccount, getFromVault func() (string, erro
 		user.chainAddresses[consts.Chain(chain.ChainName)] = userChain{
 			InitCode: chain.InitCode,
 			AA_Addr:  chain.AA_Address,
-			EOA_Addr: chain.EOA_Address,
 		}
 	}
 	return user, nil
@@ -89,15 +114,17 @@ func (user *User) GetAccounts() (email, facebook, twitter string) {
 	return
 }
 
-func (user *User) GetChainAddresses(chain consts.Chain) (initCode, aaAddr, eoaAddr *string) {
+func (user *User) GetChainAddresses(chain consts.Chain) (initCode, aaAddr *string) {
 	if len(chain) == 0 {
-		return nil, &user.wallet.Address, nil
+		return nil, nil
 	}
 
 	if chainAddr, ok := user.chainAddresses[chain]; ok {
-		return &chainAddr.InitCode, &chainAddr.AA_Addr, &chainAddr.EOA_Addr
+		initCode = &chainAddr.InitCode
+		aaAddr = &chainAddr.AA_Addr
+		return
 	} else {
-		return nil, &user.wallet.Address, nil
+		return nil, nil
 	}
 }
 
@@ -146,11 +173,9 @@ func (user *User) UpdateCredential(cred *webauthn.Credential) {
 	}
 }
 
-func (user *User) SetWallet(wallet *account.HdWallet, init_code, aa_address, eoa_address *string, network consts.Chain) {
-	user.wallet = *wallet
+func (user *User) SetAAWallet(init_code, aa_address *string, network consts.Chain) {
 	user.chainAddresses[network] = userChain{
 		InitCode: *init_code,
 		AA_Addr:  *aa_address,
-		EOA_Addr: *eoa_address,
 	}
 }

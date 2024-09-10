@@ -44,9 +44,14 @@ func AuthHandler() gin.HandlerFunc {
 			})
 		},
 		Authenticator: func(c *gin.Context) (interface{}, error) {
-
 			if user, ok := c.Get("user"); !ok {
-				return nil, jwt2.ErrFailedAuthentication
+				if email := c.Query("email"); len(email) == 0 {
+					return nil, jwt2.ErrFailedAuthentication
+				} else {
+					return &login{
+						Email: c.Query("email"),
+					}, nil
+				}
 			} else {
 				if u, ok := user.(*seedworks.User); ok {
 					return &login{

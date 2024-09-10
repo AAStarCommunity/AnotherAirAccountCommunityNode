@@ -18,8 +18,8 @@ func sigTx(user *seedworks.User, signPayment *seedworks.TxSignature) (*seedworks
 			TxData: signPayment.TxData,
 			Sign:   signHexStr,
 			Address: func() string {
-				_, eoaAddr, _ := user.GetChainAddresses("")
-				return *eoaAddr
+				_, aaAddr := user.GetChainAddresses("")
+				return *aaAddr
 			}(),
 		}
 		return &txSigRlt, nil

@@ -8,7 +8,6 @@ type AirAccountChain struct {
 	AirAccount   AirAccount `json:"-" gorm:"foreignKey:AirAccountID;references:ID"`
 	InitCode     string     `json:"init_code" gorm:"type:text"`
 	AA_Address   string     `json:"aa_address" gorm:"type:varchar(255)"`
-	EOA_Address  string     `json:"eoa_address" gorm:"type:varchar(255)"`
 	ChainName    string     `json:"chain_name" gorm:"type:varchar(50);column:chain_name"`
 }
 

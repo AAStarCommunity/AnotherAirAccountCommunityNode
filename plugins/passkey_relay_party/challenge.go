@@ -49,7 +49,7 @@ Invalidate in <b>10</b> minutes, ignore it if you were confused about this mail<
 }
 
 func (rp *RelayParty) emailChallenge(mail, code string) error {
-	if !strings.HasSuffix(mail, "@aastar.org") && code != "111111" {
+	if code != "111111" {
 		if !rp.db.Challenge(model.Email, mail, code) {
 			return seedworks.ErrInvalidCaptcha{}
 		}

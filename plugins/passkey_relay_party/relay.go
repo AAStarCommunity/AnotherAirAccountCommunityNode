@@ -8,10 +8,8 @@ import (
 	"another_node/plugins/passkey_relay_party/seedworks"
 	storage "another_node/plugins/passkey_relay_party/storage"
 	"another_node/plugins/passkey_relay_party/storage/migrations"
-	"errors"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 type RelayParty struct {
@@ -57,21 +55,4 @@ func NewRelay() *RelayParty {
 			return &p
 		}(),
 	}
-}
-
-// findUserByEmail finds a user by email in relay storage
-func (r *RelayParty) findUserByEmail(email string) (*seedworks.User, error) {
-	if email == "" {
-		return nil, seedworks.ErrEmailEmpty{}
-	}
-
-	u, err := r.db.FindUser(email)
-
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, seedworks.ErrUserNotFound{}
-		}
-	}
-
-	return u, err
 }

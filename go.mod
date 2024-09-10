@@ -2,7 +2,7 @@ module another_node
 
 go 1.23
 
-toolchain go1.23.0
+toolchain go1.23.1
 
 replace github.com/go-webauthn/webauthn => github.com/fanhousanbu/webauthn v0.0.0-20240901031842-b459556413a4
 

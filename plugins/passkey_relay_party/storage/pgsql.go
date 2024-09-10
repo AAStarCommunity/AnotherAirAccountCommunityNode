@@ -30,6 +30,7 @@ func NewPgsqlStorage() *PgsqlStorage {
 	}
 }
 
+// SaveAccounts create or update user accounts
 func (db *PgsqlStorage) SaveAccounts(user *seedworks.User, chain consts.Chain) error {
 	if walletMarshal, err := user.WalletMarshal(); err != nil {
 		return err
@@ -37,54 +38,87 @@ func (db *PgsqlStorage) SaveAccounts(user *seedworks.User, chain consts.Chain) e
 		if walletVault, err := seedworks.Encrypt(db.vaultSecret, walletMarshal); err != nil {
 			return err
 		} else {
-			initCode, aaAddr, eoaAddr := user.GetChainAddresses(chain)
+			initCode, aaAddr := user.GetChainAddresses(chain)
 
-			// so far, support email only
+			// support email only for now
 			return db.client.Transaction(func(tx *gorm.DB) error {
 				email, _, _ := user.GetAccounts()
-				if exists, err := db.FindUser(email); err != nil {
-					if !errors.Is(err, gorm.ErrRecordNotFound) {
-						return err
-					}
-
-					if exists != nil {
-						return seedworks.ErrUserAlreadyExists{}
-					}
-
-					newAirAccount := model.AirAccount{
-						Email:            email,
-						Passkeys:         make([]model.Passkey, 0),
-						AirAccountChains: make([]model.AirAccountChain, 0),
-					}
-
-					newAirAccount.HdWallet = model.HdWallet{
-						WalletVault: walletVault,
-					}
-
-					for i := range user.WebAuthnCredentials() {
-						cred := user.WebAuthnCredentials()[i]
-						rawdata, _ := json.Marshal(cred)
-						passkey := model.Passkey{
-							CredentialId: base64.URLEncoding.EncodeToString(cred.ID),
-							PublicKey:    base64.URLEncoding.EncodeToString(cred.PublicKey),
-							Algorithm:    strconv.Itoa(int(cred.Attestation.PublicKeyAlgorithm)),
-							Origin:       "-",
-							Rawdata:      string(rawdata),
+				exists := true
+				airAccount := model.AirAccount{}
+				if err := db.client.Preload(clause.Associations).Where("email = ?", email).First(&airAccount).Error; err != nil {
+					if errors.Is(err, gorm.ErrRecordNotFound) {
+						exists = false
+						airAccount = model.AirAccount{
+							Email:            email,
+							Passkeys:         make([]model.Passkey, 0),
+							AirAccountChains: make([]model.AirAccountChain, 0),
 						}
-						newAirAccount.Passkeys = append(newAirAccount.Passkeys, passkey)
-					}
 
-					newAirAccount.AirAccountChains = append(newAirAccount.AirAccountChains, model.AirAccountChain{
-						InitCode:    *initCode,
-						AA_Address:  *aaAddr,
-						EOA_Address: *eoaAddr,
-						ChainName:   string(chain),
-					})
-
-					if err := tx.Model(&model.AirAccount{}).Create(&newAirAccount).Error; err != nil {
+						airAccount.HdWallet = model.HdWallet{
+							WalletVault: walletVault,
+						}
+					} else {
 						return err
 					}
 				}
+
+				changed := false
+				for i := range user.WebAuthnCredentials() {
+					cred := user.WebAuthnCredentials()[i]
+					credId := base64.URLEncoding.EncodeToString(cred.ID)
+					flag := false
+					for j := range airAccount.Passkeys {
+						if airAccount.Passkeys[j].CredentialId == credId {
+							flag = true
+							break
+						}
+					}
+					if flag {
+						continue
+					}
+					rawdata, _ := json.Marshal(cred)
+					passkey := model.Passkey{
+						CredentialId: credId,
+						PublicKey:    base64.URLEncoding.EncodeToString(cred.PublicKey),
+						Algorithm:    strconv.Itoa(int(cred.Attestation.PublicKeyAlgorithm)),
+						Origin:       "-",
+						Rawdata:      string(rawdata),
+					}
+					airAccount.Passkeys = append(airAccount.Passkeys, passkey)
+					changed = true
+				}
+
+				for i := range airAccount.AirAccountChains {
+					flag := false
+					if airAccount.AirAccountChains[i].ChainName == string(chain) {
+						flag = true
+						break
+					}
+					if flag {
+						continue
+					}
+					airAccount.AirAccountChains = append(airAccount.AirAccountChains, model.AirAccountChain{
+						InitCode:   *initCode,
+						AA_Address: *aaAddr,
+						ChainName:  string(chain),
+					})
+					changed = true
+				}
+
+				if exists {
+					if changed {
+						if err := tx.Omit("created_at", "email").Save(&airAccount).Error; err != nil {
+							return err
+						}
+					} else {
+						return seedworks.ErrUserAlreadyExists{}
+					}
+				} else {
+					if err := tx.Model(&model.AirAccount{}).Create(&airAccount).Error; err != nil {
+						return err
+					}
+				}
+
 				return nil
 			})
 		}

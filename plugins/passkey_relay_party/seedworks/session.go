@@ -35,6 +35,7 @@ func NewInMemorySessionStore() *SessionStore {
 
 func (store *SessionStore) BeginRegSession(reg *RegistrationByEmail) (*protocol.CredentialCreation, error) {
 	user := newUser(reg.Email)
+
 	wan, _ := newWebAuthn(reg.Origin)
 	sessionKey := GetSessionKey(reg.Origin, reg.Email)
 

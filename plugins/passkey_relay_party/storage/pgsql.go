@@ -63,6 +63,27 @@ func (db *PgsqlStorage) SaveAccounts(user *seedworks.User, chain consts.Chain) e
 				}
 
 				changed := false
+
+				for i := range user.GetChains() {
+					flag := false
+					// TODO: one aa per chain
+					for j := range airAccount.AirAccountChains {
+						if airAccount.AirAccountChains[j].ChainName == string(i) {
+							flag = true
+							break
+						}
+					}
+					if flag {
+						continue
+					}
+					airAccount.AirAccountChains = append(airAccount.AirAccountChains, model.AirAccountChain{
+						InitCode:   *initCode,
+						AA_Address: *aaAddr,
+						ChainName:  string(i),
+					})
+					changed = true
+				}
+
 				for i := range user.WebAuthnCredentials() {
 					cred := user.WebAuthnCredentials()[i]
 					credId := base64.URLEncoding.EncodeToString(cred.ID)

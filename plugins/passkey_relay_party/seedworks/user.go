@@ -32,15 +32,17 @@ func (user *User) GetEOA() string {
 
 func (user *User) TryCreateAA(network consts.Chain) (err error) {
 	var w *account.HdWallet
-	if len(user.wallet.PrivateKey) == 0 {
+	if user.wallet == nil || len(user.wallet.PrivateKey) == 0 {
 		if w, err = account.NewHdWallet(account.HierarchicalPath_ETH); err != nil {
 			return
 		} else {
 			user.wallet = w
 		}
+	} else {
+		w = user.wallet
 	}
 
-	if _, aaAddr := user.GetChainAddresses(network); len(*aaAddr) > 0 {
+	if _, aaAddr := user.GetChainAddresses(network); aaAddr != nil {
 		return nil
 	}
 
@@ -112,6 +114,10 @@ func (user *User) GetAccounts() (email, facebook, twitter string) {
 	facebook = ""
 	twitter = ""
 	return
+}
+
+func (user *User) GetChains() map[consts.Chain]userChain {
+	return user.chainAddresses
 }
 
 func (user *User) GetChainAddresses(chain consts.Chain) (initCode, aaAddr *string) {

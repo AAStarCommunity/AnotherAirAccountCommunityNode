@@ -9,6 +9,7 @@ type AirAccountChain struct {
 	InitCode     string     `json:"init_code" gorm:"type:text"`
 	AA_Address   string     `json:"aa_address" gorm:"type:varchar(255)"`
 	ChainName    string     `json:"chain_name" gorm:"type:varchar(50);column:chain_name"`
+	Memo         string     `json:"memo" gorm:"type:text"`
 }
 
 func (AirAccountChain) TableName() string {

@@ -37,6 +37,7 @@ func (relay *RelayParty) getAccountInfo(ctx *gin.Context) {
 
 		if user, err := relay.db.FindUser(email); err != nil {
 			response.NotFound(ctx, err.Error())
+			return
 		} else {
 			initCode, aaAddr := user.GetChainAddresses(chain)
 			if aaAddr == nil || initCode == nil {
@@ -50,6 +51,7 @@ func (relay *RelayParty) getAccountInfo(ctx *gin.Context) {
 				EOA:      user.GetEOA(),
 				Email:    email,
 			})
+			return
 		}
 	}
 }

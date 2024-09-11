@@ -35,6 +35,7 @@ func (r *RelayParty) RegisterRoutes(router *gin.Engine, community *node.Communit
 		router.GET("/api/passkey/v1/account/info", r.getAccountInfo)
 		router.POST("/api/passkey/v1/tx/sign", r.beginTxSignature)
 		router.POST("/api/passkey/v1/tx/sign/verify", r.finishTxSignature)
+		router.POST("/api/passkey/v1/account/chain", r.createAA)
 	}
 
 	r.node = community

@@ -14,13 +14,10 @@ func sigTx(user *seedworks.User, signPayment *seedworks.TxSignature) (*seedworks
 		return nil, err
 	} else {
 		txSigRlt := seedworks.TxSignatureResult{
-			Code:   200,
-			TxData: signPayment.TxData,
-			Sign:   signHexStr,
-			Address: func() string {
-				_, aaAddr := user.GetChainAddresses("")
-				return *aaAddr
-			}(),
+			Code:    200,
+			TxData:  signPayment.TxData,
+			Sign:    signHexStr,
+			Address: user.GetEOA(),
 		}
 		return &txSigRlt, nil
 	}

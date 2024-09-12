@@ -27,6 +27,7 @@ func (r *RelayParty) RegisterRoutes(router *gin.Engine, community *node.Communit
 	router.POST("/api/passkey/v1/reg/verify", r.finishRegistrationByEmail)
 	router.POST("/api/passkey/v1/sign", r.beginSignIn)
 	router.POST("/api/passkey/v1/sign/verify", r.finishSignIn)
+	router.GET("/api/passkey/v1/chains/support", r.supportChains)
 
 	_ = router.Use(AuthHandler())
 	{

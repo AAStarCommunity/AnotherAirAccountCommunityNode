@@ -16,4 +16,5 @@ type FinishRegistrationByEmail struct {
 	RegistrationByEmailPrepare
 	Origin  string       `json:"origin"`
 	Network consts.Chain `json:"network"`
+	Alias   string       `json:"alias"`
 }

@@ -81,6 +81,7 @@ func (relay *RelayParty) beginRegistrationByEmail(ctx *gin.Context) {
 // @Param email  query string true "user email" Format(email)
 // @Param origin query string true "origin"
 // @Param network query string false "network"
+// @Param alias query string false "network"
 // @Param registrationBody body protocol.CredentialCreationResponse true "Verify Registration"
 // @Router /api/passkey/v1/reg/verify [post]
 // @Success 200 {object} SiginInResponse "OK"
@@ -100,6 +101,7 @@ func (relay *RelayParty) finishRegistrationByEmail(ctx *gin.Context) {
 		},
 		Origin:  ctx.Query("origin"),
 		Network: consts.Chain(ctx.Query("network")),
+		Alias:   ctx.Query("alias"),
 	}
 
 	if user, err := relay.authSessionStore.FinishRegSession(&stubReg, ctx); err != nil {
@@ -115,11 +117,11 @@ func signup(relay *RelayParty, ctx *gin.Context, reg *seedworks.FinishRegistrati
 		user = u
 	}
 
-	if err := user.TryCreateAA(reg.Network); err != nil {
+	if err := user.TryCreateAA(reg.Network, reg.Alias); err != nil {
 		response.InternalServerError(ctx, err.Error())
 		return
 	} else {
-		if err := relay.db.SaveAccounts(user, reg.Network); err != nil {
+		if err := relay.db.SaveAccounts(user, reg.Network, reg.Alias); err != nil {
 			if errors.Is(err, seedworks.ErrUserAlreadyExists{}) {
 				response.BadRequest(ctx, err.Error())
 			} else {

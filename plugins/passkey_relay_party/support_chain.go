@@ -2,20 +2,17 @@ package plugin_passkey_relay_party
 
 import "another_node/internal/seedworks"
 
-var supportChains = map[seedworks.Chain]byte{
-	seedworks.EthereumSepolia: 0,
-	seedworks.OptimismSepolia: 0,
-	seedworks.BaseSepolia:     0,
+var supportChains = map[seedworks.Chain]bool{
+	seedworks.EthereumSepolia: true,
+	seedworks.OptimismSepolia: true,
+	seedworks.BaseSepolia:     true,
 }
 
 func isSupportChain(chain seedworks.Chain) bool {
 	if len(chain) > 0 {
-		if _, ok := supportChains[chain]; !ok {
-			return false
+		if support, exists := supportChains[chain]; exists && support {
+			return true
 		}
-
-		return true
-	} else {
-		return false
 	}
+	return false
 }

@@ -16,6 +16,7 @@ import (
 type userChain struct {
 	InitCode string
 	AA_Addr  string
+	Alias    string
 }
 
 type User struct {
@@ -30,7 +31,7 @@ func (user *User) GetEOA() string {
 	return user.wallet.Address
 }
 
-func (user *User) TryCreateAA(network consts.Chain) (err error) {
+func (user *User) TryCreateAA(network consts.Chain, alias string) (err error) {
 	var w *account.HdWallet
 	if user.wallet == nil || len(user.wallet.PrivateKey) == 0 {
 		if w, err = account.NewHdWallet(account.HierarchicalPath_ETH); err != nil {
@@ -42,7 +43,7 @@ func (user *User) TryCreateAA(network consts.Chain) (err error) {
 		w = user.wallet
 	}
 
-	if _, aaAddr := user.GetChainAddresses(network); aaAddr != nil {
+	if _, aaAddr := user.GetChainAddresses(network, alias); aaAddr != nil {
 		return nil
 	}
 
@@ -97,6 +98,7 @@ func MappingUser(airaccount *model.AirAccount, getFromVault func() (string, erro
 		user.chainAddresses[consts.Chain(chain.ChainName)] = userChain{
 			InitCode: chain.InitCode,
 			AA_Addr:  chain.AA_Address,
+			Alias:    chain.Alias,
 		}
 	}
 	return user, nil
@@ -120,7 +122,7 @@ func (user *User) GetChains() map[consts.Chain]userChain {
 	return user.chainAddresses
 }
 
-func (user *User) GetChainAddresses(chain consts.Chain) (initCode, aaAddr *string) {
+func (user *User) GetChainAddresses(chain consts.Chain, _ string) (initCode, aaAddr *string) {
 	if len(chain) == 0 {
 		return nil, nil
 	}

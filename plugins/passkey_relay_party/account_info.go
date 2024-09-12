@@ -16,6 +16,7 @@ import (
 // @Accept json
 // @Produce json
 // @Param network  query string true "network"
+// @Param alias  query string false "alias"
 // @Success 200 {object} seedworks.AccountInfo "OK"
 // @Failure 400 {object} any "Bad Request"
 // @Router /api/passkey/v1/account/info [get]
@@ -25,21 +26,26 @@ func (relay *RelayParty) getAccountInfo(ctx *gin.Context) {
 		response.GetResponse().FailCode(ctx, http.StatusUnauthorized)
 		return
 	} else {
-		chain := consts.Chain(ctx.Query("network"))
-		if len(chain) > 0 {
-			if chain != consts.OptimismSepolia && chain != consts.BaseSepolia {
+		network := consts.Chain(ctx.Query("network"))
+		alias := ctx.Query("alias")
+		if len(network) > 0 {
+			if !isSupportChain(network) {
+				response.BadRequest(ctx, "network not supported, please specify a valid network, e.g.: optimism-mainnet, base-sepolia, optimism-sepolia")
+				return
+			}
+			if network != consts.OptimismSepolia && network != consts.BaseSepolia {
 				response.BadRequest(ctx, "network not supported")
 				return
 			}
 		} else {
-			chain = consts.OptimismSepolia
+			network = consts.OptimismSepolia
 		}
 
 		if user, err := relay.db.FindUser(email); err != nil {
 			response.NotFound(ctx, err.Error())
 			return
 		} else {
-			initCode, aaAddr := user.GetChainAddresses(chain)
+			initCode, aaAddr := user.GetChainAddresses(network, alias)
 			if aaAddr == nil || initCode == nil {
 				response.NotFound(ctx, seedworks.ErrChainNotFound{})
 				return

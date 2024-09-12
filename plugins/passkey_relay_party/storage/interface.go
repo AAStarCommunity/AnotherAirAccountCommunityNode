@@ -10,5 +10,5 @@ type Db interface {
 	FindUser(userHandler string) (*seedworks.User, error)
 	SaveChallenge(captchaType model.ChallengeType, challenger, captcha string) error
 	Challenge(captchaType model.ChallengeType, challenger, captcha string) bool
-	SaveAccounts(user *seedworks.User, network consts.Chain) error
+	SaveAccounts(user *seedworks.User, network consts.Chain, alias string) error
 }

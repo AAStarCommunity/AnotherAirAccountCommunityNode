@@ -9,6 +9,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// supportChains
+// @Summary Get support chains in relay party
+// @Tags Plugins Passkey
+// @Description get support chains
+// @Accept json
+// @Product json
+// @Router /api/passkey/v1/chains/support [get]
+// @Success 200
+func (relay *RelayParty) supportChains(ctx *gin.Context) {
+	response.GetResponse().WithDataSuccess(ctx, supportChains)
+}
+
 // createAA
 // @Summary Create AA with Purpose
 // @Tags Plugins Passkey
@@ -18,6 +30,7 @@ import (
 // @Param createAABody body seedworks.CreateAARequest true "Create AA"
 // @Router /api/passkey/v1/account/chain [post]
 // @Success 200
+// @Security JWT
 func (relay *RelayParty) createAA(ctx *gin.Context) {
 	if ok, email := CurrentUser(ctx); !ok {
 		response.GetResponse().FailCode(ctx, http.StatusUnauthorized)
@@ -40,12 +53,16 @@ func createAA(relay *RelayParty, user *seedworks.User, ctx *gin.Context) {
 		return
 	}
 
-	// TODO: support memo
-	if err := user.TryCreateAA(req.Network); err != nil {
+	if !isSupportChain(req.Network) {
+		response.BadRequest(ctx, "network not supported, please specify a valid network, e.g.: optimism-mainnet, base-sepolia, optimism-sepolia")
+		return
+	}
+
+	if err := user.TryCreateAA(req.Network, req.Alias); err != nil {
 		response.InternalServerError(ctx, err.Error())
 		return
 	} else {
-		if err := relay.db.SaveAccounts(user, req.Network); err != nil {
+		if err := relay.db.SaveAccounts(user, req.Network, req.Alias); err != nil {
 			if errors.Is(err, seedworks.ErrUserAlreadyExists{}) {
 				response.BadRequest(ctx, err.Error())
 			} else {

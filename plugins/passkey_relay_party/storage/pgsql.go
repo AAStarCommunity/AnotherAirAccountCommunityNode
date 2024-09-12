@@ -31,14 +31,14 @@ func NewPgsqlStorage() *PgsqlStorage {
 }
 
 // SaveAccounts create or update user accounts
-func (db *PgsqlStorage) SaveAccounts(user *seedworks.User, chain consts.Chain) error {
+func (db *PgsqlStorage) SaveAccounts(user *seedworks.User, chain consts.Chain, alias string) error {
 	if walletMarshal, err := user.WalletMarshal(); err != nil {
 		return err
 	} else {
 		if walletVault, err := seedworks.Encrypt(db.vaultSecret, walletMarshal); err != nil {
 			return err
 		} else {
-			initCode, aaAddr := user.GetChainAddresses(chain)
+			initCode, aaAddr := user.GetChainAddresses(chain, alias)
 
 			// support email only for now
 			return db.client.Transaction(func(tx *gorm.DB) error {
@@ -64,11 +64,11 @@ func (db *PgsqlStorage) SaveAccounts(user *seedworks.User, chain consts.Chain) e
 
 				changed := false
 
-				for i := range user.GetChains() {
+				for i, v := range user.GetChains() {
 					flag := false
-					// TODO: one aa per chain
 					for j := range airAccount.AirAccountChains {
-						if airAccount.AirAccountChains[j].ChainName == string(i) {
+						if airAccount.AirAccountChains[j].ChainName == string(i) &&
+							airAccount.AirAccountChains[j].Alias == v.Alias {
 							flag = true
 							break
 						}
@@ -80,6 +80,7 @@ func (db *PgsqlStorage) SaveAccounts(user *seedworks.User, chain consts.Chain) e
 						InitCode:   *initCode,
 						AA_Address: *aaAddr,
 						ChainName:  string(i),
+						Alias:      alias,
 					})
 					changed = true
 				}
@@ -106,23 +107,6 @@ func (db *PgsqlStorage) SaveAccounts(user *seedworks.User, chain consts.Chain) e
 						Rawdata:      string(rawdata),
 					}
 					airAccount.Passkeys = append(airAccount.Passkeys, passkey)
-					changed = true
-				}
-
-				for i := range airAccount.AirAccountChains {
-					flag := false
-					if airAccount.AirAccountChains[i].ChainName == string(chain) {
-						flag = true
-						break
-					}
-					if flag {
-						continue
-					}
-					airAccount.AirAccountChains = append(airAccount.AirAccountChains, model.AirAccountChain{
-						InitCode:   *initCode,
-						AA_Address: *aaAddr,
-						ChainName:  string(chain),
-					})
 					changed = true
 				}
 

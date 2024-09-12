@@ -149,6 +149,39 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/passkey/v1/account/chain": {
+            "post": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "create aa by sepcify network(chain)",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Plugins Passkey"
+                ],
+                "summary": "Create AA with Purpose",
+                "parameters": [
+                    {
+                        "description": "Create AA",
+                        "name": "createAABody",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/seedworks.CreateAARequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
         "/api/passkey/v1/account/info": {
             "get": {
                 "security": [
@@ -174,6 +207,12 @@ const docTemplate = `{
                         "name": "network",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "alias",
+                        "name": "alias",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -188,6 +227,23 @@ const docTemplate = `{
                         "schema": {
                             "type": "object"
                         }
+                    }
+                }
+            }
+        },
+        "/api/passkey/v1/chains/support": {
+            "get": {
+                "description": "get support chains",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Plugins Passkey"
+                ],
+                "summary": "Get support chains in relay party",
+                "responses": {
+                    "200": {
+                        "description": "OK"
                     }
                 }
             }
@@ -308,6 +364,12 @@ const docTemplate = `{
                         "type": "string",
                         "description": "network",
                         "name": "network",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "network",
+                        "name": "alias",
                         "in": "query"
                     },
                     {
@@ -1086,6 +1148,50 @@ const docTemplate = `{
                 },
                 "init_code": {
                     "type": "string"
+                }
+            }
+        },
+        "seedworks.Chain": {
+            "type": "string",
+            "enum": [
+                "ethereum-mainnet",
+                "ethereum-sepolia",
+                "optimism-mainnet",
+                "optimism-sepolia",
+                "arbitrum-one",
+                "arbitrum-nova",
+                "arbitrum-sepolia",
+                "scroll-mainnet",
+                "scroll-sepolia",
+                "starknet-mainnet",
+                "starknet-sepolia",
+                "base-mainnet",
+                "base-sepolia"
+            ],
+            "x-enum-varnames": [
+                "EthereumMainnet",
+                "EthereumSepolia",
+                "OptimismMainnet",
+                "OptimismSepolia",
+                "ArbitrumOne",
+                "ArbitrumNova",
+                "ArbitrumSpeolia",
+                "ScrollMainnet",
+                "ScrollSepolia",
+                "StarketMainnet",
+                "StarketSepolia",
+                "BaseMainnet",
+                "BaseSepolia"
+            ]
+        },
+        "seedworks.CreateAARequest": {
+            "type": "object",
+            "properties": {
+                "alias": {
+                    "type": "string"
+                },
+                "network": {
+                    "$ref": "#/definitions/seedworks.Chain"
                 }
             }
         },

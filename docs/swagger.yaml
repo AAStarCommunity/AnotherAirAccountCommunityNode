@@ -420,6 +420,43 @@ definitions:
       init_code:
         type: string
     type: object
+  seedworks.Chain:
+    enum:
+    - ethereum-mainnet
+    - ethereum-sepolia
+    - optimism-mainnet
+    - optimism-sepolia
+    - arbitrum-one
+    - arbitrum-nova
+    - arbitrum-sepolia
+    - scroll-mainnet
+    - scroll-sepolia
+    - starknet-mainnet
+    - starknet-sepolia
+    - base-mainnet
+    - base-sepolia
+    type: string
+    x-enum-varnames:
+    - EthereumMainnet
+    - EthereumSepolia
+    - OptimismMainnet
+    - OptimismSepolia
+    - ArbitrumOne
+    - ArbitrumNova
+    - ArbitrumSpeolia
+    - ScrollMainnet
+    - ScrollSepolia
+    - StarketMainnet
+    - StarketSepolia
+    - BaseMainnet
+    - BaseSepolia
+  seedworks.CreateAARequest:
+    properties:
+      alias:
+        type: string
+      network:
+        $ref: '#/definitions/seedworks.Chain'
+    type: object
   seedworks.RegistrationByEmail:
     properties:
       captcha:
@@ -571,6 +608,26 @@ paths:
           description: OK
       tags:
       - Healthz
+  /api/passkey/v1/account/chain:
+    post:
+      consumes:
+      - application/json
+      description: create aa by sepcify network(chain)
+      parameters:
+      - description: Create AA
+        in: body
+        name: createAABody
+        required: true
+        schema:
+          $ref: '#/definitions/seedworks.CreateAARequest'
+      responses:
+        "200":
+          description: OK
+      security:
+      - JWT: []
+      summary: Create AA with Purpose
+      tags:
+      - Plugins Passkey
   /api/passkey/v1/account/info:
     get:
       consumes:
@@ -581,6 +638,10 @@ paths:
         in: query
         name: network
         required: true
+        type: string
+      - description: alias
+        in: query
+        name: alias
         type: string
       produces:
       - application/json
@@ -596,6 +657,17 @@ paths:
       security:
       - JWT: []
       summary: Get User Account Info
+      tags:
+      - Plugins Passkey
+  /api/passkey/v1/chains/support:
+    get:
+      consumes:
+      - application/json
+      description: get support chains
+      responses:
+        "200":
+          description: OK
+      summary: Get support chains in relay party
       tags:
       - Plugins Passkey
   /api/passkey/v1/imauthz:
@@ -672,6 +744,10 @@ paths:
       - description: network
         in: query
         name: network
+        type: string
+      - description: network
+        in: query
+        name: alias
         type: string
       - description: Verify Registration
         in: body

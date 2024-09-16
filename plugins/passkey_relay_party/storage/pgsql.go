@@ -141,6 +141,17 @@ func (db *PgsqlStorage) FindUser(userHandler string) (*seedworks.User, error) {
 	}
 }
 
+func (db *PgsqlStorage) FindUserByPasskey(userHandler, credId string) (*seedworks.User, error) {
+	airaccount := model.AirAccount{}
+	if err := db.client.Preload(clause.Associations).Where("email = ? AND credential_id = ?", userHandler, credId).First(&airaccount).Error; err != nil {
+		return nil, err
+	} else {
+		return seedworks.MappingUser(&airaccount, func() (string, error) {
+			return seedworks.Decrypt(db.vaultSecret, &airaccount.HdWallet.WalletVault)
+		})
+	}
+}
+
 func (db *PgsqlStorage) SaveChallenge(captchaType model.ChallengeType, email, captcha string) error {
 	return db.client.Model(&model.CaptchaChallenge{}).Create(&model.CaptchaChallenge{
 		Type:   captchaType,

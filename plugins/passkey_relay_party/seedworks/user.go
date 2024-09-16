@@ -5,7 +5,6 @@ import (
 	"another_node/internal/community/chain"
 	consts "another_node/internal/seedworks"
 	"another_node/plugins/passkey_relay_party/storage/model"
-	"bytes"
 	"crypto/ecdsa"
 	"encoding/json"
 
@@ -171,14 +170,6 @@ func (user *User) WebAuthnIcon() string {
 
 func (user *User) AddCredential(cred *webauthn.Credential) {
 	user.credentials = append(user.credentials, *cred)
-}
-
-func (user *User) UpdateCredential(cred *webauthn.Credential) {
-	for i, c := range user.credentials {
-		if bytes.Equal(c.ID, cred.ID) {
-			user.credentials[i] = *cred
-		}
-	}
 }
 
 func (user *User) SetAAWallet(init_code, aa_address *string, network consts.Chain) {

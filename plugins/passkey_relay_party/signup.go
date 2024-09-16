@@ -4,6 +4,7 @@ import (
 	consts "another_node/internal/seedworks"
 	"another_node/internal/web_server/pkg/response"
 	"another_node/plugins/passkey_relay_party/seedworks"
+	"encoding/base64"
 	"errors"
 
 	"github.com/gin-gonic/gin"
@@ -113,7 +114,13 @@ func (relay *RelayParty) finishRegistrationByEmail(ctx *gin.Context) {
 
 func signup(relay *RelayParty, ctx *gin.Context, reg *seedworks.FinishRegistrationByEmail, user *seedworks.User) {
 	// check if user already exists
-	if u, _ := relay.db.FindUser(user.GetEmail()); u != nil {
+	if len(user.WebAuthnCredentials()) != 1 {
+		response.BadRequest(ctx, errors.New("not support multiple credentials"))
+		return
+	}
+
+	signupCredId := base64.URLEncoding.EncodeToString(user.WebAuthnCredentials()[0].ID)
+	if u, _ := relay.db.FindUserByPasskey(user.GetEmail(), signupCredId); u != nil {
 		user = u
 	}
 

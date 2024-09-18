@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"errors"
 	"strconv"
+	"strings"
 	"time"
 
 	"gorm.io/gorm"
@@ -64,11 +65,11 @@ func (db *PgsqlStorage) SaveAccounts(user *seedworks.User, chain consts.Chain, a
 
 				changed := false
 
-				for i, v := range user.GetChains() {
+				for _, v := range user.GetChains() {
 					flag := false
 					for j := range airAccount.AirAccountChains {
-						if airAccount.AirAccountChains[j].ChainName == string(i) &&
-							airAccount.AirAccountChains[j].Alias == v.Alias {
+						if airAccount.AirAccountChains[j].ChainName == string(v.Name) &&
+							strings.EqualFold(airAccount.AirAccountChains[j].Alias, v.Alias) {
 							flag = true
 							break
 						}
@@ -79,7 +80,7 @@ func (db *PgsqlStorage) SaveAccounts(user *seedworks.User, chain consts.Chain, a
 					airAccount.AirAccountChains = append(airAccount.AirAccountChains, model.AirAccountChain{
 						InitCode:   *initCode,
 						AA_Address: *aaAddr,
-						ChainName:  string(i),
+						ChainName:  string(v.Name),
 						Alias:      alias,
 					})
 					changed = true

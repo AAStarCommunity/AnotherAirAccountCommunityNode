@@ -22,7 +22,7 @@ func (relay *RelayParty) supportChains(ctx *gin.Context) {
 }
 
 // createAA
-// @Summary Create AA with Purpose
+// @Summary Create AA with Alias, default empty
 // @Tags Plugins Passkey
 // @Description create aa by sepcify network(chain)
 // @Accept json

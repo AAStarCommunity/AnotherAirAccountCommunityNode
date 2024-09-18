@@ -163,7 +163,7 @@ const docTemplate = `{
                 "tags": [
                     "Plugins Passkey"
                 ],
-                "summary": "Create AA with Purpose",
+                "summary": "Create AA with Alias, default empty",
                 "parameters": [
                     {
                         "description": "Create AA",

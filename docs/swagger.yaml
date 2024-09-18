@@ -625,7 +625,7 @@ paths:
           description: OK
       security:
       - JWT: []
-      summary: Create AA with Purpose
+      summary: Create AA with Alias, default empty
       tags:
       - Plugins Passkey
   /api/passkey/v1/account/info:

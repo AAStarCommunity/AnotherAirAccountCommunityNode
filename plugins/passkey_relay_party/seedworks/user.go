@@ -46,7 +46,7 @@ func (user *User) TryCreateAA(network consts.Chain, alias string) (err error) {
 	for i := range user.wallets {
 		used := false
 		for _, j := range user.GetChains() {
-			if user.wallets[i].Id == j.FromHdWalletId {
+			if user.wallets[i].Id == j.FromHdWalletId && j.Name == network {
 				used = true
 				break
 			}

@@ -68,6 +68,7 @@ func (db *PgsqlStorage) CreateAccount(email string, wallets []account.HdWallet) 
 	})
 }
 
+// TODO: network is a factor for judging the wallet used or not
 func updateWalletUsed(w []model.HdWallet, usedWalletId []int64) (*model.HdWallet, error) {
 	for i := range w {
 		used := false

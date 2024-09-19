@@ -1,7 +1,7 @@
 package storage
 
 import (
-	consts "another_node/internal/seedworks"
+	"another_node/internal/community/account"
 	"another_node/plugins/passkey_relay_party/seedworks"
 	"another_node/plugins/passkey_relay_party/storage/model"
 )
@@ -11,5 +11,6 @@ type Db interface {
 	FindUserByPasskey(userHandler, credId string) (*seedworks.User, error)
 	SaveChallenge(captchaType model.ChallengeType, challenger, captcha string) error
 	Challenge(captchaType model.ChallengeType, challenger, captcha string) bool
-	SaveAccounts(user *seedworks.User, network consts.Chain, alias string) error
+	CreateAccount(email string, wallets []account.HdWallet) error
+	SaveAccounts(user *seedworks.User) error
 }

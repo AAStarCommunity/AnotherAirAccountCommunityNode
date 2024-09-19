@@ -13,35 +13,45 @@ import (
 	"github.com/go-webauthn/webauthn/webauthn"
 )
 
-type userChain struct {
-	InitCode string
-	AA_Addr  string
-	Alias    string
-	Name     consts.Chain
+type UserChain struct {
+	InitCode     string
+	AA_Addr      string
+	Alias        string
+	Name         consts.Chain
+	FromHdWallet *account.HdWallet
 }
 
 type User struct {
 	id             []byte
 	credentials    []webauthn.Credential
 	email          string
-	wallet         *account.HdWallet
-	chainAddresses map[string]userChain
+	wallets        []account.HdWallet
+	chainAddresses map[string]UserChain
 }
 
-func (user *User) GetEOA() string {
-	return user.wallet.Address
+func (user *User) GetPrimaryEOA() string {
+	if user.wallets == nil {
+		return ""
+	}
+	for i := range user.wallets {
+		if user.wallets[i].Primary {
+			return user.wallets[i].Address
+		}
+	}
+	return ""
 }
 
 func (user *User) TryCreateAA(network consts.Chain, alias string) (err error) {
 	var w *account.HdWallet
-	if user.wallet == nil || len(user.wallet.PrivateKey) == 0 {
-		if w, err = account.NewHdWallet(account.HierarchicalPath_ETH); err != nil {
-			return
-		} else {
-			user.wallet = w
+	for i := range user.wallets {
+		if !user.wallets[i].Used {
+			w = &user.wallets[i]
+			break
 		}
-	} else {
-		w = user.wallet
+	}
+
+	if w == nil {
+		return &ErrNoAvailableWallet{}
 	}
 
 	if _, aaAddr := user.GetChainAddresses(network, alias); aaAddr != nil {
@@ -52,38 +62,45 @@ func (user *User) TryCreateAA(network consts.Chain, alias string) (err error) {
 	if err != nil {
 		return err
 	}
-	user.SetAAWallet(&initCode, &aa_address, alias, network)
-	return nil
+
+	user.SetAAWallet(w, &initCode, &aa_address, alias, network)
+
+	return
 }
 
 func newUser(email string) *User {
 	return &User{
 		id:             []byte(email),
 		email:          email,
-		chainAddresses: make(map[string]userChain),
+		chainAddresses: make(map[string]UserChain),
 	}
 }
 
-func MappingUser(airaccount *model.AirAccount, getFromVault func() (string, error)) (*User, error) {
+func MappingUser(airaccount *model.AirAccount, getFromVault func(vault *string) (string, error)) (*User, error) {
 	user := &User{
 		id:             []byte(airaccount.Email),
 		email:          airaccount.Email,
+		wallets:        make([]account.HdWallet, 0),
 		credentials:    make([]webauthn.Credential, 0),
-		chainAddresses: make(map[string]userChain),
+		chainAddresses: make(map[string]UserChain),
 	}
 
-	if hdwalletStr, err := getFromVault(); err != nil {
-		return nil, err
-	} else {
-		if hdwalletStr != "" {
-			var hdwallet account.HdWallet
-			if err := json.Unmarshal([]byte(hdwalletStr), &hdwallet); err != nil {
-				return nil, err
-			} else {
-				user.wallet = &hdwallet
-			}
+	for i := range airaccount.HdWallet {
+		if hdwalletStr, err := getFromVault(&airaccount.HdWallet[i].WalletVault); err != nil {
+			return nil, err
 		} else {
-			return nil, &ErrWalletNotFound{}
+			if hdwalletStr != "" {
+				var hdwallet account.HdWallet
+				if err := json.Unmarshal([]byte(hdwalletStr), &hdwallet); err != nil {
+					return nil, err
+				} else {
+					hdwallet.Used = airaccount.HdWallet[i].Used
+					hdwallet.Primary = airaccount.HdWallet[i].Primary
+					user.wallets = append(user.wallets, hdwallet)
+				}
+			} else {
+				return nil, &ErrWalletNotFound{}
+			}
 		}
 	}
 
@@ -96,7 +113,7 @@ func MappingUser(airaccount *model.AirAccount, getFromVault func() (string, erro
 
 	for i := range airaccount.AirAccountChains {
 		chain := airaccount.AirAccountChains[i]
-		user.chainAddresses[chain.ChainName+":"+chain.Alias] = userChain{
+		user.chainAddresses[chain.ChainName+":"+chain.Alias] = UserChain{
 			InitCode: chain.InitCode,
 			AA_Addr:  chain.AA_Address,
 			Name:     consts.Chain(chain.ChainName),
@@ -120,8 +137,12 @@ func (user *User) GetAccounts() (email, facebook, twitter string) {
 	return
 }
 
-func (user *User) GetChains() map[string]userChain {
+func (user *User) GetChains() map[string]UserChain {
 	return user.chainAddresses
+}
+
+func (user *User) GetWallets() []account.HdWallet {
+	return user.wallets
 }
 
 func (user *User) GetChainAddresses(chain consts.Chain, alias string) (initCode, aaAddr *string) {
@@ -139,15 +160,25 @@ func (user *User) GetChainAddresses(chain consts.Chain, alias string) (initCode,
 	return
 }
 
-func (user *User) GetPrivateKeyStr() string {
-	return user.wallet.PrivateKey
-}
 func (user *User) GetPrivateKeyEcdsa() (*ecdsa.PrivateKey, error) {
-	return crypto.HexToECDSA(user.GetPrivateKeyStr())
+	for i := range user.wallets {
+		if user.wallets[i].Primary {
+			return crypto.HexToECDSA(user.wallets[i].PrivateKey)
+		}
+	}
+	panic("no primary wallet")
 }
 
-func (user *User) WalletMarshal() ([]byte, error) {
-	return json.Marshal(user.wallet)
+func (user *User) WalletMarshal() ([][]byte, error) {
+	rlt := make([][]byte, 0)
+	for i := range user.wallets {
+		if wallet, err := json.Marshal(user.wallets[i]); err != nil {
+			return nil, err
+		} else {
+			rlt = append(rlt, wallet)
+		}
+	}
+	return rlt, nil
 }
 
 func (user *User) WebAuthnID() []byte {
@@ -176,11 +207,13 @@ func (user *User) AddCredential(cred *webauthn.Credential) {
 	user.credentials = append(user.credentials, *cred)
 }
 
-func (user *User) SetAAWallet(init_code, aa_address *string, alias string, network consts.Chain) {
-	user.chainAddresses[string(network)+":"+alias] = userChain{
-		InitCode: *init_code,
-		AA_Addr:  *aa_address,
-		Alias:    alias,
-		Name:     network,
+func (user *User) SetAAWallet(wallet *account.HdWallet, init_code, aa_address *string, alias string, network consts.Chain) {
+	wallet.Used = true
+	user.chainAddresses[string(network)+":"+alias] = UserChain{
+		InitCode:     *init_code,
+		AA_Addr:      *aa_address,
+		Alias:        alias,
+		Name:         network,
+		FromHdWallet: wallet,
 	}
 }

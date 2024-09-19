@@ -62,7 +62,7 @@ func createAA(relay *RelayParty, user *seedworks.User, ctx *gin.Context) {
 		response.InternalServerError(ctx, err.Error())
 		return
 	} else {
-		if err := relay.db.SaveAccounts(user, req.Network, req.Alias); err != nil {
+		if err := relay.db.SaveAccounts(user); err != nil {
 			if errors.Is(err, seedworks.ErrUserAlreadyExists{}) {
 				response.BadRequest(ctx, err.Error())
 			} else {

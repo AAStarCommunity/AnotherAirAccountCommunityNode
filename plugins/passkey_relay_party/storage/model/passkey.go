@@ -4,7 +4,7 @@ import "another_node/internal/community/storage"
 
 type Passkey struct {
 	storage.BaseData
-	AirAccountID uint       `json:"-" gorm:"column:airaccount_id"`
+	AirAccountID int64      `json:"-" gorm:"column:airaccount_id"`
 	AirAccount   AirAccount `json:"-" gorm:"foreignKey:AirAccountID;references:ID"`
 	CredentialId string     `json:"credential_id" gorm:"type:varchar(128)"`
 	PublicKey    string     `json:"public_key" gorm:"type:varchar(512)"`

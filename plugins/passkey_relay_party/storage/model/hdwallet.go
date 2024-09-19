@@ -4,8 +4,11 @@ import "another_node/internal/community/storage"
 
 type HdWallet struct {
 	storage.BaseData
-	AirAccountID uint   `json:"-" gorm:"column:airaccount_id"`
-	WalletVault  string `json:"wallet_vault" gorm:"type:text"`
+	AirAccount   AirAccount `json:"-" gorm:"foreignKey:AirAccountID;references:ID"`
+	AirAccountID int64       `json:"-" gorm:"column:airaccount_id"`
+	WalletVault  string     `json:"wallet_vault" gorm:"type:text"`
+	Used         bool       `json:"used" gorm:"default:false"`
+	Primary      bool       `json:"primary" gorm:"default:false"`
 }
 
 func (HdWallet) TableName() string {

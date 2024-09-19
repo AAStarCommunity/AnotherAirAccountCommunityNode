@@ -13,15 +13,11 @@ func TestNewHdWallet(t *testing.T) {
 		"m/44'/60'/0'/0/1",
 		"m/44'/60'/0'/0/2",
 	}
-	for _, hierarchicalPath := range paths {
-		wallet, err := NewHdWallet(hierarchicalPath)
+	wallets, err := NewHdWallet(paths...)
+	for _, wallet := range wallets {
+
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
-			return
-		}
-
-		if wallet == nil {
-			t.Error("expected wallet to be created, but got nil")
 			return
 		}
 

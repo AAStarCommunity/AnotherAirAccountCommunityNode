@@ -1,11 +1,13 @@
 package plugin_passkey_relay_party
 
 import (
+	"another_node/internal/community/account"
 	consts "another_node/internal/seedworks"
 	"another_node/internal/web_server/pkg/response"
 	"another_node/plugins/passkey_relay_party/seedworks"
 	"encoding/base64"
 	"errors"
+	"fmt"
 
 	"github.com/gin-gonic/gin"
 )
@@ -100,20 +102,40 @@ func (relay *RelayParty) finishRegistrationByEmail(ctx *gin.Context) {
 		RegistrationByEmailPrepare: seedworks.RegistrationByEmailPrepare{
 			Email: ctx.Query("email"),
 		},
-		Origin:  ctx.Query("origin"),
-		Network: consts.Chain(ctx.Query("network")),
-		Alias:   ctx.Query("alias"),
+		Origin: ctx.Query("origin"),
 	}
 
 	if user, err := relay.authSessionStore.FinishRegSession(&stubReg, ctx); err != nil {
 		response.GetResponse().FailCode(ctx, 401, "SignUp failed: "+err.Error())
 	} else {
-		signup(relay, ctx, &stubReg, user)
+		signup(relay, ctx, user)
 	}
 }
 
-func signup(relay *RelayParty, ctx *gin.Context, reg *seedworks.FinishRegistrationByEmail, user *seedworks.User) {
-	// check if user already exists
+const defaultWalletCount = 5
+
+func createWalletsForNewUser(relay *RelayParty, ctx *gin.Context, user *seedworks.User) {
+	paths := make([]account.HierarchicalPath, defaultWalletCount)
+	for i := 0; i < defaultWalletCount && i < 10; i++ {
+		paths[i] = account.HierarchicalPath(fmt.Sprintf(account.HierarchicalPath_ETH_FMT, i))
+	}
+	wallets, err := account.NewHdWallet(paths...)
+	if err != nil {
+		response.InternalServerError(ctx, err.Error())
+		return
+	}
+
+	if err := relay.db.CreateAccount(user.GetEmail(), wallets); err != nil {
+		response.InternalServerError(ctx, err.Error())
+		return
+	}
+}
+
+func signup(relay *RelayParty, ctx *gin.Context, user *seedworks.User) {
+
+	createWalletsForNewUser(relay, ctx, user)
+
+	// check if user passkey already exists
 	if len(user.WebAuthnCredentials()) != 1 {
 		response.BadRequest(ctx, errors.New("not support multiple credentials"))
 		return
@@ -124,21 +146,14 @@ func signup(relay *RelayParty, ctx *gin.Context, reg *seedworks.FinishRegistrati
 		user = u
 	}
 
-	if err := user.TryCreateAA(reg.Network, reg.Alias); err != nil {
-		response.InternalServerError(ctx, err.Error())
-		return
-	} else {
-		if err := relay.db.SaveAccounts(user, reg.Network, reg.Alias); err != nil {
-			if errors.Is(err, seedworks.ErrUserAlreadyExists{}) {
-				response.BadRequest(ctx, err.Error())
-			} else {
-				response.InternalServerError(ctx, err.Error())
-			}
-			return
+	if err := relay.db.SaveAccounts(user); err != nil {
+		if errors.Is(err, seedworks.ErrUserAlreadyExists{}) {
+			response.BadRequest(ctx, err.Error())
+		} else {
+			response.InternalServerError(ctx, err.Error())
 		}
-
-		ginJwtMiddleware().LoginHandler(ctx)
-
 		return
 	}
+
+	ginJwtMiddleware().LoginHandler(ctx)
 }

@@ -9,11 +9,14 @@ type HierarchicalPath string
 
 // HierarchicalPath_ETH is the default path for Mainet / Eth / TestNet
 const HierarchicalPath_ETH HierarchicalPath = "m/44'/60'/0'/0/0"
+const HierarchicalPath_ETH_FMT string = "m/44'/60'/0'/0/%d"
 
 type HdWallet struct {
 	Mnemonic   string `json:"mnemonic"`
 	Address    string `json:"address"`
 	PrivateKey string `json:"privateKey"`
+	Used       bool   `json:"used"`
+	Primary    bool   `json:"primary"`
 }
 
 func newWallet() (*hdwallet.Wallet, *string, error) {
@@ -39,7 +42,7 @@ func NewHdWallet(hierarchicalPath ...HierarchicalPath) ([]HdWallet, error) {
 	} else {
 		hdwallets := make([]HdWallet, 0)
 		for p := range hierarchicalPath {
-			path := hdwallet.MustParseDerivationPath(string(p))
+			path := hdwallet.MustParseDerivationPath(string(hierarchicalPath[p]))
 			account, err := wallet.Derive(path, false)
 			if err != nil {
 				return nil, err

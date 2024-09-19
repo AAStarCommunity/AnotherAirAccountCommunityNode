@@ -54,7 +54,7 @@ func (relay *RelayParty) getAccountInfo(ctx *gin.Context) {
 			response.GetResponse().WithDataSuccess(ctx, seedworks.AccountInfo{
 				InitCode: *initCode,
 				AA:       *aaAddr,
-				EOA:      user.GetEOA(),
+				EOA:      user.GetPrimaryEOA(),
 				Email:    email,
 			})
 			return

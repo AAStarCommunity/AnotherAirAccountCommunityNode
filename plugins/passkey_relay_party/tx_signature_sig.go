@@ -17,7 +17,7 @@ func sigTx(user *seedworks.User, signPayment *seedworks.TxSignature) (*seedworks
 			Code:    200,
 			TxData:  signPayment.TxData,
 			Sign:    signHexStr,
-			Address: user.GetEOA(),
+			Address: user.GetPrimaryEOA(),
 		}
 		return &txSigRlt, nil
 	}

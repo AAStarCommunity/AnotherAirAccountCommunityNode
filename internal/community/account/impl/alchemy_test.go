@@ -32,12 +32,14 @@ func TestAlchemyProvider_CreateAccount(t *testing.T) {
 		t.Errorf("Failed to create account: %v", err)
 	}
 
-	account, err := provider.CreateAccount(w)
-	if err != nil {
-		t.Errorf("Failed to create account: %v", err)
-	}
+	for i := range w {
+		account, err := provider.CreateAccount(&w[i])
+		if err != nil {
+			t.Errorf("Failed to create account: %v", err)
+		}
 
-	if account == "" {
-		t.Error("Expected account to be created, but got empty string")
+		if account == "" {
+			t.Error("Expected account to be created, but got empty string")
+		}
 	}
 }

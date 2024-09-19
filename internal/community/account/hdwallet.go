@@ -12,10 +12,10 @@ const HierarchicalPath_ETH HierarchicalPath = "m/44'/60'/0'/0/0"
 const HierarchicalPath_ETH_FMT string = "m/44'/60'/0'/0/%d"
 
 type HdWallet struct {
+	Id         int64  `json:"-"`
 	Mnemonic   string `json:"mnemonic"`
 	Address    string `json:"address"`
 	PrivateKey string `json:"privateKey"`
-	Used       bool   `json:"used"`
 	Primary    bool   `json:"primary"`
 }
 

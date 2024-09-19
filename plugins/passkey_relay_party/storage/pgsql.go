@@ -44,7 +44,6 @@ func (db *PgsqlStorage) CreateAccount(email string, wallets []account.HdWallet) 
 				return err
 			} else {
 				modelWallet[i] = model.HdWallet{
-					Used:        false,
 					Primary:     i == 0,
 					WalletVault: vault,
 				}
@@ -69,23 +68,17 @@ func (db *PgsqlStorage) CreateAccount(email string, wallets []account.HdWallet) 
 	})
 }
 
-func updateWalletUsed(w []model.HdWallet, secret []byte, mnemonic *string) (*model.HdWallet, error) {
+func updateWalletUsed(w []model.HdWallet, usedWalletId []int64) (*model.HdWallet, error) {
 	for i := range w {
-		if w[i].Used {
-			continue
-		}
-		if plain, err := seedworks.Decrypt(secret, &w[i].WalletVault); err != nil {
-			return nil, err
-		} else {
-			var h account.HdWallet
-			if err := json.Unmarshal([]byte(plain), &h); err != nil {
-				return nil, err
-			} else {
-				if h.Mnemonic == *mnemonic {
-					w[i].Used = true
-					return &w[i], nil
-				}
+		used := false
+		for j := range usedWalletId {
+			if w[i].ID == usedWalletId[j] {
+				used = true
+				break
 			}
+		}
+		if !used {
+			return &w[i], nil
 		}
 	}
 	return nil, seedworks.ErrNoAvailableWallet{}
@@ -116,7 +109,13 @@ func (db *PgsqlStorage) SaveAccounts(user *seedworks.User) error {
 			if flag {
 				continue
 			}
-			if w, err := updateWalletUsed(airAccount.HdWallet, db.vaultSecret, &v.FromHdWallet.Mnemonic); err != nil {
+			if w, err := updateWalletUsed(airAccount.HdWallet, func() []int64 {
+				ids := make([]int64, len(airAccount.AirAccountChains))
+				for i := range airAccount.AirAccountChains {
+					ids[i] = airAccount.AirAccountChains[i].FromWalletID
+				}
+				return ids
+			}()); err != nil {
 				return err
 			} else {
 				if err := tx.Save(&w).Error; err != nil {

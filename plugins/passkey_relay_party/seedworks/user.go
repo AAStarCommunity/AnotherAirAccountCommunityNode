@@ -14,11 +14,11 @@ import (
 )
 
 type UserChain struct {
-	InitCode     string
-	AA_Addr      string
-	Alias        string
-	Name         consts.Chain
-	FromHdWallet *account.HdWallet
+	InitCode       string
+	AA_Addr        string
+	Alias          string
+	Name           consts.Chain
+	FromHdWalletId int64
 }
 
 type User struct {
@@ -44,7 +44,14 @@ func (user *User) GetPrimaryEOA() string {
 func (user *User) TryCreateAA(network consts.Chain, alias string) (err error) {
 	var w *account.HdWallet
 	for i := range user.wallets {
-		if !user.wallets[i].Used {
+		used := false
+		for _, j := range user.GetChains() {
+			if user.wallets[i].Id == j.FromHdWalletId {
+				used = true
+				break
+			}
+		}
+		if !used {
 			w = &user.wallets[i]
 			break
 		}
@@ -94,7 +101,7 @@ func MappingUser(airaccount *model.AirAccount, getFromVault func(vault *string) 
 				if err := json.Unmarshal([]byte(hdwalletStr), &hdwallet); err != nil {
 					return nil, err
 				} else {
-					hdwallet.Used = airaccount.HdWallet[i].Used
+					hdwallet.Id = airaccount.HdWallet[i].ID
 					hdwallet.Primary = airaccount.HdWallet[i].Primary
 					user.wallets = append(user.wallets, hdwallet)
 				}
@@ -114,10 +121,11 @@ func MappingUser(airaccount *model.AirAccount, getFromVault func(vault *string) 
 	for i := range airaccount.AirAccountChains {
 		chain := airaccount.AirAccountChains[i]
 		user.chainAddresses[chain.ChainName+":"+chain.Alias] = UserChain{
-			InitCode: chain.InitCode,
-			AA_Addr:  chain.AA_Address,
-			Name:     consts.Chain(chain.ChainName),
-			Alias:    chain.Alias,
+			InitCode:       chain.InitCode,
+			AA_Addr:        chain.AA_Address,
+			Name:           consts.Chain(chain.ChainName),
+			Alias:          chain.Alias,
+			FromHdWalletId: chain.FromWalletID,
 		}
 	}
 	return user, nil
@@ -208,12 +216,11 @@ func (user *User) AddCredential(cred *webauthn.Credential) {
 }
 
 func (user *User) SetAAWallet(wallet *account.HdWallet, init_code, aa_address *string, alias string, network consts.Chain) {
-	wallet.Used = true
 	user.chainAddresses[string(network)+":"+alias] = UserChain{
-		InitCode:     *init_code,
-		AA_Addr:      *aa_address,
-		Alias:        alias,
-		Name:         network,
-		FromHdWallet: wallet,
+		InitCode:       *init_code,
+		AA_Addr:        *aa_address,
+		Alias:          alias,
+		Name:           network,
+		FromHdWalletId: wallet.Id,
 	}
 }

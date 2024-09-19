@@ -7,8 +7,6 @@ import (
 func TestNewHdWallet(t *testing.T) {
 	// hierarchicalPath := HierarchicalPath(HierarchicalPath_ETH)
 	paths := []HierarchicalPath{
-		HierarchicalPath_ETH,
-		"m/44'/60'/0'/0/0",
 		"m/44'/60'/0'/0/0",
 		"m/44'/60'/0'/0/1",
 		"m/44'/60'/0'/0/2",

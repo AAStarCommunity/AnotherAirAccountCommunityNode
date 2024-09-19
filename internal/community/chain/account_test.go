@@ -4,6 +4,7 @@ import (
 	"another_node/conf"
 	"another_node/internal/community/account"
 	"another_node/internal/seedworks"
+	"fmt"
 	"os"
 	"testing"
 )
@@ -20,7 +21,11 @@ func TestCreateAccount(t *testing.T) {
 
 	os.Chdir("../../../")
 
-	wallets, err := account.NewHdWallet(account.HierarchicalPath(account.HierarchicalPath_ETH))
+	p := make([]account.HierarchicalPath, 2)
+	for i := 0; i < 2; i++ {
+		p[i] = account.HierarchicalPath(fmt.Sprintf(account.HierarchicalPath_ETH_FMT, i))
+	}
+	wallets, err := account.NewHdWallet(p...)
 	if err != nil {
 		t.Errorf("Failed to create account: %v", err)
 	}
@@ -33,8 +38,7 @@ func TestCreateAccount(t *testing.T) {
 		if address == "" {
 			t.Error("Expected account to be created, but got empty string")
 		}
-		t.Logf("address: %v", address)
-		t.Logf("initCode: %v", initCode)
+		fmt.Printf("address: %v\n", address)
+		fmt.Printf("initCode: %v\n", initCode)
 	}
-	// test code
 }

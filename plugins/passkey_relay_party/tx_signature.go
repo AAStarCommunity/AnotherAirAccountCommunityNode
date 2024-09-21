@@ -67,6 +67,10 @@ func (relay *RelayParty) beginTxSignature(ctx *gin.Context) {
 // @Router /api/passkey/v1/tx/sign/verify [post]
 // @Security JWT
 func (relay *RelayParty) finishTxSignature(ctx *gin.Context) {
+	if ctx.Query("network") == "" {
+		response.GetResponse().FailCode(ctx, http.StatusBadRequest, "Network is required")
+		return
+	}
 	signPayment := seedworks.TxSignature{
 		Origin:       ctx.Query("origin"),
 		Ticket:       ctx.Query("ticket"),

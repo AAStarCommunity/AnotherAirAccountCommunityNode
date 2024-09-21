@@ -1,3 +1,7 @@
+import { useEffect, useState } from "react";
+import API from "../api/api";
+import api from "../api";
+
 export function PayForm({
     action,
     children,
@@ -5,6 +9,27 @@ export function PayForm({
     action: any;
     children: React.ReactNode;
   }) {
+    const [networks, setNetworks] = useState<{id: string; name: string}[]>([]);
+    const [selectedNetwork, setSelectedNetwork] = useState<string>('');
+    
+    useEffect(() => {
+      api.get(
+        API.SUPPORT_NETWORKS,
+      ).then(response => {
+        const data: { [key: string]: boolean } = response.data.data;
+        const networksArray = Object.keys(data)
+        .filter(key => data[key] === true).map(key => ({
+          id: key,
+          name: key,
+        }));
+        setNetworks(networksArray);
+      })
+    }, []);
+
+    const handleNetworkChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+      setSelectedNetwork(event.target.value);
+    };
+    
     return (
       <form
         action={action}
@@ -26,6 +51,26 @@ export function PayForm({
             required
             className="mt-1 block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-black focus:outline-none focus:ring-black sm:text-sm"
           />
+          <label
+            htmlFor="network"
+            className="block text-xs text-gray-600 uppercase mt-4"
+          >
+            Network
+          </label>
+          <select
+            value={selectedNetwork}
+            onChange={handleNetworkChange}
+            title="network"
+            id="network"
+            name="network"
+            className="mt-1 block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-black focus:outline-none focus:ring-black sm:text-sm"
+          >
+            {networks.map(network => (
+            <option key={network.id} value={network.id}>
+              {network.name}
+            </option>
+          ))}
+          </select>
         </div>
         {children}
       </form>

@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-webauthn/webauthn/protocol"
+	"github.com/go-webauthn/webauthn/protocol/webauthncose"
 	"github.com/go-webauthn/webauthn/webauthn"
 )
 
@@ -45,8 +46,14 @@ func (store *SessionStore) BeginRegSession(reg *RegistrationByEmail) (*protocol.
 		UserVerification:        protocol.VerificationRequired,
 	}
 
+	credParams := []protocol.CredentialParameter{
+		{Type: protocol.PublicKeyCredentialType, Algorithm: webauthncose.AlgES256},
+		{Type: protocol.PublicKeyCredentialType, Algorithm: webauthncose.AlgRS256},
+	}
+
 	if opt, session, err := wan.BeginRegistration(user,
 		webauthn.WithAuthenticatorSelection(authSelect),
+		webauthn.WithCredentialParameters(credParams),
 	); err != nil {
 		return nil, err
 	} else {

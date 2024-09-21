@@ -111,9 +111,11 @@ func (db *PgsqlStorage) SaveAccounts(user *seedworks.User) error {
 				continue
 			}
 			if w, err := updateWalletUsed(airAccount.HdWallet, func() []int64 {
-				ids := make([]int64, len(airAccount.AirAccountChains))
+				ids := make([]int64, 0)
 				for i := range airAccount.AirAccountChains {
-					ids[i] = airAccount.AirAccountChains[i].FromWalletID
+					if airAccount.AirAccountChains[i].ChainName == string(v.Name) {
+						ids[i] = airAccount.AirAccountChains[i].FromWalletID
+					}
 				}
 				return ids
 			}()); err != nil {

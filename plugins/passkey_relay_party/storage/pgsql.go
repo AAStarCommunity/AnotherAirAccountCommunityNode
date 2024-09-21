@@ -44,7 +44,6 @@ func (db *PgsqlStorage) CreateAccount(email string, wallets []account.HdWallet) 
 				return err
 			} else {
 				modelWallet[i] = model.HdWallet{
-					Primary:     i == 0,
 					WalletVault: vault,
 				}
 			}
@@ -114,7 +113,7 @@ func (db *PgsqlStorage) SaveAccounts(user *seedworks.User) error {
 				ids := make([]int64, 0)
 				for i := range airAccount.AirAccountChains {
 					if airAccount.AirAccountChains[i].ChainName == string(v.Name) {
-						ids[i] = airAccount.AirAccountChains[i].FromWalletID
+						ids = append(ids, airAccount.AirAccountChains[i].FromWalletID)
 					}
 				}
 				return ids

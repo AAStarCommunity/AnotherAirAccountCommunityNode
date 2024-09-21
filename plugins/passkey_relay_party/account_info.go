@@ -28,33 +28,25 @@ func (relay *RelayParty) getAccountInfo(ctx *gin.Context) {
 	} else {
 		network := consts.Chain(ctx.Query("network"))
 		alias := ctx.Query("alias")
-		if len(network) > 0 {
-			if !isSupportChain(network) {
-				response.BadRequest(ctx, "network not supported, please specify a valid network, e.g.: optimism-mainnet, base-sepolia, optimism-sepolia")
-				return
-			}
-			if network != consts.OptimismSepolia && network != consts.BaseSepolia {
-				response.BadRequest(ctx, "network not supported")
-				return
-			}
-		} else {
-			network = consts.OptimismSepolia
+		if !isSupportChain(network) {
+			response.BadRequest(ctx, "network not supported, please specify a valid network, e.g.: optimism-mainnet, base-sepolia, optimism-sepolia")
+			return
 		}
 
 		if user, err := relay.db.FindUser(email); err != nil {
 			response.NotFound(ctx, err.Error())
 			return
 		} else {
-			initCode, aaAddr := user.GetChainAddresses(network, alias)
-			if aaAddr == nil || initCode == nil {
+			chain := user.GetSpecifiyChain(network, alias)
+			if chain == nil {
 				response.NotFound(ctx, seedworks.ErrChainNotFound{})
 				return
 			}
 
 			response.GetResponse().WithDataSuccess(ctx, seedworks.AccountInfo{
-				InitCode: *initCode,
-				AA:       *aaAddr,
-				EOA:      user.GetPrimaryEOA(),
+				InitCode: chain.InitCode,
+				AA:       chain.AA_Addr,
+				EOA:      user.GetEOA(chain),
 				Email:    email,
 			})
 			return

@@ -1,6 +1,7 @@
 package plugin_passkey_relay_party
 
 import (
+	consts "another_node/internal/seedworks"
 	"another_node/internal/web_server/pkg/response"
 	"another_node/plugins/passkey_relay_party/seedworks"
 	"net/http"
@@ -60,13 +61,17 @@ func (relay *RelayParty) beginTxSignature(ctx *gin.Context) {
 // @Param paymentSign body protocol.CredentialAssertionResponse true "Verify SignIn"
 // @Param origin query string true "origin"
 // @Param ticket query string true "ticket"
+// @Param network query string true "chain network"
+// @Param alias query string false "chain network alias"
 // @Success 200 {object} seedworks.TxSignatureResult
 // @Router /api/passkey/v1/tx/sign/verify [post]
 // @Security JWT
 func (relay *RelayParty) finishTxSignature(ctx *gin.Context) {
 	signPayment := seedworks.TxSignature{
-		Origin: ctx.Query("origin"),
-		Ticket: ctx.Query("ticket"),
+		Origin:       ctx.Query("origin"),
+		Ticket:       ctx.Query("ticket"),
+		Network:      consts.Chain(ctx.Query("network")),
+		NetworkAlias: ctx.Query("alias"),
 	}
 	if ok, email := CurrentUser(ctx); !ok {
 		response.GetResponse().FailCode(ctx, http.StatusUnauthorized)

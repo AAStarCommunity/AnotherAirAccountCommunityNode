@@ -16,7 +16,6 @@ type HdWallet struct {
 	Mnemonic   string `json:"mnemonic"`
 	Address    string `json:"address"`
 	PrivateKey string `json:"privateKey"`
-	Primary    bool   `json:"primary"`
 }
 
 func newWallet() (*hdwallet.Wallet, *string, error) {

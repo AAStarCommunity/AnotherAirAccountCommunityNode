@@ -7,7 +7,6 @@ import (
 	"another_node/plugins/passkey_relay_party/storage/model"
 	"crypto/ecdsa"
 	"encoding/json"
-	"strings"
 
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/go-webauthn/webauthn/webauthn"
@@ -29,12 +28,12 @@ type User struct {
 	chainAddresses map[string]UserChain
 }
 
-func (user *User) GetPrimaryEOA() string {
+func (user *User) GetEOA(chain *UserChain) string {
 	if user.wallets == nil {
 		return ""
 	}
 	for i := range user.wallets {
-		if user.wallets[i].Primary {
+		if user.wallets[i].Id == chain.FromHdWalletId {
 			return user.wallets[i].Address
 		}
 	}
@@ -61,7 +60,7 @@ func (user *User) TryCreateAA(network consts.Chain, alias string) (err error) {
 		return &ErrNoAvailableWallet{}
 	}
 
-	if _, aaAddr := user.GetChainAddresses(network, alias); aaAddr != nil {
+	if user.GetSpecifiyChain(network, alias) != nil {
 		return nil
 	}
 
@@ -102,7 +101,6 @@ func MappingUser(airaccount *model.AirAccount, getFromVault func(vault *string) 
 					return nil, err
 				} else {
 					hdwallet.Id = airaccount.HdWallet[i].ID
-					hdwallet.Primary = airaccount.HdWallet[i].Primary
 					user.wallets = append(user.wallets, hdwallet)
 				}
 			} else {
@@ -153,24 +151,20 @@ func (user *User) GetWallets() []account.HdWallet {
 	return user.wallets
 }
 
-func (user *User) GetChainAddresses(chain consts.Chain, alias string) (initCode, aaAddr *string) {
+func (user *User) GetSpecifiyChain(chain consts.Chain, alias string) *UserChain {
 	if len(chain) == 0 {
-		return nil, nil
+		return nil
 	}
 
 	if chainAddr, ok := user.chainAddresses[string(chain)+":"+alias]; ok {
-		if strings.EqualFold(chainAddr.Alias, alias) {
-			initCode = &chainAddr.InitCode
-			aaAddr = &chainAddr.AA_Addr
-			return
-		}
+		return &chainAddr
 	}
-	return
+	return nil
 }
 
-func (user *User) GetPrivateKeyEcdsa() (*ecdsa.PrivateKey, error) {
+func (user *User) GetPrivateKeyEcdsa(chain *UserChain) (*ecdsa.PrivateKey, error) {
 	for i := range user.wallets {
-		if user.wallets[i].Primary {
+		if user.wallets[i].Id == chain.FromHdWalletId {
 			return crypto.HexToECDSA(user.wallets[i].PrivateKey)
 		}
 	}

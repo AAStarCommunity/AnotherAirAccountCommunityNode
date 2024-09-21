@@ -571,6 +571,19 @@ const docTemplate = `{
                         "name": "ticket",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "chain network",
+                        "name": "network",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "chain network alias",
+                        "name": "alias",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -1220,6 +1233,12 @@ const docTemplate = `{
         "seedworks.TxSignature": {
             "type": "object",
             "properties": {
+                "network": {
+                    "$ref": "#/definitions/seedworks.Chain"
+                },
+                "network_alias": {
+                    "type": "string"
+                },
                 "origin": {
                     "type": "string"
                 },

@@ -473,6 +473,10 @@ definitions:
     type: object
   seedworks.TxSignature:
     properties:
+      network:
+        $ref: '#/definitions/seedworks.Chain'
+      network_alias:
+        type: string
       origin:
         type: string
       ticket:
@@ -873,6 +877,15 @@ paths:
         in: query
         name: ticket
         required: true
+        type: string
+      - description: chain network
+        in: query
+        name: network
+        required: true
+        type: string
+      - description: chain network alias
+        in: query
+        name: alias
         type: string
       produces:
       - application/json

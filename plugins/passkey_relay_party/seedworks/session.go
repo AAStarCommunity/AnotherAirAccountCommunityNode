@@ -1,6 +1,7 @@
 package seedworks
 
 import (
+	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
 	"strings"
@@ -132,6 +133,16 @@ func (store *SessionStore) FinishTxSession(paymentSign *TxSignature, ctx *gin.Co
 	if session := store.Get(key); session == nil {
 		return nil, fmt.Errorf("%s: not found", paymentSign.Email)
 	} else {
+		t := ctx.Request
+		p, _ := protocol.ParseCredentialRequestResponse(t)
+		authData := p.Raw.AssertionResponse.AuthenticatorData
+		pubKey, _ := webauthncose.ParsePublicKey(session.User.credentials[0].PublicKey)
+		sig := p.Response.Signature
+		clientDataHash := sha256.Sum256(p.Raw.AssertionResponse.ClientDataJSON)
+		sigData := append(authData, clientDataHash[:]...)
+		b, _ := webauthncose.VerifySignature(pubKey, sigData, sig)
+		_ = b
+
 		if _, err := session.WebAuthn.FinishLogin(&session.User, session.Data, ctx.Request); err == nil {
 			store.Remove(key)
 			if paymentSign.Ticket != session.Data.Extensions["ticket"].(string) {

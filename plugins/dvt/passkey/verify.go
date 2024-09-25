@@ -1,4 +1,4 @@
-package plugin_passkey_relay_party
+package passkey
 
 import (
 	"crypto/sha256"
@@ -9,7 +9,11 @@ import (
 	"github.com/go-webauthn/webauthn/protocol/webauthncose"
 )
 
-func ExtractAssertionData(ctx *http.Request) (authData, clientDataJson protocol.URLEncodedBase64, signature []byte, err error) {
+func SignatureVerify(authData, clientDataJson protocol.URLEncodedBase64, publicKey *string, signature []byte) (bool, error) {
+	return verifySignature(authData, clientDataJson, publicKey, signature)
+}
+
+func extractAssertionData(ctx *http.Request) (authData, clientDataJson protocol.URLEncodedBase64, signature []byte, err error) {
 	p, err := protocol.ParseCredentialRequestResponse(ctx)
 	if err != nil {
 		return nil, nil, nil, err
@@ -21,7 +25,7 @@ func ExtractAssertionData(ctx *http.Request) (authData, clientDataJson protocol.
 	return authData, clientDataJson, signature, nil
 }
 
-func VerifySignature(authData, clientDataJson protocol.URLEncodedBase64, publicKey *string, signature []byte) (bool, error) {
+func verifySignature(authData, clientDataJson protocol.URLEncodedBase64, publicKey *string, signature []byte) (bool, error) {
 	pubKeyBytes, err := base64.RawURLEncoding.DecodeString(*publicKey)
 	if err != nil {
 		return false, err

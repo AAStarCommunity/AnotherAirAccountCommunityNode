@@ -1,6 +1,10 @@
-package bls_tss
+package signature
 
-import "github.com/herumi/bls-eth-go-binary/bls"
+import (
+	"another_node/plugins/dvt/seedworks"
+
+	"github.com/herumi/bls-eth-go-binary/bls"
+)
 
 func init() {
 	bls.Init(bls.BLS12_381)
@@ -34,10 +38,10 @@ func (sg *SignerGroup) GetPublicKeys() *bls.PublicKey {
 func NewSignerGroup(threshold int, id ...string) (*SignerGroup, error) {
 	total := len(id)
 	if threshold <= 0 || total <= 0 {
-		return nil, &ErrThresholdGreaterThanZero{}
+		return nil, &seedworks.ErrThresholdGreaterThanZero{}
 	}
 	if threshold > total {
-		return nil, &ErrThresholdGreaterThanTotal{}
+		return nil, &seedworks.ErrThresholdGreaterThanTotal{}
 	}
 
 	var msk []bls.SecretKey = make([]bls.SecretKey, threshold)
@@ -72,10 +76,12 @@ func NewSignerGroup(threshold int, id ...string) (*SignerGroup, error) {
 	}, nil
 }
 
-func RecoverSignerGroup(threshold int, mpk *bls.PublicKey, signers []Signer) (*SignerGroup, error) {
-	if len(signers) < threshold {
-		return nil, &ErrNotEnoughSigners{}
+func RecoverSignerGroup(threshold int, mpk *bls.PublicKey, signersCount int) (*SignerGroup, error) {
+	if signersCount < threshold {
+		return nil, &seedworks.ErrNotEnoughSigners{}
 	}
+
+	signers := make([]Signer, signersCount)
 
 	return &SignerGroup{
 		Signers:   signers,
@@ -86,7 +92,7 @@ func RecoverSignerGroup(threshold int, mpk *bls.PublicKey, signers []Signer) (*S
 
 func (sg *SignerGroup) PickUpSigners(ids ...string) (*SignerGroup, error) {
 	if len(ids) < sg.threshold {
-		return nil, &ErrNotEnoughSigners{}
+		return nil, &seedworks.ErrNotEnoughSigners{}
 	}
 
 	picked := make([]Signer, 0)
@@ -101,7 +107,7 @@ func (sg *SignerGroup) PickUpSigners(ids ...string) (*SignerGroup, error) {
 	}
 
 	if len(picked) < sg.threshold {
-		return nil, &ErrNotEnoughSigners{}
+		return nil, &seedworks.ErrNotEnoughSigners{}
 	}
 
 	return &SignerGroup{
@@ -114,7 +120,7 @@ func (sg *SignerGroup) PickUpSigners(ids ...string) (*SignerGroup, error) {
 // Sign signs the message with all the signers in the (sub)SignerGroup
 func (sg *SignerGroup) Sign(msg []byte) (*bls.Sign, error) {
 	if len(sg.Signers) < sg.threshold {
-		return nil, &ErrNotEnoughSigners{}
+		return nil, &seedworks.ErrNotEnoughSigners{}
 	}
 
 	sig := make([]bls.Sign, 0)

@@ -1,7 +1,6 @@
 package dvt
 
 import (
-	"another_node/plugins/dvt/passkey"
 	"another_node/plugins/dvt/seedworks"
 	"another_node/plugins/dvt/signature"
 
@@ -9,9 +8,11 @@ import (
 )
 
 func Signature(ca *protocol.ParsedCredentialAssertionData, publicKey *string) (blsSignature []byte, blsPublickey []byte, err error) {
-	if ok, err := passkey.SignatureVerify(
+	verifier := NewTxVerifier(publicKey)
+
+	if ok, err := verifier.Verify(
 		ca.Raw.AssertionResponse.AuthenticatorData,
-		ca.Raw.AssertionResponse.ClientDataJSON, publicKey,
+		ca.Raw.AssertionResponse.ClientDataJSON,
 		ca.Response.Signature); !ok || err != nil {
 		return nil, nil, func() error {
 			if err != nil {
@@ -20,6 +21,6 @@ func Signature(ca *protocol.ParsedCredentialAssertionData, publicKey *string) (b
 			return seedworks.ErrSignatureVerifyFailed{}
 		}()
 	} else {
-		return signature.Bls()
+		return signature.Bls(1, 1, ca.Response.Signature)
 	}
 }

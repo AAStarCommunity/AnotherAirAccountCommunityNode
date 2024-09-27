@@ -1,4 +1,4 @@
-package bls_tss
+package signature
 
 import (
 	"testing"
@@ -33,6 +33,34 @@ func itorSigners(arr []string, k int) [][]string {
 	return res
 }
 
+func TestBls(t *testing.T) {
+	threshold := 2
+	totalSigners := 5
+	val := "dfabcasdfasf"
+	data := []byte(val)
+	verifyData := []byte(val)
+
+	sig, msk, err := Bls(threshold, totalSigners, data)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	pub := bls.PublicKey{}
+	pub.Deserialize(msk)
+	signValidator, err := RecoverSignerGroup(threshold, &pub, totalSigners)
+	if err != nil {
+		t.Error(err)
+	}
+
+	sigObj := &bls.Sign{}
+	sigObj.Deserialize(sig)
+
+	if !signValidator.Verify(sigObj, verifyData) {
+		t.Error("Signature verification failed")
+	}
+}
+
 func TestSign(t *testing.T) {
 	allId := []string{"1", "2", "3", "4", "5"}
 
@@ -49,7 +77,7 @@ func TestSign(t *testing.T) {
 
 	comb := itorSigners(allId, threshold)
 
-	signValidator, err := RecoverSignerGroup(threshold, grp.GetPublicKeys(), []Signer{{}, {}, {}, {}, {}})
+	signValidator, err := RecoverSignerGroup(threshold, grp.GetPublicKeys(), len(allId))
 	if err != nil {
 		t.Error(err)
 	}

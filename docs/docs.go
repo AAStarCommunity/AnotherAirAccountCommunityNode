@@ -1256,6 +1256,12 @@ const docTemplate = `{
                 "address": {
                     "type": "string"
                 },
+                "bls_pubkey": {
+                    "type": "string"
+                },
+                "bls_sign": {
+                    "type": "string"
+                },
                 "code": {
                     "type": "integer"
                 },

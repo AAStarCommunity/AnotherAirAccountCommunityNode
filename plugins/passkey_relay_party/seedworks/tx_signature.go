@@ -24,4 +24,5 @@ type TxSignatureResult struct {
 	BlsSign   string `json:"bls_sign"`
 	BlsPubKey string `json:"bls_pubkey"`
 	Address   string `json:"address"`
+	BlsSchema string `json:"bls_schema"`
 }

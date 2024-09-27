@@ -49,6 +49,7 @@ func sigTx(user *seedworks.User, signPayment *seedworks.TxSignature) (*seedworks
 				BlsSign:   base64.URLEncoding.EncodeToString(dvtSign.signature),
 				BlsPubKey: base64.URLEncoding.EncodeToString(dvtSign.publickey),
 				Address:   user.GetEOA(chain),
+				BlsSchema: "BLS12_381:EthModeDraft07",
 			}
 			return &txSigRlt, nil
 		}

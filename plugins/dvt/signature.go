@@ -7,7 +7,11 @@ import (
 	"github.com/go-webauthn/webauthn/protocol"
 )
 
-func Signature(ca *protocol.ParsedCredentialAssertionData, publicKey *string) (blsSignature []byte, blsPublickey []byte, err error) {
+func Signature(ca *protocol.ParsedCredentialAssertionData, publicKey []byte) (blsSignature []byte, blsPublickey []byte, err error) {
+	if ca == nil || publicKey == nil {
+		return nil, nil, seedworks.ErrSignatureVerifyFailed{}
+	}
+
 	verifier := NewTxVerifier(publicKey)
 
 	if ok, err := verifier.Verify(

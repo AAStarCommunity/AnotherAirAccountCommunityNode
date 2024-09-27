@@ -2,26 +2,21 @@ package dvt
 
 import (
 	"crypto/sha256"
-	"encoding/base64"
 
 	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/go-webauthn/webauthn/protocol/webauthncose"
 )
 
 type TxVerifier struct {
-	publicKey *string
+	publicKey []byte
 }
 
-func NewTxVerifier(publicKey *string) *TxVerifier {
+func NewTxVerifier(publicKey []byte) *TxVerifier {
 	return &TxVerifier{publicKey: publicKey}
 }
 
 func (v *TxVerifier) Verify(authData, clientDataJson protocol.URLEncodedBase64, signature []byte) (bool, error) {
-	pubKeyBytes, err := base64.RawURLEncoding.DecodeString(*v.publicKey)
-	if err != nil {
-		return false, err
-	}
-	pubKey, err := webauthncose.ParsePublicKey(pubKeyBytes)
+	pubKey, err := webauthncose.ParsePublicKey(v.publicKey)
 	if err != nil {
 		return false, err
 	}

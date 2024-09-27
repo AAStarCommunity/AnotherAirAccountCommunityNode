@@ -44,6 +44,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 1. query参数中nonce改名为ticket
 2. query参数中增加network，表示链名称，必填
 3. query参数中增加network_alias，表示链别名，非必填参数
+4. 出参增加BLS信息，包括bls_sign和bls_pubkey，使用`base64url`编码
 
 ## [新增接口]
 

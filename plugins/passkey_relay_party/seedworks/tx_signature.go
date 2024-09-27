@@ -14,7 +14,7 @@ type TxSignature struct {
 	Network      seedworks.Chain                         `json:"network"`
 	NetworkAlias string                                  `json:"network_alias"`
 	CA           *protocol.ParsedCredentialAssertionData `json:"-"`
-	CAPublicKey  *string                                 `json:"-"`
+	CAPublicKey  []byte                                  `json:"-"`
 }
 
 type TxSignatureResult struct {

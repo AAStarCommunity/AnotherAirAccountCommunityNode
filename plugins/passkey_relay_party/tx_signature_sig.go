@@ -4,6 +4,7 @@ import (
 	"another_node/internal/common_util"
 	"another_node/plugins/dvt"
 	"another_node/plugins/passkey_relay_party/seedworks"
+	"encoding/base64"
 )
 
 func sigTx(user *seedworks.User, signPayment *seedworks.TxSignature) (*seedworks.TxSignatureResult, error) {
@@ -45,8 +46,8 @@ func sigTx(user *seedworks.User, signPayment *seedworks.TxSignature) (*seedworks
 				Code:      200,
 				TxData:    signPayment.TxData, // userOpHash
 				Sign:      signHexStr,
-				BlsSign:   string(dvtSign.signature),
-				BlsPubKey: string(dvtSign.publickey),
+				BlsSign:   base64.URLEncoding.EncodeToString(dvtSign.signature),
+				BlsPubKey: base64.URLEncoding.EncodeToString(dvtSign.publickey),
 				Address:   user.GetEOA(chain),
 			}
 			return &txSigRlt, nil

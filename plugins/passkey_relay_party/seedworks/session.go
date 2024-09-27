@@ -3,6 +3,7 @@ package seedworks
 import (
 	"encoding/base64"
 	"fmt"
+	"reflect"
 	"strings"
 	"sync"
 	"time"
@@ -141,6 +142,12 @@ func (store *SessionStore) FinishTxSession(paymentSign *TxSignature) (*User, err
 				return nil, err
 			} else {
 				paymentSign.TxData = string(txData)
+			}
+			for _, weban := range session.User.WebAuthnCredentials() {
+				if reflect.DeepEqual(weban.ID, paymentSign.CA.RawID) {
+					paymentSign.CAPublicKey = weban.PublicKey
+					break
+				}
 			}
 			return &session.User, nil
 		} else {

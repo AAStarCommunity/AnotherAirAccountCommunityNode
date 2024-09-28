@@ -1,6 +1,8 @@
 package signature
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func Bls(threshold, totalSigners int, data []byte) (blsSignature []byte, blsPublickey []byte, err error) {
 	allId := make([]string, totalSigners)
@@ -24,6 +26,5 @@ func Bls(threshold, totalSigners int, data []byte) (blsSignature []byte, blsPubl
 
 	blsSignature = sig.Serialize()
 	blsPublickey = grp.GetPublicKeys().Serialize()
-
 	return
 }

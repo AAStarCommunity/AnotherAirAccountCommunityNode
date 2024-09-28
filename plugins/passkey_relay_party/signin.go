@@ -36,7 +36,7 @@ func (relay *RelayParty) beginSignIn(ctx *gin.Context) {
 	if options, err := relay.authSessionStore.BeginDiscoverableAuthSession(&signIn); err != nil {
 		response.InternalServerError(ctx, err)
 	} else {
-		response.GetResponse().WithDataSuccess(ctx, options.Response)
+		response.GetResponse().SuccessWithData(ctx, options.Response)
 	}
 }
 

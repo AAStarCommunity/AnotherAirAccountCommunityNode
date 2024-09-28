@@ -34,16 +34,16 @@ func (relay *RelayParty) getAccountInfo(ctx *gin.Context) {
 		}
 
 		if user, err := relay.db.FindUser(email); err != nil {
-			response.NotFound(ctx, err.Error())
+			response.GetResponse().SuccessWithDataAndCode(http.StatusNotFound, ctx, err.Error())
 			return
 		} else {
 			chain := user.GetSpecifiyChain(network, alias)
 			if chain == nil {
-				response.NotFound(ctx, seedworks.ErrChainNotFound{})
+				response.GetResponse().SuccessWithDataAndCode(http.StatusNotFound, ctx, seedworks.ErrChainNotFound{})
 				return
 			}
 
-			response.GetResponse().WithDataSuccess(ctx, seedworks.AccountInfo{
+			response.GetResponse().SuccessWithData(ctx, seedworks.AccountInfo{
 				InitCode: chain.InitCode,
 				AA:       chain.AA_Addr,
 				EOA:      user.GetEOA(chain),

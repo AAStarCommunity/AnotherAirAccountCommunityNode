@@ -42,12 +42,12 @@ func (relay *RelayParty) beginTxSignature(ctx *gin.Context) {
 	} else {
 		user, err := relay.db.FindUser(tx.Email)
 		if err != nil {
-			response.NotFound(ctx, err.Error())
+			response.GetResponse().SuccessWithDataAndCode(http.StatusNotFound, ctx, &seedworks.ErrUserNotFound{})
 		}
 		if options, err := relay.txSessionStore.BeginTxSession(user, &tx); err != nil {
 			response.InternalServerError(ctx, err)
 		} else {
-			response.GetResponse().WithDataSuccess(ctx, options.Response)
+			response.GetResponse().SuccessWithData(ctx, options.Response)
 		}
 	}
 }
@@ -95,5 +95,5 @@ func (relay *RelayParty) finishTxSignature(ctx *gin.Context) {
 		response.GetResponse().FailCode(ctx, 403, "SignIn failed: "+err.Error())
 		return
 	}
-	response.GetResponse().WithDataSuccess(ctx, sig)
+	response.GetResponse().SuccessWithData(ctx, sig)
 }

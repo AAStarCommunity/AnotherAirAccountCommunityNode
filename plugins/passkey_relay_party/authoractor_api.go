@@ -14,5 +14,5 @@ import (
 // @Router /api/passkey/v1/imauthz [get]
 // @Security JWT
 func (relay *RelayParty) imauthz(ctx *gin.Context) {
-	response.GetResponse().WithDataSuccess(ctx, "user is authorized")
+	response.GetResponse().SuccessWithData(ctx, "user is authorized")
 }

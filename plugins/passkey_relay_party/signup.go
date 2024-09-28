@@ -71,7 +71,7 @@ func (relay *RelayParty) beginRegistrationByEmail(ctx *gin.Context) {
 	if options, err := relay.authSessionStore.BeginRegSession(&reg); err != nil {
 		response.InternalServerError(ctx, err.Error())
 	} else {
-		response.GetResponse().WithDataSuccess(ctx, options.Response)
+		response.GetResponse().SuccessWithData(ctx, options.Response)
 	}
 }
 

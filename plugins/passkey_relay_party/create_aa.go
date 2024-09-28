@@ -18,7 +18,7 @@ import (
 // @Router /api/passkey/v1/chains/support [get]
 // @Success 200
 func (relay *RelayParty) supportChains(ctx *gin.Context) {
-	response.GetResponse().WithDataSuccess(ctx, supportChains)
+	response.GetResponse().SuccessWithData(ctx, supportChains)
 }
 
 // createAA
@@ -37,7 +37,7 @@ func (relay *RelayParty) createAA(ctx *gin.Context) {
 		return
 	} else {
 		if user, err := relay.db.FindUser(email); err != nil {
-			response.NotFound(ctx, err.Error())
+			response.GetResponse().SuccessWithDataAndCode(http.StatusNotFound, ctx, err.Error())
 			return
 		} else {
 			createAA(relay, user, ctx)

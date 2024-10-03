@@ -17,7 +17,7 @@
     "bcrypt-ts": "^5.0.2",
     "drizzle-orm": "^0.29.5",
     "geist": "^1.3.1",
-    "next": "^14.2.12",
+    "next": "^14.2.13",
     "next-auth": "5.0.0-beta.4",
     "pnpm": "^9.5.0",
     "postgres": "^3.4.4",

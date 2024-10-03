@@ -8,18 +8,20 @@ import { PublicKeyCredentialRequestOptionsJSON } from "@simplewebauthn/types";
 export const PasskeyPayment = async (formData: FormData) => {
   await isSecurePaymentConfirmationSupported();
   let txdata = formData.get("txdata") as string;
-  await generateAuthPasskeyPublicKey(txdata);
+  let network = formData.get("network") as string;
+  await generateAuthPasskeyPublicKey(txdata, network);
 };
 
-const generateAuthPasskeyPublicKey = async (txdata: string) => {
+const generateAuthPasskeyPublicKey = async (txdata: string, network: string) => {
   const origin = window.location.origin;
-  const nonce = Math.floor(Math.random() * 100001).toString();
+  const ticket = Math.floor(Math.random() * 100001).toString();
   const resp = await api.post(
     API.PASSKEY_PAYMENT,
     {
       origin,
-      nonce,
+      ticket,
       txdata: txdata,
+      network: network,
     },
     {
       headers: {
@@ -40,8 +42,10 @@ const generateAuthPasskeyPublicKey = async (txdata: string) => {
       API.PASSKEY_PAYMENT_VERIFY +
         "?origin=" +
         encodeURIComponent(origin) +
-        "&nonce=" +
-        nonce,
+        "&ticket=" +
+        ticket +
+        "&network=" + 
+        network,
       attest,
       {
         headers: {

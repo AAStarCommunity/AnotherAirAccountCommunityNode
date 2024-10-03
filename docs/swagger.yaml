@@ -20,11 +20,29 @@ definitions:
       token:
         type: string
     type: object
+  protocol.AttestationFormat:
+    enum:
+    - packed
+    - tpm
+    - android-key
+    - android-safetynet
+    - fido-u2f
+    - apple
+    - none
+    type: string
+    x-enum-varnames:
+    - AttestationFormatPacked
+    - AttestationFormatTPM
+    - AttestationFormatAndroidKey
+    - AttestationFormatAndroidSafetyNet
+    - AttestationFormatFIDOUniversalSecondFactor
+    - AttestationFormatApple
+    - AttestationFormatNone
   protocol.AuthenticationExtensions:
-    additionalProperties: true
+    additionalProperties: {}
     type: object
   protocol.AuthenticationExtensionsClientOutputs:
-    additionalProperties: true
+    additionalProperties: {}
     type: object
   protocol.AuthenticatorAssertionResponse:
     properties:
@@ -74,6 +92,10 @@ definitions:
         items:
           type: integer
         type: array
+      authenticatorData:
+        items:
+          type: integer
+        type: array
       clientDataJSON:
         description: |-
           From the spec https://www.w3.org/TR/webauthn/#dom-authenticatorresponse-clientdatajson
@@ -82,6 +104,12 @@ definitions:
         items:
           type: integer
         type: array
+      publicKey:
+        items:
+          type: integer
+        type: array
+      publicKeyAlgorithm:
+        type: integer
       transports:
         items:
           type: string
@@ -120,6 +148,7 @@ definitions:
     - usb
     - nfc
     - ble
+    - smart-card
     - hybrid
     - internal
     type: string
@@ -127,6 +156,7 @@ definitions:
     - USB
     - NFC
     - BLE
+    - SmartCard
     - Hybrid
     - Internal
   protocol.ConveyancePreference:
@@ -184,15 +214,6 @@ definitions:
         type: array
       response:
         $ref: '#/definitions/protocol.AuthenticatorAttestationResponse'
-      transports:
-        description: |-
-          Deprecated: Transports is deprecated due to upstream changes to the API.
-          Use the Transports field of AuthenticatorAttestationResponse
-          instead. Transports is kept for backward compatibility, and should not
-          be used by new clients.
-        items:
-          type: string
-        type: array
       type:
         description: |-
           Type is the value of the object’s interface object's [[type]] slot,
@@ -234,6 +255,10 @@ definitions:
     properties:
       attestation:
         $ref: '#/definitions/protocol.ConveyancePreference'
+      attestationFormats:
+        items:
+          $ref: '#/definitions/protocol.AttestationFormat'
+        type: array
       authenticatorSelection:
         $ref: '#/definitions/protocol.AuthenticatorSelection'
       challenge:
@@ -246,6 +271,10 @@ definitions:
         type: array
       extensions:
         $ref: '#/definitions/protocol.AuthenticationExtensions'
+      hints:
+        items:
+          $ref: '#/definitions/protocol.PublicKeyCredentialHints'
+        type: array
       pubKeyCredParams:
         items:
           $ref: '#/definitions/protocol.CredentialParameter'
@@ -257,6 +286,16 @@ definitions:
       user:
         $ref: '#/definitions/protocol.UserEntity'
     type: object
+  protocol.PublicKeyCredentialHints:
+    enum:
+    - security-key
+    - client-device
+    - hybrid
+    type: string
+    x-enum-varnames:
+    - PublicKeyCredentialHintSecurityKey
+    - PublicKeyCredentialHintClientDevice
+    - PublicKeyCredentialHintHybrid
   protocol.PublicKeyCredentialRequestOptions:
     properties:
       allowCredentials:
@@ -269,6 +308,10 @@ definitions:
         type: array
       extensions:
         $ref: '#/definitions/protocol.AuthenticationExtensions'
+      hints:
+        items:
+          $ref: '#/definitions/protocol.PublicKeyCredentialHints'
+        type: array
       rpId:
         type: string
       timeout:
@@ -278,17 +321,6 @@ definitions:
     type: object
   protocol.RelyingPartyEntity:
     properties:
-      icon:
-        description: |-
-          A serialized URL which resolves to an image associated with the entity. For example,
-          this could be a user’s avatar or a Relying Party's logo. This URL MUST be an a priori
-          authenticated URL. Authenticators MUST accept and store a 128-byte minimum length for
-          an icon member’s value. Authenticators MAY ignore an icon member’s value if its length
-          is greater than 128 bytes. The URL’s scheme MAY be "data" to avoid fetches of the URL,
-          at the cost of needing more storage.
-
-          Deprecated: this has been removed from the specification recommendations.
-        type: string
       id:
         description: A unique identifier for the Relying Party entity, which sets
           the RP ID.
@@ -322,17 +354,6 @@ definitions:
           A human-palatable name for the user account, intended only for display.
           For example, "Alex P. Müller" or "田中 倫". The Relying Party SHOULD let
           the user choose this, and SHOULD NOT restrict the choice more than necessary.
-        type: string
-      icon:
-        description: |-
-          A serialized URL which resolves to an image associated with the entity. For example,
-          this could be a user’s avatar or a Relying Party's logo. This URL MUST be an a priori
-          authenticated URL. Authenticators MUST accept and store a 128-byte minimum length for
-          an icon member’s value. Authenticators MAY ignore an icon member’s value if its length
-          is greater than 128 bytes. The URL’s scheme MAY be "data" to avoid fetches of the URL,
-          at the cost of needing more storage.
-
-          Deprecated: this has been removed from the specification recommendations.
         type: string
       id:
         description: |-
@@ -399,7 +420,44 @@ definitions:
       init_code:
         type: string
     type: object
-  seedworks.Registration:
+  seedworks.Chain:
+    enum:
+    - ethereum-mainnet
+    - ethereum-sepolia
+    - optimism-mainnet
+    - optimism-sepolia
+    - arbitrum-one
+    - arbitrum-nova
+    - arbitrum-sepolia
+    - scroll-mainnet
+    - scroll-sepolia
+    - starknet-mainnet
+    - starknet-sepolia
+    - base-mainnet
+    - base-sepolia
+    type: string
+    x-enum-varnames:
+    - EthereumMainnet
+    - EthereumSepolia
+    - OptimismMainnet
+    - OptimismSepolia
+    - ArbitrumOne
+    - ArbitrumNova
+    - ArbitrumSpeolia
+    - ScrollMainnet
+    - ScrollSepolia
+    - StarketMainnet
+    - StarketSepolia
+    - BaseMainnet
+    - BaseSepolia
+  seedworks.CreateAARequest:
+    properties:
+      alias:
+        type: string
+      network:
+        $ref: '#/definitions/seedworks.Chain'
+    type: object
+  seedworks.RegistrationByEmail:
     properties:
       captcha:
         type: string
@@ -408,31 +466,28 @@ definitions:
       origin:
         type: string
     type: object
-  seedworks.RegistrationPrepare:
-    properties:
-      email:
-        type: string
-    type: object
   seedworks.SiginIn:
     properties:
-      captcha:
-        type: string
-      email:
-        type: string
       origin:
         type: string
     type: object
   seedworks.TxSignature:
     properties:
-      nonce:
+      network:
+        $ref: '#/definitions/seedworks.Chain'
+      network_alias:
         type: string
       origin:
+        type: string
+      ticket:
         type: string
       txdata:
         type: string
     type: object
   seedworks.TxSignatureResult:
     properties:
+      address:
+        type: string
       code:
         type: integer
       sign:
@@ -557,6 +612,26 @@ paths:
           description: OK
       tags:
       - Healthz
+  /api/passkey/v1/account/chain:
+    post:
+      consumes:
+      - application/json
+      description: create aa by sepcify network(chain)
+      parameters:
+      - description: Create AA
+        in: body
+        name: createAABody
+        required: true
+        schema:
+          $ref: '#/definitions/seedworks.CreateAARequest'
+      responses:
+        "200":
+          description: OK
+      security:
+      - JWT: []
+      summary: Create AA with Alias, default empty
+      tags:
+      - Plugins Passkey
   /api/passkey/v1/account/info:
     get:
       consumes:
@@ -567,6 +642,10 @@ paths:
         in: query
         name: network
         required: true
+        type: string
+      - description: alias
+        in: query
+        name: alias
         type: string
       produces:
       - application/json
@@ -581,7 +660,18 @@ paths:
             type: object
       security:
       - JWT: []
-      summary: get user account info
+      summary: Get User Account Info
+      tags:
+      - Plugins Passkey
+  /api/passkey/v1/chains/support:
+    get:
+      consumes:
+      - application/json
+      description: get support chains
+      responses:
+        "200":
+          description: OK
+      summary: Get support chains in relay party
       tags:
       - Plugins Passkey
   /api/passkey/v1/imauthz:
@@ -611,7 +701,7 @@ paths:
         name: registrationBody
         required: true
         schema:
-          $ref: '#/definitions/seedworks.Registration'
+          $ref: '#/definitions/seedworks.RegistrationByEmail'
       responses:
         "200":
           description: OK
@@ -631,7 +721,7 @@ paths:
         name: registrationBody
         required: true
         schema:
-          $ref: '#/definitions/seedworks.RegistrationPrepare'
+          $ref: '#/definitions/seedworks.RegistrationByEmail'
       responses:
         "200":
           description: OK
@@ -659,6 +749,10 @@ paths:
         in: query
         name: network
         type: string
+      - description: network
+        in: query
+        name: alias
+        type: string
       - description: Verify Registration
         in: body
         name: registrationBody
@@ -670,7 +764,7 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/plugin_passkey_relay_party.SiginInResponse'
-      summary: Finish SignUp
+      summary: Finish SignUp By Email
       tags:
       - Plugins Passkey
   /api/passkey/v1/sign:
@@ -713,12 +807,6 @@ paths:
       - application/json
       description: Verify attestations and return JWT
       parameters:
-      - description: user email
-        format: email
-        in: query
-        name: email
-        required: true
-        type: string
       - description: origin
         in: query
         name: origin
@@ -785,10 +873,19 @@ paths:
         name: origin
         required: true
         type: string
-      - description: nonce
+      - description: ticket
         in: query
-        name: nonce
+        name: ticket
         required: true
+        type: string
+      - description: chain network
+        in: query
+        name: network
+        required: true
+        type: string
+      - description: chain network alias
+        in: query
+        name: alias
         type: string
       produces:
       - application/json

@@ -1,5 +1,5 @@
 package seedworks
 
 type SiginIn struct {
-	Registration
+	Origin string `json:"origin"`
 }

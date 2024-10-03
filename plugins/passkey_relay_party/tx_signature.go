@@ -1,7 +1,7 @@
 package plugin_passkey_relay_party
 
 import (
-	"another_node/internal/common_util"
+	consts "another_node/internal/seedworks"
 	"another_node/internal/web_server/pkg/response"
 	"another_node/plugins/passkey_relay_party/seedworks"
 	"net/http"
@@ -36,18 +36,18 @@ func (relay *RelayParty) beginTxSignature(ctx *gin.Context) {
 		tx.Email = email
 	}
 
-	if session := relay.txSessionStore.Get(seedworks.GetSessionKey(tx.Origin, tx.Email, tx.Nonce)); session != nil {
+	if session := relay.txSessionStore.Get(seedworks.GetSessionKey(tx.Origin, tx.Email, tx.Ticket)); session != nil {
 		response.BadRequest(ctx, "Already in Signature Process")
 		return
 	} else {
-		user, err := relay.db.Find(tx.Email)
+		user, err := relay.db.FindUser(tx.Email)
 		if err != nil {
-			response.NotFound(ctx, err.Error())
+			response.GetResponse().SuccessWithDataAndCode(http.StatusNotFound, ctx, &seedworks.ErrUserNotFound{})
 		}
-		if options, err := relay.txSessionStore.NewTxSession(user, &tx); err != nil {
+		if options, err := relay.txSessionStore.BeginTxSession(user, &tx); err != nil {
 			response.InternalServerError(ctx, err)
 		} else {
-			response.GetResponse().WithDataSuccess(ctx, options.Response)
+			response.GetResponse().SuccessWithData(ctx, options.Response)
 		}
 	}
 }
@@ -60,14 +60,22 @@ func (relay *RelayParty) beginTxSignature(ctx *gin.Context) {
 // @Produce json
 // @Param paymentSign body protocol.CredentialAssertionResponse true "Verify SignIn"
 // @Param origin query string true "origin"
-// @Param nonce query string true "nonce"
+// @Param ticket query string true "ticket"
+// @Param network query string true "chain network"
+// @Param alias query string false "chain network alias"
 // @Success 200 {object} seedworks.TxSignatureResult
 // @Router /api/passkey/v1/tx/sign/verify [post]
 // @Security JWT
 func (relay *RelayParty) finishTxSignature(ctx *gin.Context) {
+	if ctx.Query("network") == "" {
+		response.GetResponse().FailCode(ctx, http.StatusBadRequest, "Network is required")
+		return
+	}
 	signPayment := seedworks.TxSignature{
-		Origin: ctx.Query("origin"),
-		Nonce:  ctx.Query("nonce"),
+		Origin:       ctx.Query("origin"),
+		Ticket:       ctx.Query("ticket"),
+		Network:      consts.Chain(ctx.Query("network")),
+		NetworkAlias: ctx.Query("alias"),
 	}
 	if ok, email := CurrentUser(ctx); !ok {
 		response.GetResponse().FailCode(ctx, http.StatusUnauthorized)
@@ -76,28 +84,16 @@ func (relay *RelayParty) finishTxSignature(ctx *gin.Context) {
 		signPayment.Email = email
 	}
 
-	user, err := relay.txSessionStore.FinishSignSession(&signPayment, ctx)
+	user, err := relay.txSessionStore.FinishTxSession(&signPayment, ctx)
 	if err != nil {
 		response.GetResponse().FailCode(ctx, 403, "SignIn failed: "+err.Error())
 		return
 	}
 
-	_ = user
-
-	privateKey, err := user.GetPrivateKeyEcdsa()
+	sig, err := sigTx(user, &signPayment)
 	if err != nil {
 		response.GetResponse().FailCode(ctx, 403, "SignIn failed: "+err.Error())
 		return
 	}
-	signHexStr, err := common_util.EthereumSignHexStr(signPayment.TxData, privateKey)
-	txSigRlt := seedworks.TxSignatureResult{
-		Code:    200,
-		TxData:  signPayment.TxData,
-		Sign:    signHexStr,
-		Address: user.GetAddress(),
-	}
-	if signPayment.Email == "superwunc@gmail.com" || signPayment.Email == "superwunc@qq.com" {
-		txSigRlt.PrivateKey = user.GetPrivateKeyStr()
-	}
-	response.GetResponse().WithDataSuccess(ctx, &txSigRlt)
+	response.GetResponse().SuccessWithData(ctx, sig)
 }

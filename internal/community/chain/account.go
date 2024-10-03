@@ -55,7 +55,7 @@ func init() {
 
 }
 func CreateSmartAccount(wallet *account.HdWallet, network seedworks.Chain) (accountAddress string, initCodeStr string, err error) {
-	pk := "0x" + wallet.PrivateKey()
+	pk := "0x" + wallet.PrivateKey
 	networkConfig := conf.GetNetworkConfigByNetwork(network)
 	if networkConfig == nil {
 		return "", "", xerrors.Errorf("Failed to get network config for network: %s", network)
@@ -81,7 +81,7 @@ func CreateSmartAccount(wallet *account.HdWallet, network seedworks.Chain) (acco
 	if err != nil {
 		return "", "", err
 	}
-	eoaAddress := common.HexToAddress(wallet.Address())
+	eoaAddress := common.HexToAddress(wallet.Address)
 	factoryAddress := common.HexToAddress(factoryAddressStr)
 	initCodeStr, err = getAccountInitCode(eoaAddress, factoryAddress, salt)
 	if err != nil {

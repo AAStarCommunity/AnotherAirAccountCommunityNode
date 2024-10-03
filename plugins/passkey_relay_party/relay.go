@@ -8,10 +8,8 @@ import (
 	"another_node/plugins/passkey_relay_party/seedworks"
 	storage "another_node/plugins/passkey_relay_party/storage"
 	"another_node/plugins/passkey_relay_party/storage/migrations"
-	"errors"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 type RelayParty struct {
@@ -24,19 +22,21 @@ type RelayParty struct {
 
 func (r *RelayParty) RegisterRoutes(router *gin.Engine, community *node.Community) {
 
-	router.POST("/api/passkey/v1/reg/prepare", r.regPrepare)
-	router.POST("/api/passkey/v1/reg", r.beginRegistration)
-	router.POST("/api/passkey/v1/reg/verify", r.finishRegistration)
+	router.POST("/api/passkey/v1/reg/prepare", r.regPrepareByEmail)
+	router.POST("/api/passkey/v1/reg", r.beginRegistrationByEmail)
+	router.POST("/api/passkey/v1/reg/verify", r.finishRegistrationByEmail)
 	router.POST("/api/passkey/v1/sign", r.beginSignIn)
 	router.POST("/api/passkey/v1/sign/verify", r.finishSignIn)
+	router.GET("/api/passkey/v1/chains/support", r.supportChains)
 
 	_ = router.Use(AuthHandler())
 	{
 		// APIs needs signin here
 		router.GET("/api/passkey/v1/imauthz", r.imauthz)
-		router.GET("/api/passkey/v1/account/info", r.accountInfo)
+		router.GET("/api/passkey/v1/account/info", r.getAccountInfo)
 		router.POST("/api/passkey/v1/tx/sign", r.beginTxSignature)
 		router.POST("/api/passkey/v1/tx/sign/verify", r.finishTxSignature)
+		router.POST("/api/passkey/v1/account/chain", r.createAA)
 	}
 
 	r.node = community
@@ -57,21 +57,4 @@ func NewRelay() *RelayParty {
 			return &p
 		}(),
 	}
-}
-
-// findUserByEmail finds a user by email in relay storage
-func (r *RelayParty) findUserByEmail(email string) (*seedworks.User, error) {
-	if email == "" {
-		return nil, seedworks.ErrEmailEmpty{}
-	}
-
-	u, err := r.db.Find(email)
-
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, seedworks.ErrUserNotFound{}
-		}
-	}
-
-	return u, err
 }

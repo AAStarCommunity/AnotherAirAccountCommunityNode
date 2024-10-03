@@ -16,7 +16,7 @@ var dbClient *gorm.DB
 // GetDbClient 获取数据库连接对象
 func GetDbClient() *gorm.DB {
 	onceDb.Do(func() {
-		if os.Getenv("UnitTestEnv") == "1" {
+		if os.Getenv("UnitTest") == "1" {
 			dbClient, _ = getInMemoryDbClient()
 			dbClient = dbClient.Debug()
 		} else {

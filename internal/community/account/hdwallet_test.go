@@ -5,28 +5,30 @@ import (
 )
 
 func TestNewHdWallet(t *testing.T) {
-	hierarchicalPath := HierarchicalPath(HierarchicalPath_ETH)
-
-	wallet, err := NewHdWallet(hierarchicalPath)
-	if err != nil {
-		t.Errorf("unexpected error: %v", err)
-		return
+	// hierarchicalPath := HierarchicalPath(HierarchicalPath_ETH)
+	paths := []HierarchicalPath{
+		"m/44'/60'/0'/0/0",
+		"m/44'/60'/0'/0/1",
+		"m/44'/60'/0'/0/2",
 	}
+	wallets, err := NewHdWallet(paths...)
+	for _, wallet := range wallets {
 
-	if wallet == nil {
-		t.Error("expected wallet to be created, but got nil")
-		return
-	}
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
 
-	if wallet.mnemonic == "" {
-		t.Error("expected mnemonic to be set, but got empty string")
-	}
+		if wallet.Mnemonic == "" {
+			t.Error("expected mnemonic to be set, but got empty string")
+		}
 
-	if wallet.address == "" {
-		t.Error("expected address to be set, but got empty string")
-	}
+		if wallet.Address == "" {
+			t.Error("expected address to be set, but got empty string")
+		}
 
-	if len(wallet.privateKey) == 0 {
-		t.Error("expected privateKey to be set, but got empty slice")
+		if len(wallet.PrivateKey) == 0 {
+			t.Error("expected privateKey to be set, but got empty slice")
+		}
 	}
 }

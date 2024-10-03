@@ -37,7 +37,7 @@ func (a *AlchemyProvider) GetRpc() string {
 
 func (a *AlchemyProvider) CreateAccount(wallet *account.HdWallet) (string, error) {
 
-	pk := "0x" + wallet.PrivateKey()
+	pk := "0x" + wallet.PrivateKey
 
 	eth := big.NewFloat(0.01)
 	wei := new(big.Float)

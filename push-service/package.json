@@ -1,8 +1,0 @@
-{
-  "name": "push-service",
-  "version": "1.0.0",
-  "description": "Push Service by Push-Protocol",
-  "main": "main.ts",
-  "author": "David@AAStar^Plancker",
-  "license": "MIT"
-}

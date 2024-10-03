@@ -5,6 +5,7 @@ import (
 	"another_node/plugins/passkey_relay_party/seedworks"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-webauthn/webauthn/webauthn"
 )
 
 type SiginInResponse struct {
@@ -32,19 +33,10 @@ func (relay *RelayParty) beginSignIn(ctx *gin.Context) {
 		return
 	}
 
-	if session := relay.authSessionStore.Get(seedworks.GetSessionKey(signIn.Origin, signIn.Email)); session != nil {
-		response.BadRequest(ctx, "Already in SignIn")
-		return
+	if options, err := relay.authSessionStore.BeginDiscoverableAuthSession(&signIn); err != nil {
+		response.InternalServerError(ctx, err)
 	} else {
-		user, err := relay.db.Find(signIn.Email)
-		if err != nil {
-			response.NotFound(ctx, err.Error())
-		}
-		if options, err := relay.authSessionStore.NewAuthSession(user, &signIn); err != nil {
-			response.InternalServerError(ctx, err)
-		} else {
-			response.GetResponse().WithDataSuccess(ctx, options.Response)
-		}
+		response.GetResponse().SuccessWithData(ctx, options.Response)
 	}
 }
 
@@ -54,7 +46,6 @@ func (relay *RelayParty) beginSignIn(ctx *gin.Context) {
 // @Tags Plugins Passkey
 // @Accept json
 // @Produce json
-// @Param email  query string true "user email" Format(email)
 // @Param origin query string true "origin"
 // @Param signinBody body protocol.CredentialAssertionResponse true "Verify SignIn"
 // @Success 200 {object} SiginInResponse "OK"
@@ -63,21 +54,20 @@ func (relay *RelayParty) beginSignIn(ctx *gin.Context) {
 func (relay *RelayParty) finishSignIn(ctx *gin.Context) {
 	// body works for SDK, the additional info appends to query
 	stubSignIn := seedworks.SiginIn{
-		Registration: seedworks.Registration{
-			RegistrationPrepare: seedworks.RegistrationPrepare{
-				Email: ctx.Query("email"),
-			},
-			Origin: ctx.Query("origin"),
-		},
+		Origin: ctx.Query("origin"),
 	}
 
-	user, _, err := relay.authSessionStore.FinishAuthSession(&stubSignIn, ctx)
+	var user *seedworks.User
+	_, err := relay.authSessionStore.FinishDiscoverableAuthSession(&stubSignIn, ctx, func(rawID, userHandle []byte) (webauthn.User, error) {
+		var err error
+		user, err = relay.db.FindUser(string(userHandle))
+		return user, err
+	})
 	if err != nil {
 		response.GetResponse().FailCode(ctx, 401, "SignIn failed: "+err.Error())
 		return
 	}
 
-	relay.db.Save(user, true)
-
+	ctx.Set("user", user)
 	ginJwtMiddleware().LoginHandler(ctx)
 }

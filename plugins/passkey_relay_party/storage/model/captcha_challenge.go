@@ -1,8 +1,6 @@
 package model
 
-import (
-	"another_node/internal/community/storage"
-)
+import "time"
 
 type ChallengeType string
 
@@ -11,10 +9,11 @@ const (
 )
 
 type CaptchaChallenge struct {
-	storage.BaseData
-	Type   ChallengeType `gorm:"type:varchar(255);column:type"`
-	Object string        `gorm:"type:varchar(255);column:object;index:idx_object"`
-	Code   string        `gorm:"type:varchar(16);column:code"`
+	ID        int64         `gorm:"primaryKey;autoIncrement;column:id" json:"id"`
+	CreatedAt time.Time     `gorm:"column:created_at" json:"created_at"`
+	Type      ChallengeType `gorm:"type:varchar(255);column:type"`
+	Object    string        `gorm:"type:varchar(255);column:object;index:idx_object"`
+	Code      string        `gorm:"type:varchar(16);column:code"`
 }
 
 func (CaptchaChallenge) TableName() string {

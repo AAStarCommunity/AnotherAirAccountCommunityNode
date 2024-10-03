@@ -2,27 +2,34 @@ package plugin_passkey_relay_party
 
 import (
 	"another_node/internal/community/account"
-	"another_node/internal/community/chain"
 	consts "another_node/internal/seedworks"
 	"another_node/internal/web_server/pkg/response"
 	"another_node/plugins/passkey_relay_party/seedworks"
+	"encoding/base64"
 	"errors"
-	"strings"
+	"fmt"
 
 	"github.com/gin-gonic/gin"
 )
 
-// regPrepare
+//lint:ignore U1000 because it's used in the swagger
+type finishRegistrationResponse struct {
+	AccountInitCode string `json:"account_init_code"`
+	AccountAddress  string `json:"account_address"`
+	EoaAddress      string `json:"eoa_address"`
+}
+
+// regPrepareByEmail
 // @Summary Prepare SignUp
 // @Tags Plugins Passkey
 // @Description Send captcha to email for confirming ownership
 // @Accept json
 // @Product json
-// @Param registrationBody body seedworks.RegistrationPrepare true "Send Captcha to Email"
+// @Param registrationBody body seedworks.RegistrationByEmail true "Send Captcha to Email"
 // @Router /api/passkey/v1/reg/prepare [post]
 // @Success 200
-func (relay *RelayParty) regPrepare(ctx *gin.Context) {
-	var reg seedworks.Registration
+func (relay *RelayParty) regPrepareByEmail(ctx *gin.Context) {
+	var reg seedworks.RegistrationByEmail
 	if err := ctx.ShouldBindJSON(&reg); err != nil {
 		response.BadRequest(ctx, err.Error())
 		return
@@ -35,68 +42,41 @@ func (relay *RelayParty) regPrepare(ctx *gin.Context) {
 	response.GetResponse().Success(ctx)
 }
 
-// beginRegistration
+// beginRegistrationByEmail
 // @Summary Begin SignUp
 // @Tags Plugins Passkey
 // @Description Send challenge for passkey
 // @Accept json
 // @Product json
-// @Param registrationBody body seedworks.Registration true "Begin Registration"
+// @Param registrationBody body seedworks.RegistrationByEmail true "Begin Registration"
 // @Router /api/passkey/v1/reg [post]
 // @Success 200 {object} protocol.PublicKeyCredentialCreationOptions
-func (relay *RelayParty) beginRegistration(ctx *gin.Context) {
-	var reg seedworks.Registration
+func (relay *RelayParty) beginRegistrationByEmail(ctx *gin.Context) {
+	var reg seedworks.RegistrationByEmail
 	if err := ctx.ShouldBindJSON(&reg); err != nil {
 		response.BadRequest(ctx, err.Error())
 		return
 	}
-	// TODO: special logic for align testing
-	if !strings.HasSuffix(reg.Email, "@aastar.org") && reg.Captcha != "111111" {
-		if err := relay.emailChallenge(reg.Email, reg.Captcha); err != nil {
-			response.BadRequest(ctx, err.Error())
-			return
-		}
-	}
 
-	if u, err := relay.findUserByEmail(reg.Email); err != nil && !errors.Is(err, seedworks.ErrUserNotFound{}) {
-		response.InternalServerError(ctx, err.Error())
-		return
-	} else if u != nil {
-		response.BadRequest(ctx, "User already exists")
+	if err := relay.emailChallenge(reg.Email, reg.Captcha); err != nil {
+		response.BadRequest(ctx, err.Error())
 		return
 	}
-
-	// TODO: if the user is not exists but in community, re-register the user
 
 	sessionKey := seedworks.GetSessionKey(reg.Origin, reg.Email)
 	if session := relay.authSessionStore.Get(sessionKey); session != nil {
 		relay.authSessionStore.Remove(sessionKey)
 	}
 
-	if options, err := relay.authSessionStore.NewRegSession(&reg); err != nil {
+	if options, err := relay.authSessionStore.BeginRegSession(&reg); err != nil {
 		response.InternalServerError(ctx, err.Error())
 	} else {
-		response.GetResponse().WithDataSuccess(ctx, options.Response)
+		response.GetResponse().SuccessWithData(ctx, options.Response)
 	}
 }
 
-//lint:ignore U1000 because it's used in the swagger
-type finishRegistrationResponse struct {
-	AccountInitCode string `json:"account_init_code"`
-	AccountAddress  string `json:"account_address"`
-	EoaAddress      string `json:"eoa_address"`
-}
-
-// func replayLoginResponse(ctx *gin.Context, append func(c *gin.Context)) {
-// 	ctx.Writer.WriteString("{\"token\": ")
-// 	ginJwtMiddleware().LoginHandler(ctx)
-// 	ctx.Writer.WriteString(",\"append\": ")
-// 	append(ctx)
-// 	ctx.Writer.WriteString("}")
-// }
-
-// finishRegistration
-// @Summary Finish SignUp
+// finishRegistrationByEmail
+// @Summary Finish SignUp By Email
 // @Tags Plugins Passkey
 // @Description Verify attestations, register user and return JWT
 // @Accept json
@@ -104,63 +84,76 @@ type finishRegistrationResponse struct {
 // @Param email  query string true "user email" Format(email)
 // @Param origin query string true "origin"
 // @Param network query string false "network"
+// @Param alias query string false "network"
 // @Param registrationBody body protocol.CredentialCreationResponse true "Verify Registration"
 // @Router /api/passkey/v1/reg/verify [post]
 // @Success 200 {object} SiginInResponse "OK"
-func (relay *RelayParty) finishRegistration(ctx *gin.Context) {
+func (relay *RelayParty) finishRegistrationByEmail(ctx *gin.Context) {
 
-	// TODO: for tokyo ONLY
 	network := consts.Chain(ctx.Query("network"))
 
 	if !isSupportChain(network) {
-		response.BadRequest(ctx, "network not supported, please specify a valid network, e.g.: optimism-mainnet, base-sepolia, optimism-sepolia, ethereum-sepolia")
+		response.BadRequest(ctx, "network not supported, please specify a valid network, e.g.: optimism-mainnet, base-sepolia, optimism-sepolia")
 		return
 	}
 
-	// body works for parser, the additional info appends to query
-	stubReg := seedworks.FinishRegistration{
-		RegistrationPrepare: seedworks.RegistrationPrepare{
+	// body-stream works for parser, the additional info appends to query
+	stubReg := seedworks.FinishRegistrationByEmail{
+		RegistrationByEmailPrepare: seedworks.RegistrationByEmailPrepare{
 			Email: ctx.Query("email"),
 		},
-		Origin:  ctx.Query("origin"),
-		Network: consts.Chain(ctx.Query("network")),
+		Origin: ctx.Query("origin"),
 	}
 
 	if user, err := relay.authSessionStore.FinishRegSession(&stubReg, ctx); err != nil {
 		response.GetResponse().FailCode(ctx, 401, "SignUp failed: "+err.Error())
-		return
 	} else {
-		// TODO: special logic for align testing
-		if strings.HasSuffix(stubReg.Email, "@aastar.org") {
-			response.GetResponse().WithDataSuccess(ctx, user)
-			return
-		}
-		if initCode, address, eoaAddress, err := createAA(user, stubReg.Network); err != nil { // TODO: persistent initCode and address
-			response.InternalServerError(ctx, err.Error())
-			return
-		} else {
-
-			// TODO: special logic for tokyo
-			relay.db.Save(user, false)
-			relay.db.SaveAccounts(user, initCode, address, eoaAddress, string(network))
-
-			ginJwtMiddleware().LoginHandler(ctx)
-
-			return
-		}
+		signup(relay, ctx, user)
 	}
 }
 
-// createAA represents creating an Account Abstraction for the user
-func createAA(user *seedworks.User, network consts.Chain) (initCode, address, eoaAddress string, err error) {
-	if w, err := account.NewHdWallet(account.HierarchicalPath_ETH); err != nil {
-		return "", "", "", err
-	} else {
-		address, initCode, err := chain.CreateSmartAccount(w, network)
-		if err != nil {
-			return "", "", "", err
-		}
-		user.SetWallet(w, address, network)
-		return initCode, address, w.Address(), nil
+const defaultWalletCount = 5
+
+func createWalletsForNewUser(relay *RelayParty, ctx *gin.Context, user *seedworks.User) {
+	paths := make([]account.HierarchicalPath, defaultWalletCount)
+	for i := 0; i < defaultWalletCount && i < 10; i++ {
+		paths[i] = account.HierarchicalPath(fmt.Sprintf(account.HierarchicalPath_ETH_FMT, i))
 	}
+	wallets, err := account.NewHdWallet(paths...)
+	if err != nil {
+		response.InternalServerError(ctx, err.Error())
+		return
+	}
+
+	if err := relay.db.CreateAccount(user.GetEmail(), wallets); err != nil {
+		response.InternalServerError(ctx, err.Error())
+		return
+	}
+}
+
+func signup(relay *RelayParty, ctx *gin.Context, user *seedworks.User) {
+
+	createWalletsForNewUser(relay, ctx, user)
+
+	// check if user passkey already exists
+	if len(user.WebAuthnCredentials()) != 1 {
+		response.BadRequest(ctx, errors.New("not support multiple credentials"))
+		return
+	}
+
+	signupCredId := base64.URLEncoding.EncodeToString(user.WebAuthnCredentials()[0].ID)
+	if u, _ := relay.db.FindUserByPasskey(user.GetEmail(), signupCredId); u != nil {
+		user = u
+	}
+
+	if err := relay.db.SaveAccounts(user); err != nil {
+		if errors.Is(err, seedworks.ErrUserAlreadyExists{}) {
+			response.BadRequest(ctx, err.Error())
+		} else {
+			response.InternalServerError(ctx, err.Error())
+		}
+		return
+	}
+
+	ginJwtMiddleware().LoginHandler(ctx)
 }

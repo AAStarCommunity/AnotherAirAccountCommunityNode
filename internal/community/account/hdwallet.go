@@ -9,61 +9,55 @@ type HierarchicalPath string
 
 // HierarchicalPath_ETH is the default path for Mainet / Eth / TestNet
 const HierarchicalPath_ETH HierarchicalPath = "m/44'/60'/0'/0/0"
+const HierarchicalPath_ETH_FMT string = "m/44'/60'/0'/0/%d"
 
 type HdWallet struct {
-	mnemonic   string
-	address    string
-	privateKey string
+	Id         int64  `json:"-"`
+	Mnemonic   string `json:"mnemonic"`
+	Address    string `json:"address"`
+	PrivateKey string `json:"privateKey"`
 }
 
-func (w *HdWallet) Mnemonic() string {
-	return w.mnemonic
-}
-
-func (w *HdWallet) PrivateKey() string {
-	return w.privateKey
-}
-
-func (w *HdWallet) Address() string {
-	return w.address
-}
-
-func RecoverHdWallet(mnemonic, addr, prv *string) *HdWallet {
-	return &HdWallet{
-		mnemonic:   *mnemonic,
-		address:    *addr,
-		privateKey: *prv,
-	}
-}
-
-func NewHdWallet(hierarchicalPath HierarchicalPath) (*HdWallet, error) {
+func newWallet() (*hdwallet.Wallet, *string, error) {
 	entropy, err := bip39.NewEntropy(256)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	mnemonic, err := bip39.NewMnemonic(entropy)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	wallet, err := hdwallet.NewFromMnemonic(mnemonic)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	path := hdwallet.MustParseDerivationPath(string(hierarchicalPath))
-	account, err := wallet.Derive(path, false)
-	if err != nil {
-		return nil, err
-	}
+	return wallet, &mnemonic, nil
+}
 
-	privateKey, err := wallet.PrivateKeyHex(account)
-	if err != nil {
+func NewHdWallet(hierarchicalPath ...HierarchicalPath) ([]HdWallet, error) {
+	if wallet, mnemonic, err := newWallet(); err != nil {
 		return nil, err
-	}
+	} else {
+		hdwallets := make([]HdWallet, 0)
+		for p := range hierarchicalPath {
+			path := hdwallet.MustParseDerivationPath(string(hierarchicalPath[p]))
+			account, err := wallet.Derive(path, false)
+			if err != nil {
+				return nil, err
+			}
 
-	return &HdWallet{
-		mnemonic:   mnemonic,
-		address:    account.Address.Hex(),
-		privateKey: privateKey,
-	}, nil
+			privateKey, err := wallet.PrivateKeyHex(account)
+			if err != nil {
+				return nil, err
+			}
+
+			hdwallets = append(hdwallets, HdWallet{
+				Mnemonic:   *mnemonic,
+				Address:    account.Address.Hex(),
+				PrivateKey: privateKey,
+			})
+		}
+		return hdwallets, nil
+	}
 }

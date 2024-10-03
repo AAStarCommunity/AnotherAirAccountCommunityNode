@@ -1,6 +1,7 @@
 package seedworks
 
 import (
+	"encoding/base64"
 	"fmt"
 	"strings"
 	"sync"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-webauthn/webauthn/protocol"
+	"github.com/go-webauthn/webauthn/protocol/webauthncose"
 	"github.com/go-webauthn/webauthn/webauthn"
 )
 
@@ -32,8 +34,9 @@ func NewInMemorySessionStore() *SessionStore {
 	return store
 }
 
-func (store *SessionStore) NewRegSession(reg *Registration) (*protocol.CredentialCreation, error) {
+func (store *SessionStore) BeginRegSession(reg *RegistrationByEmail) (*protocol.CredentialCreation, error) {
 	user := newUser(reg.Email)
+
 	wan, _ := newWebAuthn(reg.Origin)
 	sessionKey := GetSessionKey(reg.Origin, reg.Email)
 
@@ -43,8 +46,14 @@ func (store *SessionStore) NewRegSession(reg *Registration) (*protocol.Credentia
 		UserVerification:        protocol.VerificationRequired,
 	}
 
+	credParams := []protocol.CredentialParameter{
+		{Type: protocol.PublicKeyCredentialType, Algorithm: webauthncose.AlgES256},
+		{Type: protocol.PublicKeyCredentialType, Algorithm: webauthncose.AlgRS256},
+	}
+
 	if opt, session, err := wan.BeginRegistration(user,
 		webauthn.WithAuthenticatorSelection(authSelect),
+		webauthn.WithCredentialParameters(credParams),
 	); err != nil {
 		return nil, err
 	} else {
@@ -53,7 +62,7 @@ func (store *SessionStore) NewRegSession(reg *Registration) (*protocol.Credentia
 	}
 }
 
-func (store *SessionStore) FinishRegSession(reg *FinishRegistration, ctx *gin.Context) (*User, error) {
+func (store *SessionStore) FinishRegSession(reg *FinishRegistrationByEmail, ctx *gin.Context) (*User, error) {
 	key := GetSessionKey(reg.Origin, reg.Email)
 	if session := store.Get(key); session == nil {
 		return nil, fmt.Errorf("%s: not found", reg.Email)
@@ -68,51 +77,47 @@ func (store *SessionStore) FinishRegSession(reg *FinishRegistration, ctx *gin.Co
 	}
 }
 
-func (store *SessionStore) NewAuthSession(user *User, signIn *SiginIn) (*protocol.CredentialAssertion, error) {
-	if user == nil || signIn == nil {
-		return nil, fmt.Errorf("user or signIn is nil")
-	}
+const session_key_discoverlogin string = "DiscoverLogin"
 
+func (store *SessionStore) BeginDiscoverableAuthSession(signIn *SiginIn) (*protocol.CredentialAssertion, error) {
 	webauthn, _ := newWebAuthn(signIn.Origin)
-	sessionKey := GetSessionKey(signIn.Origin, signIn.Email)
-	if opt, session, err := webauthn.BeginLogin(user); err != nil {
+	if opt, session, err := webauthn.BeginDiscoverableLogin(); err != nil {
 		return nil, err
 	} else {
-		store.set(sessionKey, webauthn, session, user)
+		sessionKey := GetSessionKey(signIn.Origin, session_key_discoverlogin)
+		store.set(sessionKey, webauthn, session, nil)
 		return opt, nil
 	}
 }
 
-func (store *SessionStore) FinishAuthSession(signIn *SiginIn, ctx *gin.Context) (*User, *webauthn.Credential, error) {
-	key := GetSessionKey(signIn.Origin, signIn.Email)
+func (store *SessionStore) FinishDiscoverableAuthSession(signIn *SiginIn, ctx *gin.Context, find func(rawID, userHandle []byte) (user webauthn.User, err error)) (*webauthn.Credential, error) {
+	key := GetSessionKey(signIn.Origin, session_key_discoverlogin)
 	if session := store.Get(key); session == nil {
-		return nil, nil, fmt.Errorf("%s: not found", signIn.Email)
+		return nil, fmt.Errorf("not found")
 	} else {
-		if cred, err := session.WebAuthn.FinishLogin(&session.User, session.Data, ctx.Request); err == nil {
-			store.Remove(key)
-			session.User.UpdateCredential(cred)
-			return &session.User, cred, nil
+		defer store.Remove(key)
+		if u, err := session.WebAuthn.FinishDiscoverableLogin(find, session.Data, ctx.Request); err == nil {
+			return u, nil
 		} else {
-			return nil, nil, err
+			return nil, err
 		}
 	}
 }
 
-func (store *SessionStore) NewTxSession(user *User, txSignature *TxSignature) (*protocol.CredentialAssertion, error) {
+func (store *SessionStore) BeginTxSession(user *User, txSignature *TxSignature) (*protocol.CredentialAssertion, error) {
 	if user == nil || txSignature == nil {
 		return nil, fmt.Errorf("user or signIn is nil")
 	}
 
 	webAuthn, _ := newWebAuthn(txSignature.Origin)
-	sessionKey := GetSessionKey(txSignature.Origin, txSignature.Email, txSignature.Nonce)
+	sessionKey := GetSessionKey(txSignature.Origin, txSignature.Email, txSignature.Ticket)
 	if opt, session, err := webAuthn.BeginLogin(user,
 		func(opt *protocol.PublicKeyCredentialRequestOptions) {
-			// opt.Challenge, _ = CreateChallenge(txSignature) // TODO: rewrite the challenge algorithm
+			opt.Challenge = protocol.URLEncodedBase64(txSignature.TxData)
 			if opt.Extensions == nil {
 				opt.Extensions = make(map[string]interface{})
 			}
-			opt.Extensions["txdata"] = txSignature.TxData
-			opt.Extensions["nonce"] = txSignature.Nonce
+			opt.Extensions["ticket"] = txSignature.Ticket
 		},
 	); err != nil {
 		return nil, err
@@ -122,16 +127,20 @@ func (store *SessionStore) NewTxSession(user *User, txSignature *TxSignature) (*
 	}
 }
 
-func (store *SessionStore) FinishSignSession(paymentSign *TxSignature, ctx *gin.Context) (*User, error) {
-	key := GetSessionKey(paymentSign.Origin, paymentSign.Email, paymentSign.Nonce)
+func (store *SessionStore) FinishTxSession(paymentSign *TxSignature, ctx *gin.Context) (*User, error) {
+	key := GetSessionKey(paymentSign.Origin, paymentSign.Email, paymentSign.Ticket)
 	if session := store.Get(key); session == nil {
 		return nil, fmt.Errorf("%s: not found", paymentSign.Email)
 	} else {
 		if _, err := session.WebAuthn.FinishLogin(&session.User, session.Data, ctx.Request); err == nil {
 			store.Remove(key)
-			paymentSign.TxData = session.Data.Extensions["txdata"].(string)
-			if paymentSign.Nonce != session.Data.Extensions["nonce"].(string) {
-				return nil, fmt.Errorf("nonce not match")
+			if paymentSign.Ticket != session.Data.Extensions["ticket"].(string) {
+				return nil, fmt.Errorf("ticket not match")
+			}
+			if txData, err := base64.RawURLEncoding.DecodeString(session.Data.Challenge); err != nil {
+				return nil, err
+			} else {
+				paymentSign.TxData = string(txData)
 			}
 			return &session.User, nil
 		} else {
@@ -166,8 +175,14 @@ func (store *SessionStore) set(key string, webauthn *webauthn.WebAuthn, session 
 	cache := &sessionCache{
 		Data:     *session,
 		WebAuthn: *webauthn,
-		User:     *user,
-		expires:  120,
+		User: func() User {
+			if user == nil {
+				return User{}
+			} else {
+				return *user
+			}
+		}(),
+		expires: 120,
 	}
 	cache.countdown()
 	store.sessions[key] = cache

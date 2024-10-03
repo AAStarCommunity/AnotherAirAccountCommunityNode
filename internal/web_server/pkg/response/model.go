@@ -23,13 +23,13 @@ func BadRequest(ctx *gin.Context, data ...any) {
 }
 
 func NotFound(ctx *gin.Context, data ...any) {
-	GetResponse().withDataAndHttpCode(http.StatusNotFound, ctx, data)
+	GetResponse().withDataAndHttpCode(http.StatusOK, ctx, data)
 }
 
 // Success response when business operation is successful
 func Success(ctx *gin.Context, data ...any) {
 	if data != nil {
-		GetResponse().WithDataSuccess(ctx, data[0])
+		GetResponse().SuccessWithData(ctx, data[0])
 		return
 	}
 	GetResponse().Success(ctx)
@@ -88,8 +88,18 @@ func (r *Response) Success(ctx *gin.Context) *Response {
 	return r
 }
 
-// WithDataSuccess response with data when operation is successful
-func (r *Response) WithDataSuccess(ctx *gin.Context, data interface{}) *Response {
+func (r *Response) SuccessWithDataAndCode(code int, ctx *gin.Context, data interface{}) *Response {
+	r.SetHttpCode(http.StatusOK)
+	r.SetCode(code)
+	if data != nil {
+		r.WithData(data)
+	}
+	r.json(ctx)
+	return r
+}
+
+// SuccessWithData response with data when operation is successful
+func (r *Response) SuccessWithData(ctx *gin.Context, data interface{}) *Response {
 	r.SetCode(http.StatusOK)
 	r.WithData(data)
 	r.json(ctx)

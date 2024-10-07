@@ -7,7 +7,7 @@ import (
 )
 
 func init() {
-	bls.Init(bls.BLS12_381)
+	bls.Init(bls.CurveFp254BNb)
 	bls.SetETHmode(bls.EthModeDraft07)
 }
 

@@ -1,12 +1,16 @@
 package signature
 
 import (
+	"bytes"
 	"crypto/sha256"
+	"encoding/json"
 	"fmt"
 	"math/rand/v2"
+	"net/http"
+	"sync"
 )
 
-func randSplit(data []byte, n int) [][]byte {
+func randSplit(data string, n int) []string {
 	lengths := make([]int, n)
 	total := len(data)
 
@@ -17,7 +21,7 @@ func randSplit(data []byte, n int) [][]byte {
 	}
 	lengths[n-1] = total
 
-	groups := make([][]byte, n)
+	groups := make([]string, n)
 	start := 0
 	for i, length := range lengths {
 		groups[i] = data[start : start+length]
@@ -29,14 +33,50 @@ func randSplit(data []byte, n int) [][]byte {
 
 // Bls sign data using BLS signature scheme
 func Bls(data []byte) (blsSignature []byte, blsPublickey []byte, err error) {
-	msgHash := sha256.Sum256(data)
-	groups := randSplit(msgHash[:], rand.IntN(3)+1)
-
-	for _, g := range groups {
-		// TODO: request DVT webapi to sign data
-		fmt.Print(string(g))
+	dvtNodes := []string{
+		"http://localhost:8081",
+		// "http://localhost:8082",
+		// "http://localhost:8083",
+	}
+	msgHash := fmt.Sprintf("%x", sha256.Sum256(data))[0:31]
+	groups := randSplit(msgHash, len(dvtNodes))
+	mapGroups := make(map[string]string)
+	for i, g := range groups {
+		mapGroups[dvtNodes[i]] = g
 	}
 
+	var wg sync.WaitGroup
+	wg.Add(len(groups))
+	for dvt, g := range mapGroups {
+		go func(d string, group string) {
+			defer wg.Done()
+			body := struct {
+				Domain  string `json:"domain"`
+				Message string `json:"message"`
+			}{
+				Domain:  "dvt",
+				Message: group,
+			}
+			jsonData, err := json.Marshal(body)
+			if err != nil {
+				fmt.Println("Error encoding JSON:", err)
+				return
+			}
+
+			resp, err := http.Post(d+"/sign", "application/json", bytes.NewBuffer(jsonData))
+			if err != nil {
+				fmt.Println("Error:", err)
+				return
+			}
+			defer resp.Body.Close()
+
+			if resp.StatusCode == 200 {
+				fmt.Println("response Status:", resp.Status)
+				return
+			}
+		}(dvt, g)
+	}
+	wg.Wait()
 	panic("not implemented")
 }
 

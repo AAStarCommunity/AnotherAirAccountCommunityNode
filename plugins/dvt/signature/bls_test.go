@@ -10,12 +10,22 @@ import (
 )
 
 func TestRandSplit(t *testing.T) {
-	data := []byte("asdfasdfasdfasdf314")
+	data := "asdfasdfasdfasdf314"
 	n := rand.IntN(3) + 1
 	groups := randSplit(data, n)
 	for _, g := range groups {
 		fmt.Print(string(g))
 	}
+}
+
+func TestBls(t *testing.T) {
+	data := []byte("asdfasdfasdfasdf314")
+	sig, pub, err := Bls(data)
+	if err != nil {
+		t.Error(err)
+	}
+	fmt.Println(sig)
+	fmt.Println(pub)
 }
 
 func itorSigners(arr []string, k int) [][]string {
@@ -45,7 +55,7 @@ func itorSigners(arr []string, k int) [][]string {
 	return res
 }
 
-func TestBls(t *testing.T) {
+func TestBlsTss(t *testing.T) {
 	threshold := 2
 	totalSigners := 5
 	val := "dfabcasdfasf"

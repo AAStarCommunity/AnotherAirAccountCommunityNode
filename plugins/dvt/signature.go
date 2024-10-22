@@ -25,6 +25,6 @@ func Signature(ca *protocol.ParsedCredentialAssertionData, publicKey []byte) (bl
 			return seedworks.ErrSignatureVerifyFailed{}
 		}()
 	} else {
-		return signature.Bls(1, 1, ca.Response.Signature)
+		return signature.BlsTss(1, 1, ca.Response.Signature)
 	}
 }

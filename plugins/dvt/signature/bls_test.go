@@ -3,10 +3,20 @@ package signature
 import (
 	"encoding/base64"
 	"fmt"
+	"math/rand/v2"
 	"testing"
 
 	"github.com/herumi/bls-eth-go-binary/bls"
 )
+
+func TestRandSplit(t *testing.T) {
+	data := []byte("asdfasdfasdfasdf314")
+	n := rand.IntN(3) + 1
+	groups := randSplit(data, n)
+	for _, g := range groups {
+		fmt.Print(string(g))
+	}
+}
 
 func itorSigners(arr []string, k int) [][]string {
 	var helper func(start int, combo []string)
@@ -42,7 +52,7 @@ func TestBls(t *testing.T) {
 	data := []byte(val)
 	verifyData := []byte(val)
 
-	sig, msk, err := Bls(threshold, totalSigners, data)
+	sig, msk, err := BlsTss(threshold, totalSigners, data)
 
 	if err != nil {
 		t.Error(err)

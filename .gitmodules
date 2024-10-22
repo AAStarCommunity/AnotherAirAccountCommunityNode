@@ -1,0 +1,3 @@
+[submodule "plugins/dvt-node"]
+	path = plugins/dvt-node
+	url = https://github.com/AAStarCommunity/dvt.git

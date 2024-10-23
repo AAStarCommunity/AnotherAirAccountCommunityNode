@@ -20,12 +20,13 @@ func TestRandSplit(t *testing.T) {
 
 func TestBls(t *testing.T) {
 	data := []byte("asdfasdfasdfasdf314")
-	sig, pub, err := Bls(data)
+	ok, err := Bls(data)
 	if err != nil {
 		t.Error(err)
 	}
-	fmt.Println(sig)
-	fmt.Println(pub)
+	if !ok {
+		t.Error("Bls failed")
+	}
 }
 
 func itorSigners(arr []string, k int) [][]string {

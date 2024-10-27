@@ -93,6 +93,10 @@ func TestBlsTss(t *testing.T) {
 }
 
 func TestSign(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
+
 	allId := []string{"1", "2", "3", "4", "5"}
 
 	threshold := len(allId) - 2

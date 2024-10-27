@@ -61,6 +61,10 @@ func itorSigners(arr []string, k int) [][]string {
 }
 
 func TestBlsTss(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
+
 	threshold := 2
 	totalSigners := 5
 	val := "dfabcasdfasf"

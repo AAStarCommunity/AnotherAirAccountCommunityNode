@@ -39,11 +39,32 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 2. body参数中增加network，表示链名称，必填
 3. body参数中增加network_alias，表示链别名，非必填参数
 
+
 ### POST /api/passkey/v1/tx/sign/verify
 
 1. query参数中nonce改名为ticket
 2. query参数中增加network，表示链名称，必填
 3. query参数中增加network_alias，表示链别名，非必填参数
+4. 响应结果增加BLS信息，包括bls_sign，bls_pubkey和bls_schema，其中bls_sign和bls_pubkey使用`base64url`编码，分别表示bls的签名和公钥，bls_schema表示bls算法信息
+
+响应结果示例
+
+```json
+{
+    "code": 200,
+    "message": "",
+    "data": {
+        "code": 200,
+        "txdata": "48656c6c6f2c20576f726c6421",
+        "sign": "0xce6e001af297172aa5176b2a50200148002e9a9ece9293694fe5374b453f62c30e445a94a4b6ebab0c05631614c934b4eb318ffd4dd5ff159807430aeaff32e51c",
+        "bls_sign": "jclHo_HBKZUzYKMgJsCqpjXxGkIrJZZXx2npXHFHHdgNA4fu0VD5wsrLlVUB04OKCFNfiKw7XzGOT4Ob7qhkYkFjXDXxg3l0mG9VYct7KI7EtYd6H3jgGE93j6lYfwaM",
+        "bls_pubkey": "rzpZJX8PiAXgsf4BQZJ6hbJkhQUWyM0lrch_YmrqzZ34Z_YeqXa4nKc-lnkm7vqR",
+        "address": "0xf75291198A0c549962Db2D4816321e95a0e48fc3",
+        "bls_schemal": "BLS12_381:EthModeDraft07"
+    },
+    "cost": "2562047h47m16.854775807s"
+}
+```
 
 ## [新增接口]
 

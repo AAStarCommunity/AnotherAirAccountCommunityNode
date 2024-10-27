@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-webauthn/webauthn/protocol"
 )
 
 // beginTxSignature
@@ -84,7 +85,13 @@ func (relay *RelayParty) finishTxSignature(ctx *gin.Context) {
 		signPayment.Email = email
 	}
 
-	user, err := relay.txSessionStore.FinishTxSession(&signPayment, ctx)
+	if parsedAttestation, err := protocol.ParseCredentialRequestResponse(ctx.Request); err != nil {
+		response.GetResponse().FailCode(ctx, 400, "SignIn failed: "+err.Error())
+		return
+	} else {
+		signPayment.CA = parsedAttestation
+	}
+	user, err := relay.txSessionStore.FinishTxSession(&signPayment)
 	if err != nil {
 		response.GetResponse().FailCode(ctx, 403, "SignIn failed: "+err.Error())
 		return
@@ -92,7 +99,7 @@ func (relay *RelayParty) finishTxSignature(ctx *gin.Context) {
 
 	sig, err := sigTx(user, &signPayment)
 	if err != nil {
-		response.GetResponse().FailCode(ctx, 403, "SignIn failed: "+err.Error())
+		response.GetResponse().FailCode(ctx, 400, "SignIn failed: "+err.Error())
 		return
 	}
 	response.GetResponse().SuccessWithData(ctx, sig)

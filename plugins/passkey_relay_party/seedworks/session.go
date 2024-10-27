@@ -3,6 +3,7 @@ package seedworks
 import (
 	"encoding/base64"
 	"fmt"
+	"reflect"
 	"strings"
 	"sync"
 	"time"
@@ -127,12 +128,12 @@ func (store *SessionStore) BeginTxSession(user *User, txSignature *TxSignature) 
 	}
 }
 
-func (store *SessionStore) FinishTxSession(paymentSign *TxSignature, ctx *gin.Context) (*User, error) {
+func (store *SessionStore) FinishTxSession(paymentSign *TxSignature) (*User, error) {
 	key := GetSessionKey(paymentSign.Origin, paymentSign.Email, paymentSign.Ticket)
 	if session := store.Get(key); session == nil {
 		return nil, fmt.Errorf("%s: not found", paymentSign.Email)
 	} else {
-		if _, err := session.WebAuthn.FinishLogin(&session.User, session.Data, ctx.Request); err == nil {
+		if _, err := session.WebAuthn.ValidateLogin(&session.User, session.Data, paymentSign.CA); err == nil {
 			store.Remove(key)
 			if paymentSign.Ticket != session.Data.Extensions["ticket"].(string) {
 				return nil, fmt.Errorf("ticket not match")
@@ -141,6 +142,12 @@ func (store *SessionStore) FinishTxSession(paymentSign *TxSignature, ctx *gin.Co
 				return nil, err
 			} else {
 				paymentSign.TxData = string(txData)
+			}
+			for _, weban := range session.User.WebAuthnCredentials() {
+				if reflect.DeepEqual(weban.ID, paymentSign.CA.RawID) {
+					paymentSign.CAPublicKey = weban.PublicKey
+					break
+				}
 			}
 			return &session.User, nil
 		} else {

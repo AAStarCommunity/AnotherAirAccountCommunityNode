@@ -8,7 +8,7 @@ export default function RegisterForm() {
   return (
     <div>
       {browserSupportsWebAuthn() ? (
-        <Form action={PasskeyRegister}>
+        <Form action={PasskeyRegister} isDiscoverable={false}>
           <SubmitButton>Sign Up</SubmitButton>
           <p className="text-center text-sm text-gray-600">
             {"Already have an account? "}

@@ -21,6 +21,7 @@ func TestRandSplit(t *testing.T) {
 func TestBls(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
+		return
 	}
 
 	data := []byte("asdfasdfasdfasdf314")

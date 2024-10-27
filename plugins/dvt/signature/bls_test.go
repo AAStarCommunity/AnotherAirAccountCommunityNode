@@ -19,6 +19,10 @@ func TestRandSplit(t *testing.T) {
 }
 
 func TestBls(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
+
 	data := []byte("asdfasdfasdfasdf314")
 	ok, err := Bls(data)
 	if err != nil {
@@ -136,6 +140,5 @@ func TestSign(t *testing.T) {
 		sigMsg := base64.StdEncoding.EncodeToString(s)
 
 		fmt.Printf("pubkey: %s\n msg: %s\n sig: %s\n\n\n", m1, msg, sigMsg)
-		break
 	}
 }

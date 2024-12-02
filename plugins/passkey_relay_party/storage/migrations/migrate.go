@@ -18,6 +18,7 @@ func init() {
 	migrations = []Migration{
 		&Migration20240711{},
 		&Migration20240828{},
+		&Migration20241202{},
 	}
 }
 

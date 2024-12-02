@@ -75,6 +75,16 @@ func (relay *RelayParty) beginRegistrationByEmail(ctx *gin.Context) {
 	}
 }
 
+// beginRegistrationByEOA
+// @Summary Begin SignUp By EOA
+// @Tags Plugins Passkey
+// @Accept json
+// @Product json
+// @Param registrationBody body seedworks.RegistrationByEOA true "Begin Registration"
+func (relay *RelayParty) beginRegistrationByEOA(ctx *gin.Context) {
+
+}
+
 // finishRegistrationByEmail
 // @Summary Finish SignUp By Email
 // @Tags Plugins Passkey

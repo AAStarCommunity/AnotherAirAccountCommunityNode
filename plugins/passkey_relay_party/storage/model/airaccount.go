@@ -7,6 +7,7 @@ type AirAccount struct {
 	Email            string            `json:"email" gorm:"type:varchar(255)"`
 	Facebook         string            `json:"facebook" gorm:"type:varchar(255)"`
 	Twitter          string            `json:"twitter" gorm:"type:varchar(255)"`
+	EoaAddress       string            `json:"eoa_address" gorm:"type:varchar(255)"`
 	HdWallet         []HdWallet        `json:"hdwallet" gorm:"foreignKey:AirAccountID"`
 	Passkeys         []Passkey         `json:"passkeys" gorm:"foreignKey:AirAccountID"`
 	AirAccountChains []AirAccountChain `json:"airaccount_chains" gorm:"foreignKey:AirAccountID"`

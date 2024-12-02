@@ -28,7 +28,7 @@ require (
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 	gopkg.in/yaml.v2 v2.4.0
 	gorm.io/datatypes v1.2.4
-	gorm.io/driver/postgres v1.5.9
+	gorm.io/driver/postgres v1.5.11
 	gorm.io/driver/sqlite v1.5.6
 	gorm.io/gorm v1.25.12
 )

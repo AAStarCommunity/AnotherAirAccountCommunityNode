@@ -22,6 +22,44 @@ export const PasskeyRegister = async (formData: FormData) => {
   }
 };
 
+export const PasskeyRegisterByEOA = async (eoaAddress: string) => {
+  let user = await generateRegPasskeyPublicKeyV2("eoa", eoaAddress);
+  if (user != null) {
+    return "User already exists"; // TODO: Handle errors with useFormStatus
+  } else {
+    alert("signup success");
+  }
+};
+
+const generateRegPasskeyPublicKeyV2 = async (type: string, account: string) => {
+  const origin = window.location.origin;
+  const resp = await api.post(API.PASSKEY_REG_V2, {
+    type,
+    account,
+    origin,
+  });
+  const json = resp.data.data as PublicKeyCredentialCreationOptionsJSON;
+  if (json !== null) {
+    const attest = await startRegistration(json);
+    const verifyResp = await api.post(
+      API.PASSKEY_REG_VERIFY_V2 +
+        "?origin=" +
+        encodeURIComponent(origin) +
+        "&account=" +
+        account +
+        "&network=optimism-sepolia",
+      attest
+    );
+    const signInRlt = verifyResp.status === 200 && verifyResp.data.code === 200;
+    if (signInRlt) {
+      if (verifyResp.data.token) {
+        localStorage.setItem("token", verifyResp.data.token!);
+      }
+    }
+  }
+};
+
+
 const generateRegPasskeyPublicKey = async (email: string) => {
   const origin = window.location.origin;
   const resp = await api.post(API.PASSKEY_REG, {

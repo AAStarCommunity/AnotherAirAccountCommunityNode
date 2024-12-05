@@ -35,11 +35,8 @@ func NewInMemorySessionStore() *SessionStore {
 	return store
 }
 
-func (store *SessionStore) BeginRegSession(reg *RegistrationByEmail) (*protocol.CredentialCreation, error) {
-	user := newUser(reg.Email)
-
-	wan, _ := newWebAuthn(reg.Origin)
-	sessionKey := GetSessionKey(reg.Origin, reg.Email)
+func beginRegSession(store *SessionStore, user *User, sessionKey string, origin string) (*protocol.CredentialCreation, error) {
+	wan, _ := newWebAuthn(origin)
 
 	authSelect := protocol.AuthenticatorSelection{
 		AuthenticatorAttachment: protocol.Platform,
@@ -61,6 +58,12 @@ func (store *SessionStore) BeginRegSession(reg *RegistrationByEmail) (*protocol.
 		store.set(sessionKey, wan, session, user)
 		return opt, nil
 	}
+}
+
+func (store *SessionStore) BeginRegSession(reg *RegistrationByEmail) (*protocol.CredentialCreation, error) {
+	user := newUser(reg.Email)
+	sessionKey := GetSessionKey(reg.Origin, reg.Email)
+	return beginRegSession(store, user, sessionKey, reg.Origin)
 }
 
 func (store *SessionStore) FinishRegSession(reg *FinishRegistrationByEmail, ctx *gin.Context) (*User, error) {

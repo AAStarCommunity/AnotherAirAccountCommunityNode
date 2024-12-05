@@ -14,3 +14,9 @@ type FinishRegistrationByEmail struct {
 	RegistrationByEmailPrepare
 	Origin string `json:"origin"`
 }
+
+type RegistrationByAccount struct {
+	Origin  string `json:"origin"`
+	Type    string `json:"type"`
+	Account string `json:"account"`
+}

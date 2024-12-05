@@ -75,14 +75,31 @@ func (relay *RelayParty) beginRegistrationByEmail(ctx *gin.Context) {
 	}
 }
 
-// beginRegistrationByEOA
-// @Summary Begin SignUp By EOA
+// RegistrationByAccount
+// @Summary Begin SignUp By EOA/UnionID/etc.,
 // @Tags Plugins Passkey
 // @Accept json
 // @Product json
-// @Param registrationBody body seedworks.RegistrationByEOA true "Begin Registration"
-func (relay *RelayParty) beginRegistrationByEOA(ctx *gin.Context) {
+// @Param registrationBody body seedworks.RegistrationByAccount true "Begin Registration"
+// @Router /api/passkey/v1/reg-account [post]
+// @Success 200 {object} protocol.PublicKeyCredentialCreationOptions
+func (relay *RelayParty) beginRegistrationByAccount(ctx *gin.Context) {
+	var reg seedworks.RegistrationByAccount
+	if err := ctx.ShouldBindJSON(&reg); err != nil {
+		response.BadRequest(ctx, err.Error())
+		return
+	}
 
+	sessionKey := seedworks.GetSessionKey(reg.Origin, reg.Account, reg.Type)
+	if session := relay.authSessionStore.Get(sessionKey); session != nil {
+		relay.authSessionStore.Remove(sessionKey)
+	}
+
+	if options, err := relay.authSessionStore.BeginRegSession(&reg); err != nil {
+		response.InternalServerError(ctx, err.Error())
+	} else {
+		response.GetResponse().SuccessWithData(ctx, options.Response)
+	}
 }
 
 // finishRegistrationByEmail

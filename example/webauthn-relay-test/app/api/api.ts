@@ -1,8 +1,8 @@
 enum API {
     PASSKEY_REG = "/api/passkey/v1/reg",
     PASSKEY_REG_VERIFY = "/api/passkey/v1/reg/verify",
-    PASSKEY_REG_V2 = "/api/passkey/v2/reg",
-    PASSKEY_REG_VERIFY_V2 = "/api/passkey/v2/reg/verify",
+    PASSKEY_REG_BY_ACCOUNT = "/api/passkey/v1/reg-account",
+    PASSKEY_REG_VERIFY_BY_ACCOUNT = "/api/passkey/v1/reg-account/verify",
     PASSKEY_AUTH = "/api/passkey/v1/sign",
     PASSKEY_AUTH_VERIFY = "/api/passkey/v1/sign/verify",
     PASSKEY_PAYMENT = "/api/passkey/v1/tx/sign",

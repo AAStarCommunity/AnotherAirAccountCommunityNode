@@ -9,6 +9,18 @@ on:
       - "*"
 
 jobs:
+  UnitTests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+      - name: Go Module Downloads
+        run: go mod download
+      - name: Run tests
+        run: go test -v -short -race ./...
+        
   TestAndCoverage:
     runs-on: ubuntu-latest
     steps:

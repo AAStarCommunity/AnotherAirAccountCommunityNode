@@ -132,7 +132,7 @@ func (store *SessionStore) BeginTxSession(user *User, txSignature *TxSignature) 
 	}
 
 	webAuthn, _ := newWebAuthn(txSignature.Origin)
-	sessionKey := GetSessionKey(txSignature.Origin, txSignature.Email, txSignature.Ticket)
+	sessionKey := GetSessionKey(txSignature.Origin, txSignature.Account, txSignature.Ticket)
 	if opt, session, err := webAuthn.BeginLogin(user,
 		func(opt *protocol.PublicKeyCredentialRequestOptions) {
 			opt.Challenge = protocol.URLEncodedBase64(txSignature.TxData)
@@ -150,9 +150,9 @@ func (store *SessionStore) BeginTxSession(user *User, txSignature *TxSignature) 
 }
 
 func (store *SessionStore) FinishTxSession(paymentSign *TxSignature) (*User, error) {
-	key := GetSessionKey(paymentSign.Origin, paymentSign.Email, paymentSign.Ticket)
+	key := GetSessionKey(paymentSign.Origin, paymentSign.Account, paymentSign.Ticket)
 	if session := store.Get(key); session == nil {
-		return nil, fmt.Errorf("%s: not found", paymentSign.Email)
+		return nil, fmt.Errorf("%s: not found", paymentSign.Account)
 	} else {
 		if _, err := session.WebAuthn.ValidateLogin(&session.User, session.Data, paymentSign.CA); err == nil {
 			store.Remove(key)

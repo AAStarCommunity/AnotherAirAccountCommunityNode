@@ -1,5 +1,11 @@
 package seedworks
 
+type AccountType string
+
+const (
+	EOA AccountType = "EOA"
+)
+
 type RegistrationByEmailPrepare struct {
 	Email string `json:"email"`
 }
@@ -16,7 +22,7 @@ type FinishRegistrationByEmail struct {
 }
 
 type RegistrationByAccount struct {
-	Origin  string `json:"origin"`
-	Type    string `json:"type"`
-	Account string `json:"account"`
+	Origin  string      `json:"origin"`
+	Type    AccountType `json:"type"`
+	Account string      `json:"account"`
 }

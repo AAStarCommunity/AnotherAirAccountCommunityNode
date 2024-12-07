@@ -23,7 +23,7 @@ type UserChain struct {
 type User struct {
 	id             []byte
 	credentials    []webauthn.Credential
-	email          string
+	account        string
 	wallets        []account.HdWallet
 	chainAddresses map[string]UserChain
 }
@@ -74,18 +74,23 @@ func (user *User) TryCreateAA(network consts.Chain, alias string) (err error) {
 	return
 }
 
-func newUser(email string) *User {
+func newUser(name *string) *User {
 	return &User{
-		id:             []byte(email),
-		email:          email,
+		id:             []byte(*name),
+		account:        *name,
 		chainAddresses: make(map[string]UserChain),
 	}
 }
 
 func MappingUser(airaccount *model.AirAccount, getFromVault func(vault *string) (string, error)) (*User, error) {
 	user := &User{
-		id:             []byte(airaccount.Email),
-		email:          airaccount.Email,
+		id: []byte(airaccount.Email),
+		account: func() string {
+			if airaccount.Email != "" {
+				return airaccount.Email
+			}
+			return airaccount.EoaAddress
+		}(),
 		wallets:        make([]account.HdWallet, 0),
 		credentials:    make([]webauthn.Credential, 0),
 		chainAddresses: make(map[string]UserChain),
@@ -131,15 +136,30 @@ func MappingUser(airaccount *model.AirAccount, getFromVault func(vault *string) 
 
 var _ webauthn.User = (*User)(nil)
 
+func (user *User) GetDefaultAccount() string {
+	email, _, _, eoaAddress := user.GetAccounts()
+
+	if email != "" {
+		return email
+	}
+	return eoaAddress
+}
+
 func (user *User) GetEmail() string {
-	email, _, _ := user.GetAccounts()
+	email, _, _, _ := user.GetAccounts()
 	return email
 }
 
-func (user *User) GetAccounts() (email, facebook, twitter string) {
-	email = user.email
+func (user *User) GetEOAAddress() string {
+	_, _, _, eoaAddress := user.GetAccounts()
+	return eoaAddress
+}
+
+func (user *User) GetAccounts() (email, facebook, twitter, eoaAddress string) {
+	email = user.account
 	facebook = ""
 	twitter = ""
+	eoaAddress = ""
 	return
 }
 
@@ -188,11 +208,11 @@ func (user *User) WebAuthnID() []byte {
 }
 
 func (user *User) WebAuthnName() string {
-	return user.email
+	return user.account
 }
 
 func (user *User) WebAuthnDisplayName() string {
-	return user.email
+	return user.account
 }
 
 func (user *User) WebAuthnCredentials() []webauthn.Credential {

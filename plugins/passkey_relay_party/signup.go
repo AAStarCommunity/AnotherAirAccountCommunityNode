@@ -90,12 +90,12 @@ func (relay *RelayParty) beginRegistrationByAccount(ctx *gin.Context) {
 		return
 	}
 
-	sessionKey := seedworks.GetSessionKey(reg.Origin, reg.Account, reg.Type)
+	sessionKey := seedworks.GetSessionKey(reg.Origin, reg.Account, string(reg.Type))
 	if session := relay.authSessionStore.Get(sessionKey); session != nil {
 		relay.authSessionStore.Remove(sessionKey)
 	}
 
-	if options, err := relay.authSessionStore.BeginRegSession(&reg); err != nil {
+	if options, err := relay.authSessionStore.BeginRegSessionByAccount(&reg); err != nil {
 		response.InternalServerError(ctx, err.Error())
 	} else {
 		response.GetResponse().SuccessWithData(ctx, options.Response)
@@ -139,6 +139,47 @@ func (relay *RelayParty) finishRegistrationByEmail(ctx *gin.Context) {
 	}
 }
 
+// finishRegistrationByAccount
+// @Summary Finish SignUp By Account
+// @Tags Plugins Passkey
+// @Description Verify attestations, register user and return JWT
+// @Accept json
+// @Product json
+// @Param account  query string true "user account"
+// @Param origin query string true "origin"
+// @Param type query string false "account type, default: EOA"
+// @Param network query string false "network"
+// @Param alias query string false "network"
+// @Param registrationBody body protocol.CredentialCreationResponse true "Verify Registration"
+// @Router /api/passkey/v1/reg/verify-account [post]
+// @Success 200 {object} SiginInResponse "OK"
+func (relay *RelayParty) finishRegistrationByAccount(ctx *gin.Context) {
+	network := consts.Chain(ctx.Query("network"))
+
+	if !isSupportChain(network) {
+		response.BadRequest(ctx, "network not supported, please specify a valid network, e.g.: optimism-mainnet, base-sepolia, optimism-sepolia")
+		return
+	}
+
+	// body-stream works for parser, the additional info appends to query
+	stubReg := seedworks.RegistrationByAccount{
+		Account: ctx.Query("account"),
+		Type: func() seedworks.AccountType {
+			if ctx.Query("type") == "" {
+				return seedworks.EOA
+			}
+			return seedworks.AccountType(ctx.Query("type"))
+		}(),
+		Origin: ctx.Query("origin"),
+	}
+
+	if user, err := relay.authSessionStore.FinishRegSessionByAccount(&stubReg, ctx); err != nil {
+		response.GetResponse().FailCode(ctx, 401, "SignUp failed: "+err.Error())
+	} else {
+		signup(relay, ctx, user)
+	}
+}
+
 const defaultWalletCount = 5
 
 func createWalletsForNewUser(relay *RelayParty, ctx *gin.Context, user *seedworks.User) {
@@ -152,7 +193,7 @@ func createWalletsForNewUser(relay *RelayParty, ctx *gin.Context, user *seedwork
 		return
 	}
 
-	if err := relay.db.CreateAccount(user.GetEmail(), wallets); err != nil {
+	if err := relay.db.CreateAccount(user.GetDefaultAccount(), wallets); err != nil {
 		response.InternalServerError(ctx, err.Error())
 		return
 	}
@@ -169,7 +210,7 @@ func signup(relay *RelayParty, ctx *gin.Context, user *seedworks.User) {
 	}
 
 	signupCredId := base64.URLEncoding.EncodeToString(user.WebAuthnCredentials()[0].ID)
-	if u, _ := relay.db.FindUserByPasskey(user.GetEmail(), signupCredId); u != nil {
+	if u, _ := relay.db.FindUserByPasskey(user.GetDefaultAccount(), signupCredId); u != nil {
 		user = u
 	}
 

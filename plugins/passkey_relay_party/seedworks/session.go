@@ -19,7 +19,7 @@ func GetSessionKey(origin, id string, ext ...string) string {
 	if len(ext) > 0 {
 		m = ":" + strings.Join(ext, ":")
 	}
-	return origin + ":" + id + m
+	return strings.ToUpper(origin + ":" + id + m)
 }
 
 type SessionStore struct {
@@ -35,11 +35,8 @@ func NewInMemorySessionStore() *SessionStore {
 	return store
 }
 
-func (store *SessionStore) BeginRegSession(reg *RegistrationByEmail) (*protocol.CredentialCreation, error) {
-	user := newUser(reg.Email)
-
-	wan, _ := newWebAuthn(reg.Origin)
-	sessionKey := GetSessionKey(reg.Origin, reg.Email)
+func _beginRegSession(store *SessionStore, user *User, sessionKey, origin *string) (*protocol.CredentialCreation, error) {
+	wan, _ := newWebAuthn(*origin)
 
 	authSelect := protocol.AuthenticatorSelection{
 		AuthenticatorAttachment: protocol.Platform,
@@ -58,19 +55,43 @@ func (store *SessionStore) BeginRegSession(reg *RegistrationByEmail) (*protocol.
 	); err != nil {
 		return nil, err
 	} else {
-		store.set(sessionKey, wan, session, user)
+		store.set(*sessionKey, wan, session, user)
 		return opt, nil
 	}
 }
 
+func (store *SessionStore) BeginRegSession(reg *RegistrationByEmail) (*protocol.CredentialCreation, error) {
+	sessionKey := GetSessionKey(reg.Origin, reg.Email)
+	return beginRegSession(store, &reg.Email, &reg.Origin, &sessionKey)
+}
+
+func (store *SessionStore) BeginRegSessionByAccount(reg *RegistrationByAccount) (*protocol.CredentialCreation, error) {
+	sessionKey := GetSessionKey(reg.Origin, reg.Account, string(reg.Type))
+	return beginRegSession(store, &reg.Account, &reg.Origin, &sessionKey)
+}
+
+func beginRegSession(store *SessionStore, userName, origin, sessionKey *string) (*protocol.CredentialCreation, error) {
+	user := newUser(userName)
+	return _beginRegSession(store, user, sessionKey, origin)
+}
+
 func (store *SessionStore) FinishRegSession(reg *FinishRegistrationByEmail, ctx *gin.Context) (*User, error) {
 	key := GetSessionKey(reg.Origin, reg.Email)
-	if session := store.Get(key); session == nil {
-		return nil, fmt.Errorf("%s: not found", reg.Email)
+	return finishRegSession(store, key, ctx)
+}
+
+func (store *SessionStore) FinishRegSessionByAccount(reg *RegistrationByAccount, ctx *gin.Context) (*User, error) {
+	key := GetSessionKey(reg.Origin, reg.Account, string(reg.Type))
+	return finishRegSession(store, key, ctx)
+}
+
+func finishRegSession(store *SessionStore, sessionKey string, ctx *gin.Context) (*User, error) {
+	if session := store.Get(sessionKey); session == nil {
+		return nil, fmt.Errorf("account not found")
 	} else {
 		if cred, err := session.WebAuthn.FinishRegistration(&session.User, session.Data, ctx.Request); err == nil {
 			session.User.AddCredential(cred)
-			store.Remove(key)
+			store.Remove(sessionKey)
 			return &session.User, nil
 		} else {
 			return nil, err

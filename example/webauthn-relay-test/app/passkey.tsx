@@ -33,7 +33,7 @@ export const PasskeyRegisterByEOA = async (eoaAddress: string) => {
 
 const generateRegPasskeyPublicKeyV2 = async (type: string, account: string) => {
   const origin = window.location.origin;
-  const resp = await api.post(API.PASSKEY_REG_V2, {
+  const resp = await api.post(API.PASSKEY_REG_BY_ACCOUNT, {
     type,
     account,
     origin,
@@ -42,7 +42,7 @@ const generateRegPasskeyPublicKeyV2 = async (type: string, account: string) => {
   if (json !== null) {
     const attest = await startRegistration(json);
     const verifyResp = await api.post(
-      API.PASSKEY_REG_VERIFY_V2 +
+      API.PASSKEY_REG_VERIFY_BY_ACCOUNT +
         "?origin=" +
         encodeURIComponent(origin) +
         "&account=" +

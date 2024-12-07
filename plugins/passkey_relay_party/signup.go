@@ -151,7 +151,7 @@ func (relay *RelayParty) finishRegistrationByEmail(ctx *gin.Context) {
 // @Param network query string false "network"
 // @Param alias query string false "network"
 // @Param registrationBody body protocol.CredentialCreationResponse true "Verify Registration"
-// @Router /api/passkey/v1/reg/verify-account [post]
+// @Router /api/passkey/v1/reg-account/verify [post]
 // @Success 200 {object} SiginInResponse "OK"
 func (relay *RelayParty) finishRegistrationByAccount(ctx *gin.Context) {
 	network := consts.Chain(ctx.Query("network"))

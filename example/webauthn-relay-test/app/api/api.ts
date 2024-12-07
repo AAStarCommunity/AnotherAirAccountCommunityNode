@@ -8,6 +8,7 @@ enum API {
     PASSKEY_PAYMENT = "/api/passkey/v1/tx/sign",
     PASSKEY_PAYMENT_VERIFY = "/api/passkey/v1/tx/sign/verify",
     SUPPORT_NETWORKS = "/api/passkey/v1/chains/support",
+    CREATE_AA = "/api/passkey/v1/account/chain",
 }
 
 export default API;

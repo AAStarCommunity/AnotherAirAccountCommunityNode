@@ -19,7 +19,7 @@ func GetSessionKey(origin, id string, ext ...string) string {
 	if len(ext) > 0 {
 		m = ":" + strings.Join(ext, ":")
 	}
-	return origin + ":" + id + m
+	return strings.ToUpper(origin + ":" + id + m)
 }
 
 type SessionStore struct {

@@ -11,6 +11,6 @@ type Db interface {
 	FindUserByPasskey(userHandler, credId string) (*seedworks.User, error)
 	SaveChallenge(captchaType model.ChallengeType, challenger, captcha string) error
 	Challenge(captchaType model.ChallengeType, challenger, captcha string) bool
-	CreateAccount(email string, wallets []account.HdWallet) error
+	CreateAccount(account string, wallets []account.HdWallet) error
 	SaveAccounts(user *seedworks.User) error
 }

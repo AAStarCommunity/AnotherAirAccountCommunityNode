@@ -159,7 +159,7 @@ func (user *User) GetAccounts() (email, facebook, twitter, eoaAddress string) {
 	email = user.account
 	facebook = ""
 	twitter = ""
-	eoaAddress = ""
+	eoaAddress = user.account
 	return
 }
 

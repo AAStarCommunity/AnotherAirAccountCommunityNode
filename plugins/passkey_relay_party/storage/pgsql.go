@@ -54,7 +54,18 @@ func (db *PgsqlStorage) CreateAccount(account string, wallets []account.HdWallet
 		if err := tx.Where("email = ? or eoa_address = ?", account, account).First(&model.AirAccount{}).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				airAccount := model.AirAccount{
-					Email:    account,
+					Email: func() string {
+						if strings.Contains(account, "@") {
+							return account
+						}
+						return ""
+					}(),
+					EoaAddress: func() string {
+						if !strings.Contains(account, "@") {
+							return account
+						}
+						return ""
+					}(),
 					HdWallet: modelWallet,
 				}
 
@@ -90,7 +101,7 @@ func (db *PgsqlStorage) SaveAccounts(user *seedworks.User) error {
 	return db.client.Transaction(func(tx *gorm.DB) error {
 		email, _, _, eoaAddress := user.GetAccounts()
 		airAccount := model.AirAccount{}
-		if err := db.client.Preload(clause.Associations).Where("email = ? or eoaAddress = ?", email, eoaAddress).First(&airAccount).Error; err != nil {
+		if err := db.client.Preload(clause.Associations).Where("email = ? or eoa_address = ?", email, eoaAddress).First(&airAccount).Error; err != nil {
 			// SaveAccounts only update user account, so if user not exists, return error
 			return err
 		}

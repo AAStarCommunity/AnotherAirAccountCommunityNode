@@ -84,7 +84,7 @@ func newUser(name *string) *User {
 
 func MappingUser(airaccount *model.AirAccount, getFromVault func(vault *string) (string, error)) (*User, error) {
 	user := &User{
-		id: []byte(airaccount.Email),
+		id: []byte(airaccount.WebAuthnID),
 		account: func() string {
 			if airaccount.Email != "" {
 				return airaccount.Email

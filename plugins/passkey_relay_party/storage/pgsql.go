@@ -66,7 +66,8 @@ func (db *PgsqlStorage) CreateAccount(account string, wallets []account.HdWallet
 						}
 						return ""
 					}(),
-					HdWallet: modelWallet,
+					WebAuthnID: account,
+					HdWallet:   modelWallet,
 				}
 
 				if err := tx.Omit("updated_at").Create(&airAccount).Error; err != nil {

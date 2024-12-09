@@ -295,6 +295,99 @@
                 }
             }
         },
+        "/api/passkey/v1/reg-account": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Plugins Passkey"
+                ],
+                "summary": "Begin SignUp By EOA/UnionID/etc.,",
+                "parameters": [
+                    {
+                        "description": "Begin Registration",
+                        "name": "registrationBody",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/seedworks.RegistrationByAccount"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/protocol.PublicKeyCredentialCreationOptions"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/passkey/v1/reg-account/verify": {
+            "post": {
+                "description": "Verify attestations, register user and return JWT",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Plugins Passkey"
+                ],
+                "summary": "Finish SignUp By Account",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "user account",
+                        "name": "account",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "origin",
+                        "name": "origin",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "account type, default: EOA",
+                        "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "network",
+                        "name": "network",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "network",
+                        "name": "alias",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Verify Registration",
+                        "name": "registrationBody",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/protocol.CredentialCreationResponse"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/plugin_passkey_relay_party.SiginInResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/passkey/v1/reg/prepare": {
             "post": {
                 "description": "Send captcha to email for confirming ownership",
@@ -1153,6 +1246,15 @@
                 }
             }
         },
+        "seedworks.AccountType": {
+            "type": "string",
+            "enum": [
+                "EOA"
+            ],
+            "x-enum-varnames": [
+                "EOA"
+            ]
+        },
         "seedworks.Chain": {
             "type": "string",
             "enum": [
@@ -1194,6 +1296,20 @@
                 },
                 "network": {
                     "$ref": "#/definitions/seedworks.Chain"
+                }
+            }
+        },
+        "seedworks.RegistrationByAccount": {
+            "type": "object",
+            "properties": {
+                "account": {
+                    "type": "string"
+                },
+                "origin": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/seedworks.AccountType"
                 }
             }
         },

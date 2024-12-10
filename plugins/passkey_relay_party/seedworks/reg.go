@@ -3,6 +3,7 @@ package seedworks
 type AccountType string
 
 const (
+	Unknown      AccountType = "UNKNOWN"
 	Email        AccountType = "email"
 	EOA          AccountType = "EOA"
 	ZuzaluCityID AccountType = "ZuzaluCityID"

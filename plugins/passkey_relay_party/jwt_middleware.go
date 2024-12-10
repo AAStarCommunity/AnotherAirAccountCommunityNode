@@ -11,7 +11,6 @@ import (
 )
 
 type login struct {
-	Email      string
 	Account    string
 	AccontType seedworks.AccountType
 }
@@ -33,7 +32,7 @@ func AuthHandler() gin.HandlerFunc {
 			if v, ok := data.(*login); ok {
 				return jwt2.MapClaims{
 					"jti": uuid.New().String(),
-					"sub": v.Email,
+					"sub": v.Account,
 				}
 			}
 			return jwt2.MapClaims{}
@@ -54,9 +53,16 @@ func AuthHandler() gin.HandlerFunc {
 				}
 
 				return &login{
-					Email:   email,
-					Account: account,
+					Account: func() string {
+						if len(email) != 0 {
+							return email
+						}
+						return account
+					}(),
 					AccontType: func() seedworks.AccountType {
+						if len(email) != 0 {
+							return seedworks.Email
+						}
 						if c.Query("type") == "" {
 							return seedworks.EOA
 						}
@@ -66,9 +72,14 @@ func AuthHandler() gin.HandlerFunc {
 			} else {
 				if u, ok := user.(*seedworks.User); ok {
 					return &login{
-						Email:      u.GetEmail(),
-						Account:    u.GetEOAAddress(),
-						AccontType: seedworks.EOA,
+						Account: func() string {
+							account, _ := u.GetAccount()
+							return account
+						}(),
+						AccontType: func() seedworks.AccountType {
+							_, accountType := u.GetAccount()
+							return accountType
+						}(),
 					}, nil
 				} else {
 					return nil, jwt2.ErrFailedAuthentication

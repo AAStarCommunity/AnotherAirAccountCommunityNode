@@ -9,7 +9,7 @@ type AirAccount struct {
 	Facebook         string            `json:"facebook" gorm:"type:varchar(255)"`
 	Twitter          string            `json:"twitter" gorm:"type:varchar(255)"`
 	EoaAddress       string            `json:"eoa_address" gorm:"type:varchar(255)"`
-	ZuzaluCityId     string            `json:"zuzalu_city_id" gorm:"column:zuzalu_city_id;type:varchar(255)"`
+	ZuzaluCityID     string            `json:"zuzalu_city_id" gorm:"column:zuzalu_city_id;type:varchar(255)"`
 	HdWallet         []HdWallet        `json:"hdwallet" gorm:"foreignKey:AirAccountID"`
 	Passkeys         []Passkey         `json:"passkeys" gorm:"foreignKey:AirAccountID"`
 	AirAccountChains []AirAccountChain `json:"airaccount_chains" gorm:"foreignKey:AirAccountID"`

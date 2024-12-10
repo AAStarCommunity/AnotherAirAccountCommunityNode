@@ -62,16 +62,16 @@ func _beginRegSession(store *SessionStore, user *User, sessionKey, origin *strin
 
 func (store *SessionStore) BeginRegSession(reg *RegistrationByEmail) (*protocol.CredentialCreation, error) {
 	sessionKey := GetSessionKey(reg.Origin, reg.Email)
-	return beginRegSession(store, &reg.Email, &reg.Origin, &sessionKey)
+	return beginRegSession(store, &reg.Email, &reg.Origin, &sessionKey, Email)
 }
 
 func (store *SessionStore) BeginRegSessionByAccount(reg *RegistrationByAccount) (*protocol.CredentialCreation, error) {
 	sessionKey := GetSessionKey(reg.Origin, reg.Account, string(reg.Type))
-	return beginRegSession(store, &reg.Account, &reg.Origin, &sessionKey)
+	return beginRegSession(store, &reg.Account, &reg.Origin, &sessionKey, reg.Type)
 }
 
-func beginRegSession(store *SessionStore, userName, origin, sessionKey *string) (*protocol.CredentialCreation, error) {
-	user := newUser(userName)
+func beginRegSession(store *SessionStore, userName, origin, sessionKey *string, accountType AccountType) (*protocol.CredentialCreation, error) {
+	user := newUser(userName, accountType)
 	return _beginRegSession(store, user, sessionKey, origin)
 }
 

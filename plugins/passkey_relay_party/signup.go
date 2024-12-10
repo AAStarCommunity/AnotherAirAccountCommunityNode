@@ -193,7 +193,7 @@ func createWalletsForNewUser(relay *RelayParty, ctx *gin.Context, user *seedwork
 		return
 	}
 
-	if defaultAccount, err := user.GetDefaultAccount(); err != nil {
+	if defaultAccount, _,err := user.GetDefaultAccount(); err != nil {
 		response.InternalServerError(ctx, err.Error())
 		return
 	} else {
@@ -215,7 +215,7 @@ func signup(relay *RelayParty, ctx *gin.Context, user *seedworks.User, regType s
 	}
 
 	signupCredId := base64.URLEncoding.EncodeToString(user.WebAuthnCredentials()[0].ID)
-	if defaultAccount, err := user.GetDefaultAccount(); err != nil {
+	if defaultAccount, _, err := user.GetDefaultAccount(); err != nil {
 		response.InternalServerError(ctx, err.Error())
 		return
 	} else {

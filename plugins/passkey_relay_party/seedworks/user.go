@@ -7,6 +7,8 @@ import (
 	"another_node/plugins/passkey_relay_party/storage/model"
 	"crypto/ecdsa"
 	"encoding/json"
+	"errors"
+	"strings"
 
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/go-webauthn/webauthn/webauthn"
@@ -24,6 +26,7 @@ type User struct {
 	id             []byte
 	credentials    []webauthn.Credential
 	account        string
+	accountType    AccountType
 	wallets        []account.HdWallet
 	chainAddresses map[string]UserChain
 }
@@ -74,10 +77,11 @@ func (user *User) TryCreateAA(network consts.Chain, alias string) (err error) {
 	return
 }
 
-func newUser(name *string) *User {
+func newUser(name *string, accountType AccountType) *User {
 	return &User{
 		id:             []byte(*name),
 		account:        *name,
+		accountType:    accountType,
 		chainAddresses: make(map[string]UserChain),
 	}
 }
@@ -89,7 +93,25 @@ func MappingUser(airaccount *model.AirAccount, getFromVault func(vault *string) 
 			if airaccount.Email != "" {
 				return airaccount.Email
 			}
-			return airaccount.EoaAddress
+			if airaccount.EoaAddress != "" {
+				return airaccount.EoaAddress
+			}
+			if airaccount.ZuzaluCityID != "" {
+				return airaccount.ZuzaluCityID
+			}
+			return ""
+		}(),
+		accountType: func() AccountType {
+			if airaccount.Email != "" {
+				return Email
+			}
+			if airaccount.EoaAddress != "" {
+				return EOA
+			}
+			if airaccount.ZuzaluCityID != "" {
+				return ZuzaluCityID
+			}
+			return ""
 		}(),
 		wallets:        make([]account.HdWallet, 0),
 		credentials:    make([]webauthn.Credential, 0),
@@ -136,30 +158,59 @@ func MappingUser(airaccount *model.AirAccount, getFromVault func(vault *string) 
 
 var _ webauthn.User = (*User)(nil)
 
-func (user *User) GetDefaultAccount() string {
-	email, _, _, eoaAddress := user.GetAccounts()
+func (user *User) GetDefaultAccount() (string, AccountType, error) {
+	email, _, _, eoaAddress, zuzaluCityID := user.GetAccounts()
 
 	if email != "" {
-		return email
+		return email, Email, nil
 	}
-	return eoaAddress
+
+	if eoaAddress != "" {
+		return eoaAddress, EOA, nil
+	}
+
+	if zuzaluCityID != "" {
+		return zuzaluCityID, ZuzaluCityID, nil
+	}
+	return "", "", errors.New("no available account")
 }
 
 func (user *User) GetEmail() string {
-	email, _, _, _ := user.GetAccounts()
+	email, _, _, _, _ := user.GetAccounts()
 	return email
 }
 
+func (user *User) GetAccount() (string, AccountType) {
+	email, _, _, eoaAddress, zuzaluCityID := user.GetAccounts()
+	if email != "" {
+		return email, Email
+	}
+	if eoaAddress != "" {
+		return eoaAddress, EOA
+	}
+	if zuzaluCityID != "" {
+		return zuzaluCityID, ZuzaluCityID
+	}
+	return "", Unknown
+}
+
 func (user *User) GetEOAAddress() string {
-	_, _, _, eoaAddress := user.GetAccounts()
+	_, _, eoaAddress, _, _ := user.GetAccounts()
 	return eoaAddress
 }
 
-func (user *User) GetAccounts() (email, facebook, twitter, eoaAddress string) {
-	email = user.account
+func (user *User) GetAccounts() (email, facebook, twitter, eoaAddress, zuzaluCityID string) {
+	if user.accountType == Email {
+		email = user.account
+	}
 	facebook = ""
 	twitter = ""
-	eoaAddress = user.account
+	if strings.EqualFold(string(user.accountType), string(EOA)) {
+		eoaAddress = user.account
+	}
+	if strings.EqualFold(string(user.accountType), string(ZuzaluCityID)) {
+		zuzaluCityID = user.account
+	}
 	return
 }
 

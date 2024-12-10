@@ -23,7 +23,7 @@ import (
 func (relay *RelayParty) beginTxSignature(ctx *gin.Context) {
 	var tx seedworks.TxSignature
 
-	if ok, email := CurrentUser(ctx); !ok {
+	if ok, account := CurrentUser(ctx); !ok {
 		response.GetResponse().FailCode(ctx, http.StatusUnauthorized)
 		return
 	} else {
@@ -34,14 +34,14 @@ func (relay *RelayParty) beginTxSignature(ctx *gin.Context) {
 			response.BadRequest(ctx, "TxData is empty")
 			return
 		}
-		tx.Email = email
+		tx.Account = account
 	}
 
-	if session := relay.txSessionStore.Get(seedworks.GetSessionKey(tx.Origin, tx.Email, tx.Ticket)); session != nil {
+	if session := relay.txSessionStore.Get(seedworks.GetSessionKey(tx.Origin, tx.Account, tx.Ticket)); session != nil {
 		response.BadRequest(ctx, "Already in Signature Process")
 		return
 	} else {
-		user, err := relay.db.FindUser(tx.Email)
+		user, err := relay.db.FindUser(tx.Account)
 		if err != nil {
 			response.GetResponse().SuccessWithDataAndCode(http.StatusNotFound, ctx, &seedworks.ErrUserNotFound{})
 		}
@@ -82,7 +82,7 @@ func (relay *RelayParty) finishTxSignature(ctx *gin.Context) {
 		response.GetResponse().FailCode(ctx, http.StatusUnauthorized)
 		return
 	} else {
-		signPayment.Email = email
+		signPayment.Account = email
 	}
 
 	if parsedAttestation, err := protocol.ParseCredentialRequestResponse(ctx.Request); err != nil {

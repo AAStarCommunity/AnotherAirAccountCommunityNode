@@ -25,6 +25,12 @@ func (m *Migration20241202) Up(db *gorm.DB) error {
 		}
 	}
 
+	if !db.Migrator().HasColumn(&model.AirAccount{}, "zuzalu_city_id") {
+		if err := db.Migrator().AddColumn(&model.AirAccount{}, "zuzalu_city_id"); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -37,6 +43,12 @@ func (m *Migration20241202) Down(db *gorm.DB) error {
 
 	if db.Migrator().HasColumn(&model.AirAccount{}, "webauthn_id") {
 		if err := db.Migrator().DropColumn(&model.AirAccount{}, "webauthn_id"); err != nil {
+			return err
+		}
+	}
+
+	if db.Migrator().HasColumn(&model.AirAccount{}, "zuzalu_city_id") {
+		if err := db.Migrator().DropColumn(&model.AirAccount{}, "zuzalu_city_id"); err != nil {
 			return err
 		}
 	}

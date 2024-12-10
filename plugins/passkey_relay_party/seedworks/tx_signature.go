@@ -8,7 +8,7 @@ import (
 
 type TxSignature struct {
 	Ticket       string                                  `json:"ticket"`
-	Email        string                                  `json:"-"`
+	Account      string                                  `json:"-"`
 	Origin       string                                  `json:"origin"`
 	TxData       string                                  `json:"txdata"`
 	Network      seedworks.Chain                         `json:"network"`

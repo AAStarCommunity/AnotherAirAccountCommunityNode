@@ -420,6 +420,12 @@ definitions:
       init_code:
         type: string
     type: object
+  seedworks.AccountType:
+    enum:
+    - EOA
+    type: string
+    x-enum-varnames:
+    - EOA
   seedworks.Chain:
     enum:
     - ethereum-mainnet
@@ -456,6 +462,15 @@ definitions:
         type: string
       network:
         $ref: '#/definitions/seedworks.Chain'
+    type: object
+  seedworks.RegistrationByAccount:
+    properties:
+      account:
+        type: string
+      origin:
+        type: string
+      type:
+        $ref: '#/definitions/seedworks.AccountType'
     type: object
   seedworks.RegistrationByEmail:
     properties:
@@ -714,6 +729,67 @@ paths:
           schema:
             $ref: '#/definitions/protocol.PublicKeyCredentialCreationOptions'
       summary: Begin SignUp
+      tags:
+      - Plugins Passkey
+  /api/passkey/v1/reg-account:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Begin Registration
+        in: body
+        name: registrationBody
+        required: true
+        schema:
+          $ref: '#/definitions/seedworks.RegistrationByAccount'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/protocol.PublicKeyCredentialCreationOptions'
+      summary: Begin SignUp By EOA/UnionID/etc.,
+      tags:
+      - Plugins Passkey
+  /api/passkey/v1/reg-account/verify:
+    post:
+      consumes:
+      - application/json
+      description: Verify attestations, register user and return JWT
+      parameters:
+      - description: user account
+        in: query
+        name: account
+        required: true
+        type: string
+      - description: origin
+        in: query
+        name: origin
+        required: true
+        type: string
+      - description: 'account type, default: EOA'
+        in: query
+        name: type
+        type: string
+      - description: network
+        in: query
+        name: network
+        type: string
+      - description: network
+        in: query
+        name: alias
+        type: string
+      - description: Verify Registration
+        in: body
+        name: registrationBody
+        required: true
+        schema:
+          $ref: '#/definitions/protocol.CredentialCreationResponse'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/plugin_passkey_relay_party.SiginInResponse'
+      summary: Finish SignUp By Account
       tags:
       - Plugins Passkey
   /api/passkey/v1/reg/prepare:

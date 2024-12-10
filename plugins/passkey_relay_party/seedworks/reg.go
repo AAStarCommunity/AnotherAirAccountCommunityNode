@@ -3,7 +3,10 @@ package seedworks
 type AccountType string
 
 const (
-	EOA AccountType = "EOA"
+	Unknown      AccountType = "UNKNOWN"
+	Email        AccountType = "email"
+	EOA          AccountType = "EOA"
+	ZuzaluCityID AccountType = "ZuzaluCityID"
 )
 
 type RegistrationByEmailPrepare struct {

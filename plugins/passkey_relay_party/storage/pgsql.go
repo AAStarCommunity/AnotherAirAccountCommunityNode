@@ -33,7 +33,7 @@ func NewPgsqlStorage() *PgsqlStorage {
 
 // CreateAccount create user account with init hdwallets
 // won't throw error if account already exists
-func (db *PgsqlStorage) CreateAccount(account string, wallets []account.HdWallet) error {
+func (db *PgsqlStorage) CreateAccount(account string, accountType seedworks.AccountType, wallets []account.HdWallet) error {
 
 	modelWallet := make([]model.HdWallet, len(wallets))
 	for i := range wallets {
@@ -51,17 +51,23 @@ func (db *PgsqlStorage) CreateAccount(account string, wallets []account.HdWallet
 	}
 
 	return db.client.Transaction(func(tx *gorm.DB) error {
-		if err := tx.Where("email = ? or eoa_address = ?", account, account).First(&model.AirAccount{}).Error; err != nil {
+		if err := tx.Where("email = ? or eoa_address = ? or zuzalu_city_id = ?", account, account, account).First(&model.AirAccount{}).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				airAccount := model.AirAccount{
 					Email: func() string {
-						if strings.Contains(account, "@") {
+						if accountType == seedworks.Email {
 							return account
 						}
 						return ""
 					}(),
 					EoaAddress: func() string {
-						if !strings.Contains(account, "@") {
+						if accountType == seedworks.EOA {
+							return account
+						}
+						return ""
+					}(),
+					ZuzaluCityId: func() string {
+						if accountType == seedworks.ZuzaluCityID {
 							return account
 						}
 						return ""
@@ -100,9 +106,9 @@ func updateWalletUsed(w []model.HdWallet, usedWalletId []int64) (*model.HdWallet
 func (db *PgsqlStorage) SaveAccounts(user *seedworks.User) error {
 	// support email only for now
 	return db.client.Transaction(func(tx *gorm.DB) error {
-		email, _, _, eoaAddress := user.GetAccounts()
+		email, _, _, eoaAddress, zuzaluCityID := user.GetAccounts()
 		airAccount := model.AirAccount{}
-		if err := db.client.Preload(clause.Associations).Where("email = ? or eoa_address = ?", email, eoaAddress).First(&airAccount).Error; err != nil {
+		if err := db.client.Preload(clause.Associations).Where("email = ? or eoa_address = ? or zuzalu_city_id = ?", email, eoaAddress, zuzaluCityID).First(&airAccount).Error; err != nil {
 			// SaveAccounts only update user account, so if user not exists, return error
 			return err
 		}
@@ -172,7 +178,7 @@ func (db *PgsqlStorage) SaveAccounts(user *seedworks.User) error {
 		}
 
 		if changed {
-			if err := tx.Omit("created_at", "email", "eoa_address").Save(&airAccount).Error; err != nil {
+			if err := tx.Omit("created_at", "email", "eoa_address", "zuzalu_city_id").Save(&airAccount).Error; err != nil {
 				return err
 			}
 		}
@@ -183,7 +189,7 @@ func (db *PgsqlStorage) SaveAccounts(user *seedworks.User) error {
 
 func (db *PgsqlStorage) FindUser(userHandler string) (*seedworks.User, error) {
 	airaccount := model.AirAccount{}
-	if err := db.client.Preload(clause.Associations).Where("email = ? or eoa_address = ?", userHandler, userHandler).First(&airaccount).Error; err != nil {
+	if err := db.client.Preload(clause.Associations).Where("email = ? or eoa_address = ? or zuzalu_city_id = ?", userHandler, userHandler, userHandler).First(&airaccount).Error; err != nil {
 		return nil, err
 	} else {
 		return seedworks.MappingUser(&airaccount, func(vault *string) (string, error) {
@@ -194,7 +200,7 @@ func (db *PgsqlStorage) FindUser(userHandler string) (*seedworks.User, error) {
 
 func (db *PgsqlStorage) FindUserByPasskey(userHandler, credId string) (*seedworks.User, error) {
 	airaccount := model.AirAccount{}
-	if err := db.client.Preload(clause.Associations).Where("(email = ? or eoa_address = ?) AND credential_id = ?", userHandler, userHandler, credId).First(&airaccount).Error; err != nil {
+	if err := db.client.Preload(clause.Associations).Where("(email = ? or eoa_address = ? or zuzalu_city_id = ?) AND credential_id = ?", userHandler, userHandler, userHandler, credId).First(&airaccount).Error; err != nil {
 		return nil, err
 	} else {
 		return seedworks.MappingUser(&airaccount, func(vault *string) (string, error) {

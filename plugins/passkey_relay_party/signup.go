@@ -135,7 +135,7 @@ func (relay *RelayParty) finishRegistrationByEmail(ctx *gin.Context) {
 	if user, err := relay.authSessionStore.FinishRegSession(&stubReg, ctx); err != nil {
 		response.GetResponse().FailCode(ctx, 401, "SignUp failed: "+err.Error())
 	} else {
-		signup(relay, ctx, user)
+		signup(relay, ctx, user, seedworks.Email)
 	}
 }
 
@@ -176,13 +176,13 @@ func (relay *RelayParty) finishRegistrationByAccount(ctx *gin.Context) {
 	if user, err := relay.authSessionStore.FinishRegSessionByAccount(&stubReg, ctx); err != nil {
 		response.GetResponse().FailCode(ctx, 401, "SignUp failed: "+err.Error())
 	} else {
-		signup(relay, ctx, user)
+		signup(relay, ctx, user, stubReg.Type)
 	}
 }
 
 const defaultWalletCount = 5
 
-func createWalletsForNewUser(relay *RelayParty, ctx *gin.Context, user *seedworks.User) {
+func createWalletsForNewUser(relay *RelayParty, ctx *gin.Context, user *seedworks.User, regType seedworks.AccountType) {
 	paths := make([]account.HierarchicalPath, defaultWalletCount)
 	for i := 0; i < defaultWalletCount && i < 10; i++ {
 		paths[i] = account.HierarchicalPath(fmt.Sprintf(account.HierarchicalPath_ETH_FMT, i))
@@ -193,15 +193,20 @@ func createWalletsForNewUser(relay *RelayParty, ctx *gin.Context, user *seedwork
 		return
 	}
 
-	if err := relay.db.CreateAccount(user.GetDefaultAccount(), wallets); err != nil {
+	if defaultAccount, err := user.GetDefaultAccount(); err != nil {
 		response.InternalServerError(ctx, err.Error())
 		return
+	} else {
+		if err := relay.db.CreateAccount(defaultAccount, regType, wallets); err != nil {
+			response.InternalServerError(ctx, err.Error())
+			return
+		}
 	}
 }
 
-func signup(relay *RelayParty, ctx *gin.Context, user *seedworks.User) {
+func signup(relay *RelayParty, ctx *gin.Context, user *seedworks.User, regType seedworks.AccountType) {
 
-	createWalletsForNewUser(relay, ctx, user)
+	createWalletsForNewUser(relay, ctx, user, regType)
 
 	// check if user passkey already exists
 	if len(user.WebAuthnCredentials()) != 1 {
@@ -210,8 +215,13 @@ func signup(relay *RelayParty, ctx *gin.Context, user *seedworks.User) {
 	}
 
 	signupCredId := base64.URLEncoding.EncodeToString(user.WebAuthnCredentials()[0].ID)
-	if u, _ := relay.db.FindUserByPasskey(user.GetDefaultAccount(), signupCredId); u != nil {
-		user = u
+	if defaultAccount, err := user.GetDefaultAccount(); err != nil {
+		response.InternalServerError(ctx, err.Error())
+		return
+	} else {
+		if u, _ := relay.db.FindUserByPasskey(defaultAccount, signupCredId); u != nil {
+			user = u
+		}
 	}
 
 	if err := relay.db.SaveAccounts(user); err != nil {

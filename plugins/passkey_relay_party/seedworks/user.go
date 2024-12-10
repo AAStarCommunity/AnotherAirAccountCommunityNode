@@ -7,6 +7,7 @@ import (
 	"another_node/plugins/passkey_relay_party/storage/model"
 	"crypto/ecdsa"
 	"encoding/json"
+	"errors"
 
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/go-webauthn/webauthn/webauthn"
@@ -136,30 +137,39 @@ func MappingUser(airaccount *model.AirAccount, getFromVault func(vault *string) 
 
 var _ webauthn.User = (*User)(nil)
 
-func (user *User) GetDefaultAccount() string {
-	email, _, _, eoaAddress := user.GetAccounts()
+func (user *User) GetDefaultAccount() (string, error) {
+	email, _, _, eoaAddress, zuzaluCityID := user.GetAccounts()
 
 	if email != "" {
-		return email
+		return email, nil
 	}
-	return eoaAddress
+
+	if eoaAddress != "" {
+		return eoaAddress, nil
+	}
+
+	if zuzaluCityID != "" {
+		return zuzaluCityID, nil
+	}
+	return "", errors.New("no available account")
 }
 
 func (user *User) GetEmail() string {
-	email, _, _, _ := user.GetAccounts()
+	email, _, _, _, _ := user.GetAccounts()
 	return email
 }
 
 func (user *User) GetEOAAddress() string {
-	_, _, _, eoaAddress := user.GetAccounts()
+	_, _, _, eoaAddress, _ := user.GetAccounts()
 	return eoaAddress
 }
 
-func (user *User) GetAccounts() (email, facebook, twitter, eoaAddress string) {
+func (user *User) GetAccounts() (email, facebook, twitter, eoaAddress, zuzaluCityID string) {
 	email = user.account
 	facebook = ""
 	twitter = ""
 	eoaAddress = user.account
+	zuzaluCityID = user.account
 	return
 }
 

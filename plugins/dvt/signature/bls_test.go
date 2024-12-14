@@ -3,21 +3,11 @@ package signature
 import (
 	"encoding/base64"
 	"fmt"
-	"math/rand/v2"
 	"testing"
 
 	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/herumi/bls-eth-go-binary/bls"
 )
-
-func TestRandSplit(t *testing.T) {
-	data := "asdfasdfasdfasdf314"
-	n := rand.IntN(3) + 1
-	groups := randSplit(data, n)
-	for _, g := range groups {
-		fmt.Print(string(g))
-	}
-}
 
 func TestBls(t *testing.T) {
 	if testing.Short() {
@@ -45,17 +35,11 @@ func TestBls(t *testing.T) {
 			t.Errorf("Expected 2 signatures, got %d", len(dvrResult.Signatures))
 		}
 
-		if len(dvrResult.Validator) < threshold {
+		if len(dvrResult.PublicKeys) < threshold {
 			t.Errorf("Expected at least %d validators", threshold)
 		}
-
-		for _, v := range dvrResult.Validator {
-			if len(v.Message) != 2 {
-				t.Error("Expected messages len to be 2")
-			}
-			if len(v.PublicKeys) != 4 {
-				t.Error("Expected public keys len to be 4")
-			}
+		if len(dvrResult.MessagePt) != 2 {
+			t.Error("Expected messages len to be 2")
 		}
 	}
 }

@@ -4,11 +4,9 @@ import (
 	dvtSeedworks "another_node/plugins/dvt/seedworks"
 	"another_node/plugins/passkey_relay_party/seedworks"
 	"bytes"
-	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"io"
-	"math/rand"
 	"net/http"
 	"sync"
 	"time"
@@ -31,27 +29,7 @@ func (s signGroup) first() string {
 	return ""
 }
 
-func randSplit(data string, n int) []string {
-	lengths := make([]int, n)
-	total := len(data)
-
-	for i := 0; i < n-1; i++ {
-		lengths[i] = rand.Intn(total-(n-i-1)) + 1
-		total -= lengths[i]
-	}
-	lengths[n-1] = total
-
-	groups := make([]string, n)
-	start := 0
-	for i, length := range lengths {
-		groups[i] = data[start : start+length]
-		start += length
-	}
-
-	return groups
-}
-
-func requestSign(host string, group *string, passkeyPubkey []byte, passkey *protocol.ParsedCredentialAssertionData) (*signResponse, error) {
+func requestSign(host string, message []byte, passkeyPubkey []byte, passkey *protocol.ParsedCredentialAssertionData) (*signResponse, error) {
 	defer func() {
 		if r := recover(); r != nil {
 			fmt.Println("Recovered from panic:", r)
@@ -59,11 +37,11 @@ func requestSign(host string, group *string, passkeyPubkey []byte, passkey *prot
 	}()
 
 	body := struct {
-		Message       *string                                 `json:"message"`
+		Message       string                                  `json:"message"`
 		PasskeyPubkey []byte                                  `json:"passkeyPubkey"`
 		Passkey       *protocol.ParsedCredentialAssertionData `json:"passkey"`
 	}{
-		Message:       group,
+		Message:       string(message),
 		PasskeyPubkey: passkeyPubkey,
 		Passkey:       passkey,
 	}
@@ -107,43 +85,46 @@ func requestSign(host string, group *string, passkeyPubkey []byte, passkey *prot
 	return &signResponse, nil
 }
 
-func aggrSign(host string, signGroup signGroup) ([]string, error) {
+func aggrSign(host string, signGroup signGroup) ([]string, [][4]string, error) {
 	var sigs [][2]string
+	pubkeys := make([][4]string, 0)
 	for _, sign := range signGroup {
 		sigs = append(sigs, [2]string{sign.Signature[0], sign.Signature[1]})
+		pubkeys = append(pubkeys, [4]string{sign.PublicKey[0], sign.PublicKey[1], sign.PublicKey[2], sign.PublicKey[3]})
 	}
 	body := struct {
 		Signatures [][2]string `json:"sigs"`
+		Pubkeys    [][4]string `json:"pubkeys"`
 	}{
 		Signatures: sigs,
 	}
 	jsonData, err := json.Marshal(body)
 	if err != nil {
 		fmt.Println("Error encoding JSON:", err)
-		return nil, err
+		return nil, nil, err
 	}
 
 	resp, err := http.Post(host+"/aggr", "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
 		fmt.Println("Error:", err)
-		return nil, err
+		return nil, nil, err
 	}
 	defer resp.Body.Close()
 
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	var aggrResp struct {
 		Signature []string `json:"sig"`
 	}
 
 	if err := json.Unmarshal(respBody, &aggrResp); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	ret := aggrResp.Signature
-	return ret, nil
+	return ret, pubkeys, nil
 }
 
 //lint:ignore U1000 ignore unused
@@ -190,34 +171,25 @@ func Bls(data []byte, threshold, timeoutSeconds int, dvtNodes []string, passkeyC
 	if len(dvtNodes) < threshold {
 		return nil, dvtSeedworks.ErrNotEnoughSigners{}
 	}
-	msgHash := fmt.Sprintf("%x", sha256.Sum256(data))[0:31]
-	groups := randSplit(msgHash, len(dvtNodes))
-	mapMsgGroups := make(map[string]string)
 	mapSignatures := make(signGroup)
-	for i, g := range groups {
-		mapMsgGroups[dvtNodes[i]] = g
-	}
-
 	var mu sync.Mutex
 	done := make(chan struct{})
 
-	validatorResults := make([]seedworks.ValidatorResult, 0)
-	for host, g := range mapMsgGroups {
-		go func(dvtHost string, group string) {
-			if signResult, err := requestSign(dvtHost, &group, passkeyCAPubKey, passkeyCA); err == nil {
+	var messagePt [2]string
+	for _, host := range dvtNodes {
+		go func() {
+			if signResult, err := requestSign(host, data, passkeyCAPubKey, passkeyCA); err == nil {
 				mu.Lock()
-				mapSignatures[dvtHost] = signResult
+				mapSignatures[host] = signResult
 				sigCount := len(mapSignatures)
-				validatorResults = append(validatorResults, seedworks.ValidatorResult{
-					Message:    signResult.Message,
-					PublicKeys: signResult.PublicKey,
-				})
 				mu.Unlock()
 
 				if sigCount >= threshold {
 					select {
 					case <-done:
 						// close the channel due to enough signatures
+						messagePt[0] = signResult.Message[0]
+						messagePt[1] = signResult.Message[1]
 					default:
 						close(done)
 					}
@@ -225,35 +197,41 @@ func Bls(data []byte, threshold, timeoutSeconds int, dvtNodes []string, passkeyC
 			} else {
 				fmt.Println(err)
 			}
-		}(host, g)
+		}()
 	}
 
 	timeout := time.After(time.Duration(timeoutSeconds) * time.Second)
 
-	var aggr []string
-	var aggrErr error
 	select {
 	case <-done:
 		firstNode := mapSignatures.first()
-		aggr, aggrErr = aggrSign(firstNode, mapSignatures)
+		if aggr, pubkeys, err := aggrSign(firstNode, mapSignatures); err != nil {
+			return nil, err
+		} else {
+			return &seedworks.DvtResult{
+				Signatures: aggr,
+				MessagePt:  messagePt,
+				PublicKeys: pubkeys,
+			}, nil
+		}
 	case <-timeout:
 		mu.Lock()
 		sigCount := len(mapSignatures)
 		mu.Unlock()
 		if sigCount >= threshold {
 			firstNode := mapSignatures.first()
-			aggr, aggrErr = aggrSign(firstNode, mapSignatures)
+			if aggr, pubkeys, err := aggrSign(firstNode, mapSignatures); err != nil {
+				return nil, err
+			} else {
+				return &seedworks.DvtResult{
+					Signatures: aggr,
+					MessagePt:  messagePt,
+					PublicKeys: pubkeys,
+				}, nil
+			}
 		}
 		return nil, dvtSeedworks.ErrNotEnoughSigners{}
 	}
-
-	if aggrErr != nil {
-		return nil, aggrErr
-	}
-	return &seedworks.DvtResult{
-		Signatures: aggr,
-		Validator:  validatorResults,
-	}, nil
 }
 
 // BlsTss sign data using BLS threshold signature scheme

@@ -17,15 +17,11 @@ type TxSignature struct {
 	CAPublicKey  []byte                                  `json:"-"`
 }
 
-type ValidatorResult struct {
-	Message    []string `json:"message"`
-	PublicKeys []string `json:"pubkeys"`
-}
-
 // DvtResult aggregate distributed validators signatures by BLS
 type DvtResult struct {
-	Signatures []string          `json:"signatures"`
-	Validator  []ValidatorResult `json:"validator"`
+	MessagePt  [2]string   `json:"message"`
+	Signatures []string    `json:"signatures"`
+	PublicKeys [][4]string `json:"pubkeys"`
 }
 
 type TxSignatureResult struct {

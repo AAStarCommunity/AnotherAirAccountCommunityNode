@@ -6,6 +6,7 @@ import (
 	"math/rand/v2"
 	"testing"
 
+	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/herumi/bls-eth-go-binary/bls"
 )
 
@@ -24,12 +25,38 @@ func TestBls(t *testing.T) {
 	}
 
 	data := []byte("asdfasdfasdfasdf314")
-	ok, err := Bls(data)
+	threshold := 2
+	dvrResult, err := Bls(
+		data,
+		threshold,
+		10,
+		[]string{"http://127.0.0.1:8081", "http://127.0.0.1:8082", "http://127.0.0.1:8083"},
+		&protocol.ParsedCredentialAssertionData{},
+		[]byte("123"),
+	)
 	if err != nil {
 		t.Error(err)
 	}
-	if !ok {
-		t.Error("Bls failed")
+
+	if dvrResult == nil {
+		t.Error("Expected non-nil result")
+	} else {
+		if len(dvrResult.Signatures) != 2 {
+			t.Errorf("Expected 2 signatures, got %d", len(dvrResult.Signatures))
+		}
+
+		if len(dvrResult.Validator) < threshold {
+			t.Errorf("Expected at least %d validators", threshold)
+		}
+
+		for _, v := range dvrResult.Validator {
+			if len(v.Message) != 2 {
+				t.Error("Expected messages len to be 2")
+			}
+			if len(v.PublicKeys) != 4 {
+				t.Error("Expected public keys len to be 4")
+			}
+		}
 	}
 }
 

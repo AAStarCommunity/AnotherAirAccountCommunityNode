@@ -5,6 +5,7 @@ type DVT struct {
 	Disable   bool     `yaml:"disable"`
 	Threshold int      `yaml:"threshold"`
 	Nodes     []string `yaml:"nodes"`
+	Timeout   int      `yaml:"timeout"`
 }
 
 // GetDVT returns the DVT configuration section from the global config

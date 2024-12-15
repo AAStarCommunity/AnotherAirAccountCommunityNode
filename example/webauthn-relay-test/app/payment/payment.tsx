@@ -4,15 +4,22 @@ import api from "@/app/api";
 import API from "../api/api";
 import { startAuthentication } from "@simplewebauthn/browser";
 import { PublicKeyCredentialRequestOptionsJSON } from "@simplewebauthn/types";
+import { AuthData } from "../types/auth";
+import { getAggr } from "./bls-helper/utility";
+
 
 export const PasskeyPayment = async (formData: FormData) => {
   await isSecurePaymentConfirmationSupported();
   let txdata = formData.get("txdata") as string;
   let network = formData.get("network") as string;
-  await generateAuthPasskeyPublicKey(txdata, network);
+  const bls: AuthData = await generateAuthPasskeyPublicKey(txdata, network);
+  console.log(bls);
+  const calldata = getAggr(bls.signatures, bls.pubkeys, bls.message);
+  console.log(calldata);
+  return calldata;
 };
 
-const generateAuthPasskeyPublicKey = async (txdata: string, network: string) => {
+const generateAuthPasskeyPublicKey = async (txdata: string, network: string): Promise<AuthData | any> => {
   const origin = window.location.origin;
   const ticket = Math.floor(Math.random() * 100001).toString();
   const resp = await api.post(
@@ -40,12 +47,12 @@ const generateAuthPasskeyPublicKey = async (txdata: string, network: string) => 
     const attest = await startAuthentication(json);
     const verifyResp = await api.post(
       API.PASSKEY_PAYMENT_VERIFY +
-        "?origin=" +
-        encodeURIComponent(origin) +
-        "&ticket=" +
-        ticket +
-        "&network=" + 
-        network,
+      "?origin=" +
+      encodeURIComponent(origin) +
+      "&ticket=" +
+      ticket +
+      "&network=" +
+      network,
       attest,
       {
         headers: {
@@ -55,8 +62,10 @@ const generateAuthPasskeyPublicKey = async (txdata: string, network: string) => 
     );
     if (verifyResp.status === 200) {
       alert("Signature:\n" + verifyResp.data.data.sign);
+      return verifyResp.data.data.dvt;
     } else {
       alert("Signature FAILED!");
+      return null;
     }
   }
 };

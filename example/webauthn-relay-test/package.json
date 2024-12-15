@@ -8,6 +8,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@kevincharm/noble-bn254-drand": "^0.0.1",
     "@rainbow-me/rainbowkit": "^2.2.1",
     "@simplewebauthn/browser": "^10.0.0",
     "@simplewebauthn/types": "^10.0.0",

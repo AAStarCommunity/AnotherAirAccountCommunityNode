@@ -173,6 +173,7 @@ func Bls(data []byte, threshold, timeoutSeconds int, dvtNodes []string, passkeyC
 	}
 	mapSignatures := make(signGroup)
 	var mu sync.Mutex
+	var doneOnce sync.Once
 	done := make(chan struct{})
 
 	var messagePt [2]string
@@ -185,14 +186,11 @@ func Bls(data []byte, threshold, timeoutSeconds int, dvtNodes []string, passkeyC
 				mu.Unlock()
 
 				if sigCount >= threshold {
-					select {
-					case <-done:
-						// close the channel due to enough signatures
+					doneOnce.Do(func() {
 						messagePt[0] = signResult.Message[0]
 						messagePt[1] = signResult.Message[1]
-					default:
 						close(done)
-					}
+					})
 				}
 			} else {
 				fmt.Println(err)

@@ -184,11 +184,6 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
-"@kevincharm/noble-bn254-drand@^0.0.1":
-  version "0.0.1"
-  resolved "https://registry.npmmirror.com/@kevincharm/noble-bn254-drand/-/noble-bn254-drand-0.0.1.tgz#78c478e73236a93c6617d77c24a9e206f5fd00fe"
-  integrity sha512-HU5Gmst+nxYx8OYKMWuaJZyXh+9/oqJL/L9F3B4My4/IOZZBqIkZIfHQMuPN6KoFHBni08YOw0sRQqEyHVpnGg==
-
 "@lit-labs/ssr-dom-shim@^1.0.0", "@lit-labs/ssr-dom-shim@^1.1.0":
   version "1.2.1"
   resolved "https://registry.npmmirror.com/@lit-labs/ssr-dom-shim/-/ssr-dom-shim-1.2.1.tgz#2f3a8f1d688935c704dbc89132394a41029acbb8"

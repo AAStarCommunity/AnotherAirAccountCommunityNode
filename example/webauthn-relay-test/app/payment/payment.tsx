@@ -13,7 +13,6 @@ export const PasskeyPayment = async (formData: FormData) => {
   let txdata = formData.get("txdata") as string;
   let network = formData.get("network") as string;
   const bls: AuthData = await generateAuthPasskeyPublicKey(txdata, network);
-  console.log(bls);
   const calldata = getAggr(bls.signatures, bls.pubkeys, bls.message);
   console.log(calldata);
   return calldata;

@@ -5,17 +5,13 @@ import API from "../api/api";
 import { startAuthentication } from "@simplewebauthn/browser";
 import { PublicKeyCredentialRequestOptionsJSON } from "@simplewebauthn/types";
 import { AuthData } from "../types/auth";
-import { getAggr } from "./bls-helper/utility";
 
 
 export const PasskeyPayment = async (formData: FormData) => {
   await isSecurePaymentConfirmationSupported();
   let txdata = formData.get("txdata") as string;
   let network = formData.get("network") as string;
-  const bls: AuthData = await generateAuthPasskeyPublicKey(txdata, network);
-  const calldata = getAggr(bls.signatures, bls.pubkeys, bls.message);
-  console.log(calldata);
-  return calldata;
+  await generateAuthPasskeyPublicKey(txdata, network);
 };
 
 const generateAuthPasskeyPublicKey = async (txdata: string, network: string): Promise<AuthData | any> => {
@@ -61,7 +57,7 @@ const generateAuthPasskeyPublicKey = async (txdata: string, network: string): Pr
     );
     if (verifyResp.status === 200) {
       alert("Signature:\n" + verifyResp.data.data.sign);
-      return verifyResp.data.data.dvt;
+      return verifyResp.data.data.sign;
     } else {
       alert("Signature FAILED!");
       return null;

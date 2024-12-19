@@ -2,7 +2,6 @@ package signature
 
 import (
 	dvtSeedworks "another_node/plugins/dvt/seedworks"
-	"another_node/plugins/passkey_relay_party/seedworks"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -85,46 +84,44 @@ func requestSign(host string, message []byte, passkeyPubkey []byte, passkey *pro
 	return &signResponse, nil
 }
 
-func aggrSign(host string, signGroup signGroup) ([]string, [][4]string, error) {
+func aggrSign(eoa string, host string, signGroup signGroup) (string, error) {
 	var sigs [][2]string
-	pubkeys := make([][4]string, 0)
 	for _, sign := range signGroup {
 		sigs = append(sigs, [2]string{sign.Signature[0], sign.Signature[1]})
-		pubkeys = append(pubkeys, [4]string{sign.PublicKey[0], sign.PublicKey[1], sign.PublicKey[2], sign.PublicKey[3]})
 	}
 	body := struct {
 		Signatures [][2]string `json:"sigs"`
-		Pubkeys    [][4]string `json:"pubkeys"`
+		EOASigs    string      `json:"eoa"`
 	}{
 		Signatures: sigs,
+		EOASigs:    eoa,
 	}
 	jsonData, err := json.Marshal(body)
 	if err != nil {
 		fmt.Println("Error encoding JSON:", err)
-		return nil, nil, err
+		return "", err
 	}
 
 	resp, err := http.Post(host+"/aggr", "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
 		fmt.Println("Error:", err)
-		return nil, nil, err
+		return "", err
 	}
 	defer resp.Body.Close()
 
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, nil, err
+		return "", err
 	}
 	var aggrResp struct {
-		Signature []string `json:"sig"`
+		Signature string `json:"sig"`
 	}
 
 	if err := json.Unmarshal(respBody, &aggrResp); err != nil {
-		return nil, nil, err
+		return "", err
 	}
 
-	ret := aggrResp.Signature
-	return ret, pubkeys, nil
+	return aggrResp.Signature, nil
 }
 
 //lint:ignore U1000 ignore unused
@@ -166,10 +163,10 @@ func uniqueNodes(nodes []string) []string {
 }
 
 // Bls sign data using BLS signature scheme
-func Bls(data []byte, threshold, timeoutSeconds int, dvtNodes []string, passkeyCA *protocol.ParsedCredentialAssertionData, passkeyCAPubKey []byte) (*seedworks.DvtResult, error) {
+func Bls(eoaSig string, data []byte, threshold, timeoutSeconds int, dvtNodes []string, passkeyCA *protocol.ParsedCredentialAssertionData, passkeyCAPubKey []byte) (string, error) {
 	dvtNodes = uniqueNodes(dvtNodes)
 	if len(dvtNodes) < threshold {
-		return nil, dvtSeedworks.ErrNotEnoughSigners{}
+		return "", dvtSeedworks.ErrNotEnoughSigners{}
 	}
 	mapSignatures := make(signGroup)
 	var mu sync.Mutex
@@ -203,32 +200,16 @@ func Bls(data []byte, threshold, timeoutSeconds int, dvtNodes []string, passkeyC
 	select {
 	case <-done:
 		firstNode := mapSignatures.first()
-		if aggr, pubkeys, err := aggrSign(firstNode, mapSignatures); err != nil {
-			return nil, err
-		} else {
-			return &seedworks.DvtResult{
-				Signatures: aggr,
-				MessagePt:  messagePt,
-				PublicKeys: pubkeys,
-			}, nil
-		}
+		return aggrSign(eoaSig, firstNode, mapSignatures)
 	case <-timeout:
 		mu.Lock()
 		sigCount := len(mapSignatures)
 		mu.Unlock()
 		if sigCount >= threshold {
 			firstNode := mapSignatures.first()
-			if aggr, pubkeys, err := aggrSign(firstNode, mapSignatures); err != nil {
-				return nil, err
-			} else {
-				return &seedworks.DvtResult{
-					Signatures: aggr,
-					MessagePt:  messagePt,
-					PublicKeys: pubkeys,
-				}, nil
-			}
+			return aggrSign(eoaSig, firstNode, mapSignatures)
 		}
-		return nil, dvtSeedworks.ErrNotEnoughSigners{}
+		return "", dvtSeedworks.ErrNotEnoughSigners{}
 	}
 }
 

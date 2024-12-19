@@ -16,7 +16,8 @@ func TestBls(t *testing.T) {
 
 	data := []byte("asdfasdfasdfasdf314")
 	threshold := 2
-	dvrResult, err := Bls(
+	sig, err := Bls(
+		"eoasig",
 		data,
 		threshold,
 		10,
@@ -28,19 +29,8 @@ func TestBls(t *testing.T) {
 		t.Error(err)
 	}
 
-	if dvrResult == nil {
+	if len(sig) == 0 {
 		t.Error("Expected non-nil result")
-	} else {
-		if len(dvrResult.Signatures) != 2 {
-			t.Errorf("Expected 2 signatures, got %d", len(dvrResult.Signatures))
-		}
-
-		if len(dvrResult.PublicKeys) < threshold {
-			t.Errorf("Expected at least %d validators", threshold)
-		}
-		if len(dvrResult.MessagePt) != 2 {
-			t.Error("Expected messages len to be 2")
-		}
 	}
 }
 

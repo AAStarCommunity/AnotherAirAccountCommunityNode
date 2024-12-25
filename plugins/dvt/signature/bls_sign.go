@@ -14,9 +14,20 @@ import (
 )
 
 type signResponse struct {
-	Signature []string `json:"sig"`
-	PublicKey []string `json:"pubkeys"`
-	Message   []string `json:"msg"`
+	Signature struct {
+		Px string `json:"px"`
+		Py string `json:"py"`
+	} `json:"sig"`
+	PublicKeys struct {
+		Px struct {
+			C0 string `json:"c0"`
+			C1 string `json:"c1"`
+		} `json:"px"`
+		Py struct {
+			C0 string `json:"c0"`
+			C1 string `json:"c1"`
+		} `json:"py"`
+	} `json:"pub"`
 }
 
 type signGroup map[string]*signResponse
@@ -84,17 +95,19 @@ func requestSign(host string, message []byte, passkeyPubkey []byte, passkey *pro
 	return &signResponse, nil
 }
 
-func aggrSign(eoa string, host string, signGroup signGroup) (string, error) {
-	var sigs [][2]string
+func aggrSign(msg []byte, eoa string, host string, signGroup signGroup) (string, error) {
+	sigs := make([]*signResponse, 0)
 	for _, sign := range signGroup {
-		sigs = append(sigs, [2]string{sign.Signature[0], sign.Signature[1]})
+		sigs = append(sigs, sign)
 	}
 	body := struct {
-		Signatures [][2]string `json:"sigs"`
-		EOASigs    string      `json:"eoa"`
+		Signatures []*signResponse `json:"sigs"`
+		EOASigs    string          `json:"eoa"`
+		Message    string          `json:"msg"`
 	}{
 		Signatures: sigs,
 		EOASigs:    eoa,
+		Message:    string(msg),
 	}
 	jsonData, err := json.Marshal(body)
 	if err != nil {
@@ -170,10 +183,8 @@ func Bls(eoaSig string, data []byte, threshold, timeoutSeconds int, dvtNodes []s
 	}
 	mapSignatures := make(signGroup)
 	var mu sync.Mutex
-	var doneOnce sync.Once
 	done := make(chan struct{})
 
-	var messagePt [2]string
 	for _, host := range dvtNodes {
 		go func() {
 			if signResult, err := requestSign(host, data, passkeyCAPubKey, passkeyCA); err == nil {
@@ -183,11 +194,7 @@ func Bls(eoaSig string, data []byte, threshold, timeoutSeconds int, dvtNodes []s
 				mu.Unlock()
 
 				if sigCount >= threshold {
-					doneOnce.Do(func() {
-						messagePt[0] = signResult.Message[0]
-						messagePt[1] = signResult.Message[1]
-						close(done)
-					})
+					close(done)
 				}
 			} else {
 				fmt.Println(err)
@@ -200,14 +207,14 @@ func Bls(eoaSig string, data []byte, threshold, timeoutSeconds int, dvtNodes []s
 	select {
 	case <-done:
 		firstNode := mapSignatures.first()
-		return aggrSign(eoaSig, firstNode, mapSignatures)
+		return aggrSign(data, eoaSig, firstNode, mapSignatures)
 	case <-timeout:
 		mu.Lock()
 		sigCount := len(mapSignatures)
 		mu.Unlock()
 		if sigCount >= threshold {
 			firstNode := mapSignatures.first()
-			return aggrSign(eoaSig, firstNode, mapSignatures)
+			return aggrSign(data, eoaSig, firstNode, mapSignatures)
 		}
 		return "", dvtSeedworks.ErrNotEnoughSigners{}
 	}

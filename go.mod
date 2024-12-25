@@ -8,7 +8,7 @@ replace github.com/armon/go-metrics => github.com/hashicorp/go-metrics v0.5.3
 
 require (
 	github.com/appleboy/gin-jwt/v2 v2.10.0
-	github.com/deckarep/golang-set/v2 v2.6.0
+	github.com/deckarep/golang-set/v2 v2.7.0
 	github.com/ethereum/go-ethereum v1.14.12
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-webauthn/webauthn v0.11.2
@@ -27,7 +27,7 @@ require (
 	golang.org/x/xerrors v0.0.0-20240903120638-7835f813f4da
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 	gopkg.in/yaml.v2 v2.4.0
-	gorm.io/datatypes v1.2.4
+	gorm.io/datatypes v1.2.5
 	gorm.io/driver/postgres v1.5.11
 	gorm.io/driver/sqlite v1.5.6
 	gorm.io/gorm v1.25.12

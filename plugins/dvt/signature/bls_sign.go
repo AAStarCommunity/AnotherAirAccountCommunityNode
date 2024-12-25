@@ -1,118 +1,144 @@
 package signature
 
 import (
+	dvtSeedworks "another_node/plugins/dvt/seedworks"
 	"bytes"
-	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"io"
-	"math/rand/v2"
 	"net/http"
 	"sync"
+	"time"
+
+	"github.com/go-webauthn/webauthn/protocol"
 )
 
 type signResponse struct {
-	Signature []string `json:"sig"`
-	PublicKey []string `json:"pubkeys"`
+	Signature struct {
+		Px string `json:"px"`
+		Py string `json:"py"`
+	} `json:"sig"`
+	PublicKeys struct {
+		Px struct {
+			C0 string `json:"c0"`
+			C1 string `json:"c1"`
+		} `json:"px"`
+		Py struct {
+			C0 string `json:"c0"`
+			C1 string `json:"c1"`
+		} `json:"py"`
+	} `json:"pub"`
 }
 
-func randSplit(data string, n int) []string {
-	lengths := make([]int, n)
-	total := len(data)
+type signGroup map[string]*signResponse
 
-	// 生成随机分组方案
-	for i := 0; i < n-1; i++ {
-		lengths[i] = rand.IntN(total-(n-i-1)) + 1
-		total -= lengths[i]
+func (s signGroup) first() string {
+	for k := range s {
+		return k
 	}
-	lengths[n-1] = total
-
-	groups := make([]string, n)
-	start := 0
-	for i, length := range lengths {
-		groups[i] = data[start : start+length]
-		start += length
-	}
-
-	return groups
+	return ""
 }
 
-func requestSign(d string, group *string, domain *string) (*signResponse, error) {
+func requestSign(host string, message []byte, passkeyPubkey []byte, passkey *protocol.ParsedCredentialAssertionData) (*signResponse, error) {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("Recovered from panic:", r)
+		}
+	}()
+
 	body := struct {
-		Domain  *string `json:"domain"`
-		Message *string `json:"message"`
+		Message       string                                  `json:"message"`
+		PasskeyPubkey []byte                                  `json:"passkeyPubkey"`
+		Passkey       *protocol.ParsedCredentialAssertionData `json:"passkey"`
 	}{
-		Domain:  domain,
-		Message: group,
+		Message:       string(message),
+		PasskeyPubkey: passkeyPubkey,
+		Passkey:       passkey,
 	}
 	jsonData, err := json.Marshal(body)
 	if err != nil {
-		fmt.Println("Error encoding JSON:", err)
-		return nil, err
+		return nil, fmt.Errorf("failed to encode request body: %w", err)
 	}
 
-	resp, err := http.Post(d+"/sign", "application/json", bytes.NewBuffer(jsonData))
-	if err != nil {
-		fmt.Println("Error:", err)
-		return nil, err
+	client := &http.Client{
+		Timeout: 15 * time.Second,
 	}
+
+	req, err := http.NewRequest("POST", host+"/sign", bytes.NewBuffer(jsonData))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("request failed: %w", err)
+	}
+
 	defer resp.Body.Close()
+
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("http status code: %d", resp.StatusCode)
+		respBody, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("server returned non-200 status code: %d, body: %s", resp.StatusCode, string(respBody))
 	}
 
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
 
 	var signResponse signResponse
 	if err := json.Unmarshal(respBody, &signResponse); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to decode response: %w", err)
 	}
+
 	return &signResponse, nil
 }
 
-func aggrSign(dvt string, signGroup map[string]*signResponse) (*[2]string, error) {
-	var sigs [][2]string
+func aggrSign(msg []byte, eoa string, host string, signGroup signGroup) (string, error) {
+	sigs := make([]*signResponse, 0)
 	for _, sign := range signGroup {
-		sigs = append(sigs, [2]string{sign.Signature[0], sign.Signature[1]})
+		sigs = append(sigs, sign)
 	}
 	body := struct {
-		Signatures [][2]string `json:"sigs"`
+		Signatures []*signResponse `json:"sigs"`
+		EOASigs    string          `json:"eoa"`
+		Message    string          `json:"msg"`
 	}{
 		Signatures: sigs,
+		EOASigs:    eoa,
+		Message:    string(msg),
 	}
 	jsonData, err := json.Marshal(body)
 	if err != nil {
 		fmt.Println("Error encoding JSON:", err)
-		return nil, err
+		return "", err
 	}
 
-	resp, err := http.Post(dvt+"/aggr", "application/json", bytes.NewBuffer(jsonData))
+	resp, err := http.Post(host+"/aggr", "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
 		fmt.Println("Error:", err)
-		return nil, err
+		return "", err
 	}
 	defer resp.Body.Close()
 
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	var aggrResp struct {
-		Signature [2]string `json:"sig"`
+		Signature string `json:"sig"`
 	}
 
 	if err := json.Unmarshal(respBody, &aggrResp); err != nil {
-		return nil, err
+		return "", err
 	}
 
-	ret := aggrResp.Signature
-	return &ret, nil
+	return aggrResp.Signature, nil
 }
 
-func verifyAggr(dvt string, pubkeys [][4]string, aggrSigs *[2]string, messages []string, domain *string) (bool, error) {
+//lint:ignore U1000 ignore unused
+func verifyAggr(host string, pubkeys [][4]string, aggrSigs *[2]string, messages []string, domain *string) (bool, error) {
 	payload := struct {
 		PublicKey    [][4]string `json:"pubkeys"`
 		AggregateSig [2]string   `json:"aggrSig"`
@@ -128,7 +154,7 @@ func verifyAggr(dvt string, pubkeys [][4]string, aggrSigs *[2]string, messages [
 	if jsonData, err := json.Marshal(payload); err != nil {
 		return false, err
 	} else {
-		resp, err := http.Post(dvt+"/aggr/verify", "application/json", bytes.NewBuffer(jsonData))
+		resp, err := http.Post(host+"/aggr/verify", "application/json", bytes.NewBuffer(jsonData))
 		if err != nil {
 			return false, err
 		}
@@ -136,55 +162,66 @@ func verifyAggr(dvt string, pubkeys [][4]string, aggrSigs *[2]string, messages [
 	}
 }
 
-// Bls sign data using BLS signature scheme
-func Bls(data []byte) (ok bool, err error) {
-	dvtNodes := []string{
-		"http://localhost:8081",
-		// "http://localhost:8082",
-		// "http://localhost:8083",
-	}
-	msgHash := fmt.Sprintf("%x", sha256.Sum256(data))[0:31]
-	groups := randSplit(msgHash, len(dvtNodes))
-	mapMsgGroups := make(map[string]string)
-	mapSignatures := make(map[string]*signResponse)
-	for i, g := range groups {
-		mapMsgGroups[dvtNodes[i]] = g
-	}
-	domain := groups[0]
-
-	var wg sync.WaitGroup
-	wg.Add(len(groups))
-	for dvt, g := range mapMsgGroups {
-		go func(d string, group string) {
-			defer wg.Done()
-			if signResult, err := requestSign(d, &group, &domain); err == nil {
-				mapSignatures[d] = signResult
-			}
-		}(dvt, g)
-	}
-	wg.Wait()
-
-	if len(mapSignatures) != len(dvtNodes) {
-		return false, fmt.Errorf("not all nodes signed")
-	} else {
-		if aggrSign, err := aggrSign(dvtNodes[0], mapSignatures); err != nil {
-			return false, err
-		} else {
-			pubkeys := make([][4]string, 0)
-			for _, sign := range mapSignatures {
-				pubkeys = append(pubkeys, [4]string{sign.PublicKey[0], sign.PublicKey[1], sign.PublicKey[2], sign.PublicKey[3]})
-			}
-
-			if ok, err := verifyAggr(dvtNodes[0], pubkeys, aggrSign, groups, &domain); err != nil {
-				return false, err
-			} else {
-				return ok, nil
-			}
+// uniqueNodes removes duplicate nodes from the input slice
+func uniqueNodes(nodes []string) []string {
+	uniqueMap := make(map[string]struct{})
+	var result []string
+	for _, node := range nodes {
+		if _, exists := uniqueMap[node]; !exists {
+			uniqueMap[node] = struct{}{}
+			result = append(result, node)
 		}
+	}
+	return result
+}
+
+// Bls sign data using BLS signature scheme
+func Bls(eoaSig string, data []byte, threshold, timeoutSeconds int, dvtNodes []string, passkeyCA *protocol.ParsedCredentialAssertionData, passkeyCAPubKey []byte) (string, error) {
+	dvtNodes = uniqueNodes(dvtNodes)
+	if len(dvtNodes) < threshold {
+		return "", dvtSeedworks.ErrNotEnoughSigners{}
+	}
+	mapSignatures := make(signGroup)
+	var mu sync.Mutex
+	done := make(chan struct{})
+
+	for _, host := range dvtNodes {
+		go func() {
+			if signResult, err := requestSign(host, data, passkeyCAPubKey, passkeyCA); err == nil {
+				mu.Lock()
+				mapSignatures[host] = signResult
+				sigCount := len(mapSignatures)
+				mu.Unlock()
+
+				if sigCount >= threshold {
+					close(done)
+				}
+			} else {
+				fmt.Println(err)
+			}
+		}()
+	}
+
+	timeout := time.After(time.Duration(timeoutSeconds) * time.Second)
+
+	select {
+	case <-done:
+		firstNode := mapSignatures.first()
+		return aggrSign(data, eoaSig, firstNode, mapSignatures)
+	case <-timeout:
+		mu.Lock()
+		sigCount := len(mapSignatures)
+		mu.Unlock()
+		if sigCount >= threshold {
+			firstNode := mapSignatures.first()
+			return aggrSign(data, eoaSig, firstNode, mapSignatures)
+		}
+		return "", dvtSeedworks.ErrNotEnoughSigners{}
 	}
 }
 
 // BlsTss sign data using BLS threshold signature scheme
+// [deprecated]
 func BlsTss(threshold, totalSigners int, data []byte) (blsSignature []byte, blsPublickey []byte, err error) {
 	allId := make([]string, totalSigners)
 	for i := 0; i < totalSigners; i++ {

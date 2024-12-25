@@ -4,6 +4,8 @@ import api from "@/app/api";
 import API from "../api/api";
 import { startAuthentication } from "@simplewebauthn/browser";
 import { PublicKeyCredentialRequestOptionsJSON } from "@simplewebauthn/types";
+import { AuthData } from "../types/auth";
+
 
 export const PasskeyPayment = async (formData: FormData) => {
   await isSecurePaymentConfirmationSupported();
@@ -12,7 +14,7 @@ export const PasskeyPayment = async (formData: FormData) => {
   await generateAuthPasskeyPublicKey(txdata, network);
 };
 
-const generateAuthPasskeyPublicKey = async (txdata: string, network: string) => {
+const generateAuthPasskeyPublicKey = async (txdata: string, network: string): Promise<AuthData | any> => {
   const origin = window.location.origin;
   const ticket = Math.floor(Math.random() * 100001).toString();
   const resp = await api.post(
@@ -40,12 +42,12 @@ const generateAuthPasskeyPublicKey = async (txdata: string, network: string) => 
     const attest = await startAuthentication(json);
     const verifyResp = await api.post(
       API.PASSKEY_PAYMENT_VERIFY +
-        "?origin=" +
-        encodeURIComponent(origin) +
-        "&ticket=" +
-        ticket +
-        "&network=" + 
-        network,
+      "?origin=" +
+      encodeURIComponent(origin) +
+      "&ticket=" +
+      ticket +
+      "&network=" +
+      network,
       attest,
       {
         headers: {
@@ -55,8 +57,10 @@ const generateAuthPasskeyPublicKey = async (txdata: string, network: string) => 
     );
     if (verifyResp.status === 200) {
       alert("Signature:\n" + verifyResp.data.data.sign);
+      return verifyResp.data.data.sign;
     } else {
       alert("Signature FAILED!");
+      return null;
     }
   }
 };

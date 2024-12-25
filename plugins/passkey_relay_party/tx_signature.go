@@ -3,7 +3,9 @@ package plugin_passkey_relay_party
 import (
 	consts "another_node/internal/seedworks"
 	"another_node/internal/web_server/pkg/response"
+	dvtSeedworks "another_node/plugins/dvt/seedworks"
 	"another_node/plugins/passkey_relay_party/seedworks"
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -99,6 +101,10 @@ func (relay *RelayParty) finishTxSignature(ctx *gin.Context) {
 
 	sig, err := sigTx(user, &signPayment)
 	if err != nil {
+		if errors.Is(err, &dvtSeedworks.ErrNotEnoughSigners{}) {
+			response.GetResponse().FailCode(ctx, 424, "DVT failed: "+err.Error())
+			return
+		}
 		response.GetResponse().FailCode(ctx, 400, "SignIn failed: "+err.Error())
 		return
 	}

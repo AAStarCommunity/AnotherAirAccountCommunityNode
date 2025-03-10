@@ -1,7 +1,6 @@
 module another_node
 
 go 1.23
-
 replace github.com/go-webauthn/webauthn => github.com/fanhousanbu/webauthn v0.0.0-20240901031842-b459556413a4
 
 replace github.com/armon/go-metrics => github.com/hashicorp/go-metrics v0.5.3
@@ -23,7 +22,7 @@ require (
 	github.com/swaggo/swag v1.16.4
 	github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
 	github.com/tyler-smith/go-bip39 v1.1.0
-	golang.org/x/time v0.8.0
+	golang.org/x/time v0.11.0
 	golang.org/x/xerrors v0.0.0-20240903120638-7835f813f4da
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 	gopkg.in/yaml.v2 v2.4.0
